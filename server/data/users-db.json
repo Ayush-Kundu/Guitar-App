@@ -1,0 +1,98 @@
+[
+  {
+    "id": "user_1",
+    "name": "Strummy2024",
+    "username": "strummy2024",
+    "email": "strummy@example.com",
+    "level": "expert",
+    "totalPoints": 18450,
+    "weeklyPoints": 850,
+    "streak": 45,
+    "avatar": "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=50&h=50&fit=crop&auto=format",
+    "createdAt": "2025-12-30T11:55:30.801Z"
+  },
+  {
+    "id": "user_2",
+    "name": "StrumQueen",
+    "username": "strumqueen",
+    "email": "queen@example.com",
+    "level": "advanced",
+    "totalPoints": 14200,
+    "weeklyPoints": 720,
+    "streak": 38,
+    "avatar": "https://images.unsplash.com/photo-1494790108755-2616b612b786?w=50&h=50&fit=crop&auto=format",
+    "createdAt": "2025-12-30T11:55:30.802Z"
+  },
+  {
+    "id": "user_3",
+    "name": "ChordWizard",
+    "username": "chordwizard",
+    "email": "wizard@example.com",
+    "level": "proficient",
+    "totalPoints": 11800,
+    "weeklyPoints": 590,
+    "streak": 32,
+    "avatar": "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=50&h=50&fit=crop&auto=format",
+    "createdAt": "2025-12-30T11:55:30.802Z"
+  },
+  {
+    "id": "user_4",
+    "name": "PickMaster",
+    "username": "pickmaster",
+    "email": "pick@example.com",
+    "level": "intermediate",
+    "totalPoints": 3100,
+    "weeklyPoints": 180,
+    "streak": 18,
+    "avatar": "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=50&h=50&fit=crop&auto=format",
+    "createdAt": "2025-12-30T11:55:30.802Z"
+  },
+  {
+    "id": "user_5",
+    "name": "SixStringHero",
+    "username": "sixstringhero",
+    "email": "hero@example.com",
+    "level": "elementary",
+    "totalPoints": 2850,
+    "weeklyPoints": 165,
+    "streak": 22,
+    "avatar": "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=50&h=50&fit=crop&auto=format",
+    "createdAt": "2025-12-30T11:55:30.802Z"
+  },
+  {
+    "id": "user_6",
+    "name": "GuitarNinja",
+    "username": "guitarninja",
+    "email": "ninja@example.com",
+    "level": "advanced",
+    "totalPoints": 9500,
+    "weeklyPoints": 420,
+    "streak": 28,
+    "avatar": "https://images.unsplash.com/photo-1527980965255-d3b416303d12?w=50&h=50&fit=crop&auto=format",
+    "createdAt": "2025-12-30T11:55:30.802Z"
+  },
+  {
+    "id": "user_7",
+    "name": "MelodyMaker",
+    "username": "melodymaker",
+    "email": "melody@example.com",
+    "level": "proficient",
+    "totalPoints": 7200,
+    "weeklyPoints": 350,
+    "streak": 15,
+    "avatar": "https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=50&h=50&fit=crop&auto=format",
+    "createdAt": "2025-12-30T11:55:30.802Z"
+  },
+  {
+    "id": "user_8",
+    "name": "RiffRider",
+    "username": "riffrider",
+    "email": "riff@example.com",
+    "level": "intermediate",
+    "totalPoints": 4800,
+    "weeklyPoints": 280,
+    "streak": 12,
+    "avatar": "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=50&h=50&fit=crop&auto=format",
+    "createdAt": "2025-12-30T11:55:30.802Z"
+  }
+]

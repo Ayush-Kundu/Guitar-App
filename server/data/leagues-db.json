@@ -1,0 +1,42 @@
+[
+  {
+    "id": "league_1",
+    "name": "Acoustic Legends",
+    "description": "For acoustic guitar enthusiasts",
+    "image": "https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?w=200&h=200&fit=crop&auto=format",
+    "members": [
+      "user_1",
+      "user_3"
+    ],
+    "maxMembers": 10,
+    "creatorId": "user_1",
+    "createdAt": "2025-12-30T11:55:30.803Z"
+  },
+  {
+    "id": "league_2",
+    "name": "Rock Warriors",
+    "description": "Electric guitar and rock music focus",
+    "image": "https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?w=200&h=200&fit=crop&auto=format",
+    "members": [
+      "user_2",
+      "user_4",
+      "user_6"
+    ],
+    "maxMembers": 15,
+    "creatorId": "user_2",
+    "createdAt": "2025-12-30T11:55:30.803Z"
+  },
+  {
+    "id": "league_3",
+    "name": "Classical Masters",
+    "description": "Classical guitar techniques and repertoire",
+    "image": "https://images.unsplash.com/photo-1507838153414-b4b713384a76?w=200&h=200&fit=crop&auto=format",
+    "members": [
+      "user_5",
+      "user_7"
+    ],
+    "maxMembers": 8,
+    "creatorId": "user_5",
+    "createdAt": "2025-12-30T11:55:30.803Z"
+  }
+]

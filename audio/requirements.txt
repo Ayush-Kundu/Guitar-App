@@ -1,0 +1,6 @@
+# Guitar Song Playback Engine Dependencies
+# Install with: pip install -r requirements.txt
+
+numpy>=1.20.0        # For Karplus-Strong synthesis
+pyaudio>=0.2.11      # For real-time audio playback (optional)
+

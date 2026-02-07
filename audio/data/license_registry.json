@@ -1,0 +1,102 @@
+{
+  "_comment": "License Registry - Guitar App Song Licenses",
+  "_updated": "2026-01-04",
+  "_version": "1.0",
+  
+  "licenses": [
+    {
+      "song_id": "SMOKE_ON_WATER",
+      "licensed_song_id": "SMOKE_ON_WATER",
+      "title": "Smoke on the Water",
+      "artist": "Deep Purple",
+      "publisher": "Universal Music Publishing",
+      "license_type": "educational",
+      "granted_date": "2025-01-01",
+      "expiry_date": "2026-12-31",
+      "territories": ["worldwide"],
+      "restrictions": [
+        "educational_use_only",
+        "no_full_song_autoplay",
+        "synthesized_audio_only"
+      ],
+      "verified": true,
+      "contract_id": "UMP-2025-EDU-0001"
+    },
+    {
+      "song_id": "WONDERWALL",
+      "licensed_song_id": "WONDERWALL",
+      "title": "Wonderwall",
+      "artist": "Oasis",
+      "publisher": "Sony Music Publishing",
+      "license_type": "educational",
+      "granted_date": "2025-02-15",
+      "expiry_date": "2027-02-14",
+      "territories": ["worldwide"],
+      "restrictions": [
+        "educational_use_only",
+        "max_30_second_preview"
+      ],
+      "verified": true,
+      "contract_id": "SMP-2025-EDU-0042"
+    },
+    {
+      "song_id": "HOTEL_CALIFORNIA",
+      "licensed_song_id": "HOTEL_CALIFORNIA",
+      "title": "Hotel California",
+      "artist": "Eagles",
+      "publisher": "Warner Chappell Music",
+      "license_type": "educational",
+      "granted_date": "2025-03-01",
+      "expiry_date": null,
+      "territories": ["US", "CA", "UK", "AU"],
+      "restrictions": [
+        "educational_use_only",
+        "territory_restricted"
+      ],
+      "verified": true,
+      "contract_id": "WCM-2025-EDU-0088"
+    },
+    {
+      "song_id": "STAIRWAY_TO_HEAVEN",
+      "licensed_song_id": "STAIRWAY_TO_HEAVEN",
+      "title": "Stairway to Heaven",
+      "artist": "Led Zeppelin",
+      "publisher": "Warner Chappell Music",
+      "license_type": "pending",
+      "granted_date": null,
+      "expiry_date": null,
+      "territories": [],
+      "restrictions": [],
+      "verified": false,
+      "contract_id": null,
+      "notes": "License application submitted - awaiting response"
+    }
+  ],
+  
+  "blocked_songs": [
+    "PIRATED_001",
+    "UNLICENSED_DEMO",
+    "TAKEDOWN_REQUEST_001"
+  ],
+  
+  "public_domain_verified": [
+    "GREENSLEEVES",
+    "AMAZING_GRACE",
+    "SCARBOROUGH_FAIR",
+    "ODE_TO_JOY",
+    "FUR_ELISE",
+    "CANON_IN_D",
+    "TWINKLE_STAR",
+    "HAPPY_BIRTHDAY"
+  ],
+  
+  "original_content": [
+    "GUITAR_APP_THEME",
+    "BLUES_RIFF_EXERCISE",
+    "CHORD_PROGRESSION_101",
+    "FINGERSTYLE_ETUDE_1",
+    "SCALE_PRACTICE_MAJOR",
+    "SCALE_PRACTICE_MINOR"
+  ]
+}
+

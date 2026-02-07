@@ -1,0 +1,2708 @@
+export interface QuizQuestion {
+  question: string;
+  options: string[];
+  correctAnswer: number;
+}
+
+export interface LessonContent {
+  title: string;
+  content: string;
+  quiz?: QuizQuestion[];
+}
+
+// ============================================================================
+// ========================= TECHNIQUE CONTENT ===============================
+// ============================================================================
+
+export const techniqueContent: Record<string, LessonContent> = {
+  // ---------- NOVICE LEVEL ----------
+  'Parts of the Guitar': {
+    title: 'Parts of the Guitar',
+    content: `The guitar is divided into three main functional areas: the headstock, neck, and body. The headstock holds the tuning machines, which control string pitch. The neck contains the frets, dividing pitch into fixed steps and serving as the main workspace for your fingers. The body amplifies sound, either acoustically or electronically. Understanding these parts is essential because it explains why strings buzz, chords sound muted, or the guitar goes out of tune. Practice naming and pointing to each part until it becomes second nature—this knowledge will help diagnose problems and improve technique.`,
+    quiz: [
+      { question: 'Which part of the guitar holds the tuning machines?', options: ['The Neck', 'The Body', 'The Headstock', 'The Bridge'], correctAnswer: 2 },
+      { question: 'What is the primary function of the frets?', options: ['To amplify sound', 'To divide pitch into fixed steps', 'To hold the strings in place', 'To tune the strings'], correctAnswer: 1 },
+      { question: 'Why is it important to understand the different parts of the guitar?', options: ['To look like a professional', 'To diagnose problems like string buzz or tuning issues', 'To play faster', 'It is not necessary for beginners'], correctAnswer: 1 }
+    ]
+  },
+  'Why Technique Matters': {
+    title: 'Why Technique Matters in Guitar',
+    content: `Technique is the foundation of all playing. Without proper technique, even simple chords or scales will sound sloppy, your hands will fatigue quickly, and learning advanced concepts becomes nearly impossible. Good technique ensures clean sound, efficiency, endurance, and control. Practicing technique isn’t just about looking “neat” — it’s about learning how to communicate musical ideas accurately and expressively. Think of it like building a solid foundation before constructing a house: every note, strum, and pluck depends on it.`,
+    quiz: [
+      { question: 'What is a common consequence of poor technique?', options: ['Better tone', 'Faster learning of advanced concepts', 'Quick hand fatigue and sloppy sound', 'Louder volume'], correctAnswer: 2 },
+      { question: 'Good technique ensures which of the following?', options: ['Expensive gear', 'Efficiency, endurance, and control', 'Playing only major chords', 'Never having to tune'], correctAnswer: 1 },
+      { question: 'Why is technique compared to a house foundation?', options: ['Because it is the most expensive part', 'Because every note and strum depends on it', 'Because it is hidden from the audience', 'Because it takes years to build'], correctAnswer: 1 }
+    ]
+  },
+  'Clean Fretting': {
+    title: 'Clean Fretting of Open Chords',
+    content: `Clean fretting ensures each note rings clearly without buzzing or muting neighboring strings. Place fingertips just behind the fret wire, not on top, and press straight down. Keep fingers curved and close to the strings so they don’t touch other notes. Use only as much pressure as necessary. Over-pressing adds tension and slows progress. If a note buzzes, adjust finger angle first, then increase pressure slightly. Practice slowly on each chord, strumming each string individually until every note rings cleanly.`,
+    quiz: [
+      { question: 'Where should you place your fingertips for the cleanest sound?', options: ['Directly on top of the fret wire', 'Far away from the fret wire', 'Just behind the fret wire', 'On the headstock'], correctAnswer: 2 },
+      { question: 'What is the risk of over-pressing the strings?', options: ['It increases volume', 'It adds tension and slows progress', 'It makes the guitar stay in tune longer', 'It makes the strings last longer'], correctAnswer: 1 },
+      { question: 'If a note buzzes, what should you adjust first?', options: ['Finger pressure', 'Finger angle', 'The tuning machines', 'The pick grip'], correctAnswer: 1 }
+    ]
+  },
+  'Thumb Placement': {
+    title: 'Proper Thumb Placement',
+    content: `The thumb should rest behind the neck, roughly aligned with your middle finger, pointing upward. It acts as a support lever, not a clamp. Proper placement allows your fingers to reach all strings without strain. Avoid wrapping your thumb around the neck early; it reduces mobility and causes tension. Practice forming chords while focusing on thumb positioning, and notice how small shifts affect finger reach.`,
+    quiz: [
+      { question: 'How should the thumb function behind the neck?', options: ['As a tight clamp', 'As a support lever', 'It should point toward the floor', 'It should not touch the neck'], correctAnswer: 1 },
+      { question: 'Where should the thumb roughly align?', options: ['With the index finger', 'With the middle finger', 'With the pinky', 'With the bridge'], correctAnswer: 1 },
+      { question: 'Why should you avoid wrapping your thumb around the neck as a beginner?', options: ['It makes the guitar too heavy', 'It reduces mobility and causes tension', 'It makes the strings buzz', 'It is only for electric guitars'], correctAnswer: 1 }
+    ]
+  },
+  'Chord Transitions': {
+    title: 'Basic Chord Transitions (C–G–Am)',
+    content: `Chord changes rely on efficiency, not speed. Before moving, visualize the next chord shape. Move all required fingers together rather than one at a time. Practice changing chords slowly without strumming, focusing on landing fingers cleanly. Speed will increase naturally once your hand learns the motion. Over time, incorporate strumming while counting to internalize rhythm.`,
+    quiz: [
+      { question: 'What is the most important factor in a successful chord change?', options: ['Raw speed', 'Efficiency and visualization', 'Strumming as hard as possible', 'Moving one finger at a time'], correctAnswer: 1 },
+      { question: 'How should fingers move when transitioning between chords?', options: ['One at a time', 'Index finger first always', 'All required fingers together', 'Randomly'], correctAnswer: 2 },
+      { question: 'When will speed in chord transitions increase?', options: ['By playing fast immediately', 'Naturally once the hand learns the motion through slow practice', 'By buying a better guitar', 'By only practicing one chord'], correctAnswer: 1 }
+    ]
+  },
+  'Avoiding String Buzz': {
+    title: 'Avoiding String Buzz',
+    content: `Buzz happens when a string doesn’t vibrate cleanly. Causes include weak pressure, finger angle, or fretting too far from the fret wire. Correct technique starts with adjusting finger position and minimal pressure. Avoid flattening fingers unnecessarily, unless intentionally forming a barre. Strum slowly and adjust until each note rings clearly.`,
+    quiz: [
+      { question: 'Which of the following causes string buzz?', options: ['Fretting too close to the wire', 'Fretting too far from the wire', 'Using a thin pick', 'Playing too loudly'], correctAnswer: 1 },
+      { question: 'What should you avoid unless forming a barre chord?', options: ['Curving your fingers', 'Flattening fingers unnecessarily', 'Using the thumb for support', 'Playing slowly'], correctAnswer: 1 },
+      { question: 'How should you practice to identify the source of buzz?', options: ['Strum as fast as possible', 'Strum slowly and adjust finger position', 'Stop playing the chord', 'Only play open strings'], correctAnswer: 1 }
+    ]
+  },
+  'Finger Pressure Control': {
+    title: 'Finger Pressure Control',
+    content: `Press each string just enough for the note to sound cleanly, then slightly reduce pressure until it almost buzzes. This teaches minimal force, improves endurance, and prevents fatigue. Practicing this control early helps you play longer, cleaner, and more musically, rather than pressing unnecessarily hard.`,
+    quiz: [
+      { question: 'How much pressure should you ideally use when fretting?', options: ['Maximum possible force', 'Just enough for the note to sound cleanly', 'No pressure at all', 'Enough to bend the string'], correctAnswer: 1 },
+      { question: 'What is a benefit of learning minimal force?', options: ['It makes the strings louder', 'It improves endurance and prevents fatigue', 'It helps the guitar stay in tune', 'It is only for acoustic guitars'], correctAnswer: 1 },
+      { question: 'Reducing pressure until a note almost buzzes helps you find:', options: ['The sweet spot for minimal effort', 'A broken string', 'The loudest volume', 'A way to mute the guitar'], correctAnswer: 0 }
+    ]
+  },
+  'Parts Relevant to Chords': {
+    title: 'Parts of the Guitar Relevant to Chords',
+    content: `Understanding how strings, frets, and tuners affect chord playing is crucial. Strings closer to the bridge feel stiffer; frets divide notes for precise pitch; tuning machines maintain string tension. When learning chords, knowing how each part interacts will help you troubleshoot buzz, dead notes, or sloppy transitions. For example, tuning issues can make even a perfect chord sound wrong—so always check tuning before blaming technique.`,
+    quiz: [
+      { question: 'Why do strings feel stiffer near the bridge?', options: ['They are thicker there', 'Increased tension near the anchor point', 'The frets are higher there', 'It is a visual illusion'], correctAnswer: 1 },
+      { question: 'What should you check before assuming your chord technique is wrong?', options: ['The color of the guitar', 'The tuning', 'The pick thickness', 'The length of the strap'], correctAnswer: 1 },
+      { question: 'What role do frets play in chord construction?', options: ['They amplify the harmony', 'They divide notes for precise pitch', 'They change the string gauge', 'They are only for decoration'], correctAnswer: 1 }
+    ]
+  },
+  'Why Chord Technique Matters': {
+    title: 'Why Chord Technique Matters',
+    content: `Chord technique is essential for sound clarity, speed, and musical expression. Sloppy chords make even simple songs sound off. Correct finger placement, pressure, and thumb positioning make transitions smooth, reduce hand strain, and allow expressive dynamics. Practicing chords with precision trains muscle memory, which forms the base for advanced chords, fingerstyle, and improvisation.`,
+    quiz: [
+      { question: 'What does precision in chord practice build?', options: ['Callouses only', 'Muscle memory for advanced playing', 'Better hearing', 'Faster string replacement'], correctAnswer: 1 },
+      { question: 'Proper chord technique allows for which expressive element?', options: ['Dynamics', 'Faster tuning', 'Thicker strings', 'Better lyrics'], correctAnswer: 0 },
+      { question: 'What is a result of sloppy chord technique?', options: ['Easier songs', 'Making simple songs sound "off"', 'Faster progress', 'Reduced need for practice'], correctAnswer: 1 }
+    ]
+  },
+  'Downstroke Consistency': {
+    title: 'Downstroke Consistency',
+    content: `A downstroke should sound even across all strings. Use wrist motion, not your whole arm, and keep movements small and relaxed. Aim through the strings, not at them, and maintain consistent volume. Uneven strokes indicate tension or rushing. Practice with a metronome, strumming slowly and evenly, gradually increasing speed while maintaining control.`,
+    quiz: [
+      { question: 'Where should the strumming motion primarily come from?', options: ['The elbow', 'The shoulder', 'The wrist', 'The fingers'], correctAnswer: 2 },
+      { question: 'What do uneven downstrokes typically indicate?', options: ['Good progress', 'Tension or rushing', 'Using a thin pick', 'Playing an electric guitar'], correctAnswer: 1 },
+      { question: 'How should you aim your pick during a downstroke?', options: ['At the strings', 'Through the strings', 'Away from the strings', 'Only at the top string'], correctAnswer: 1 }
+    ]
+  },
+  'Upstroke Accuracy': {
+    title: 'Basic Upstroke Accuracy',
+    content: `Upstrokes lightly brush the higher strings with a loose wrist motion. They are naturally quieter than downstrokes, which is musically useful. Avoid digging in or forcing volume. Practice upstrokes on a single string, then expand to full chords.`,
+    quiz: [
+      { question: 'Which strings do upstrokes primarily brush?', options: ['The lowest/thickest strings', 'The higher/thinner strings', 'Only the middle strings', 'All strings with equal force'], correctAnswer: 1 },
+      { question: 'How should the volume of an upstroke compare to a downstroke?', options: ['It should be much louder', 'It is naturally quieter', 'It must be identical', 'It should be muted'], correctAnswer: 1 },
+      { question: 'What should you avoid during an upstroke?', options: ['Loose wrist motion', 'Digging in or forcing volume', 'Using a pick', 'Curving your fingers'], correctAnswer: 1 }
+    ]
+  },
+  '4/4 Timing Control': {
+    title: '4/4 Timing Control',
+    content: `Counting beats keeps you in sync with rhythm. In 4/4, there are four steady beats per measure. Count aloud while strumming to internalize timing. Keep your hand moving continuously, even if you miss strings—momentum and rhythm come first, clarity follows.`,
+    quiz: [
+      { question: 'What is the benefit of counting aloud while playing?', options: ['It helps you sing', 'It internalizes timing and keeps you in sync', 'It makes the guitar louder', 'It prevents string buzz'], correctAnswer: 1 },
+      { question: 'If you miss a string during a strumming pattern, what should you do?', options: ['Stop and restart the measure', 'Keep your hand moving to maintain momentum', 'Check your tuning', 'Grip the pick tighter'], correctAnswer: 1 },
+      { question: 'In 4/4 time, how many beats are in each measure?', options: ['Three', 'Four', 'Eight', 'One'], correctAnswer: 1 }
+    ]
+  },
+  'Relaxed Wrist Motion': {
+    title: 'Relaxed Wrist Motion',
+    content: `A relaxed wrist allows speed, endurance, and musical feel. If forearm or hand tension builds, stop and reset. Tension limits control and clarity. Practice slow, deliberate strokes, focusing on wrist motion rather than speed.`,
+    quiz: [
+      { question: 'What does a relaxed wrist provide to a guitarist?', options: ['Less volume', 'Speed, endurance, and musical feel', 'More string breakages', 'Tighter grip'], correctAnswer: 1 },
+      { question: 'What should you do if you feel tension in your forearm?', options: ['Play faster to push through it', 'Stop and reset', 'Grip the pick harder', 'Change your strings'], correctAnswer: 1 },
+      { question: 'Focusing on wrist motion during slow practice helps prevent:', options: ['Good tone', 'Tension and loss of control', 'Internal timing', 'Callouses'], correctAnswer: 1 }
+    ]
+  },
+  'Muting Unused Strings': {
+    title: 'Muting Unused Strings',
+    content: `Muting is as important as fretting. Use the side of your picking hand or fretting-hand fingers to stop unwanted strings from ringing. Clean chords require controlling silence as much as sound. Practice strumming while muting different strings to hear the difference in clarity.`,
+    quiz: [
+      { question: 'Why is muting considered important in guitar playing?', options: ['It makes the guitar quieter', 'Clean chords require controlling silence as much as sound', 'It prevents the pick from slipping', 'It is only used in heavy metal'], correctAnswer: 1 },
+      { question: 'What can you use to mute unwanted strings?', options: ['Only the thumb', 'Side of the picking hand or fretting fingers', 'A guitar strap', 'The tuning machines'], correctAnswer: 1 },
+      { question: 'Controlling silence helps improve:', options: ['Chord clarity', 'Pick speed', 'Strap comfort', 'String life'], correctAnswer: 0 }
+    ]
+  },
+  'Pick Grip': {
+    title: 'Proper Pick Grip',
+    content: `Hold the pick between thumb and index finger with a relaxed grip. It should glide through strings, not wobble or dig in. Too tight a grip causes tension and harsh tone. Practice single-string plucks, adjusting grip until motion feels smooth.`,
+    quiz: [
+      { question: 'Between which fingers should the pick be held?', options: ['Thumb and middle finger', 'Thumb and index finger', 'Index and middle finger', 'Between all fingers'], correctAnswer: 1 },
+      { question: 'What is a sign that your pick grip is too tight?', options: ['Smooth motion', 'Tension and harsh tone', 'Consistent volume', 'Internal rhythm'], correctAnswer: 1 },
+      { question: 'How should the pick interact with the strings?', options: ['It should dig in deeply', 'It should wobble', 'It should glide through smoothly', 'It should not touch them'], correctAnswer: 2 }
+    ]
+  },
+  'Single-String Accuracy': {
+    title: 'Single-String Plucking Accuracy',
+    content: `Accuracy comes from minimizing motion and keeping the pick close to the string. Avoid wide swings or hitting other strings. Start slowly, plucking one string repeatedly until precision is consistent.`,
+    quiz: [
+      { question: 'How can you improve accuracy in single-string plucking?', options: ['By using wide swings', 'By minimizing motion and staying close to the string', 'By looking away from the guitar', 'By plucking as hard as possible'], correctAnswer: 1 },
+      { question: 'What should you avoid hitting when plucking a single string?', options: ['The fret wire', 'Neighboring strings', 'The bridge', 'The pickguard'], correctAnswer: 1 },
+      { question: 'What is the best way to start precision practice?', options: ['Playing fast scales', 'Plucking one string repeatedly at a slow speed', 'Strumming chords', 'Tuning the guitar'], correctAnswer: 1 }
+    ]
+  },
+  'Thumb Plucking': {
+    title: 'Thumb Plucking Basics',
+    content: `Use a rest-stroke, plucking through the string while resting lightly on the next string. This stabilizes motion and creates consistent tone. Avoid snapping the string upward; aim for smooth, controlled strokes.`,
+    quiz: [
+      { question: 'What is a "rest-stroke" in thumb plucking?', options: ['Taking a break while playing', 'Plucking through the string and resting on the next one', 'Muting the string with the thumb', 'Plucking the string very softly'], correctAnswer: 1 },
+      { question: 'What does the rest-stroke help achieve?', options: ['Speed only', 'Stabilized motion and consistent tone', 'A snapping sound', 'Lighter string tension'], correctAnswer: 1 },
+      { question: 'What motion should you avoid with your thumb?', options: ['Downward strokes', 'Smooth strokes', 'Snapping the string upward', 'Resting on the next string'], correctAnswer: 2 }
+    ]
+  },
+  'Finger Independence': {
+    title: 'Finger Independence Basics',
+    content: `Each finger should move independently without tensing others. Practice simple patterns slowly, focusing on relaxation. Finger tension reduces control, accuracy, and speed. Relaxation allows fluid motion across all fingers.`,
+    quiz: [
+      { question: 'What is the primary goal of finger independence?', options: ['Moving all fingers at once', 'Each finger moving without tensing the others', 'Playing with only one finger', 'Using only the index finger'], correctAnswer: 1 },
+      { question: 'What are the negative effects of finger tension?', options: ['Better reach', 'Reduced control, accuracy, and speed', 'Increased volume', 'Slower string wear'], correctAnswer: 1 },
+      { question: 'How should you practice to achieve fluid motion?', options: ['Fast and aggressive', 'Slowly with a focus on relaxation', 'Without looking at the hand', 'Only using major scales'], correctAnswer: 1 }
+    ]
+  },
+  'Controlled Attack': {
+    title: 'Controlled Attack',
+    content: `Attack is how you strike a string. Maintain consistent volume and tone. Loudness comes from confidence, not force. Practice scales and simple lines, paying attention to evenness and clarity in each note.`,
+    quiz: [
+      { question: 'In guitar playing, what does "attack" refer to?', options: ['Aggressive playing style', 'How you strike the string', 'A fast song', 'Breaking a string'], correctAnswer: 1 },
+      { question: 'True loudness on the guitar comes from:', options: ['Brute force', 'Confidence and controlled motion', 'A thick pick', 'New strings'], correctAnswer: 1 },
+      { question: 'What should you pay attention to during scale practice?', options: ['Maximum volume', 'Evenness and clarity in each note', 'How fast you can finish', 'Looking at the audience'], correctAnswer: 1 }
+    ]
+  },
+  'One-Octave Scale Fingering': {
+    title: 'One-Octave Scale Fingering',
+    content: `Use designated fingers for each note instead of sliding randomly. This builds muscle memory and finger strength. Practice slowly, focusing on finger placement and clean articulation.`,
+    quiz: [
+      { question: 'Why is it important to use designated fingers for scales?', options: ['To look professional', 'To build muscle memory and finger strength', 'To avoid using the pinky', 'To make the guitar louder'], correctAnswer: 1 },
+      { question: 'What should you focus on during slow scale practice?', options: ['Speed', 'Finger placement and clean articulation', 'Playing without a pick', 'The name of the scale only'], correctAnswer: 1 },
+      { question: 'Sliding randomly between scale notes prevents:', options: ['Good tone', 'Consistent muscle memory', 'Volume control', 'String buzzing'], correctAnswer: 1 }
+    ]
+  },
+  'Finger-Per-Fret': {
+    title: 'Finger-Per-Fret Technique',
+    content: `Assign one finger per fret in a position. Keep fingers close to the strings to minimize motion. This improves efficiency, reach, and control across the neck.`,
+    quiz: [
+      { question: 'The finger-per-fret technique assigns how many fingers per fret?', options: ['Two', 'One', 'All fingers to one fret', 'Random assignments'], correctAnswer: 1 },
+      { question: 'Why should fingers be kept close to the strings?', options: ['To mute them', 'To minimize motion and improve efficiency', 'To keep them warm', 'To press harder'], correctAnswer: 1 },
+      { question: 'What does this technique improve?', options: ['Volume', 'Efficiency, reach, and control', 'Guitar tuning', 'Pick grip'], correctAnswer: 1 }
+    ]
+  },
+  'Clean Note Articulation': {
+    title: 'Clean Note Articulation',
+    content: `Each note should ring clearly with no overlap or buzz. Stop and correct immediately if notes blur. Clean playing develops discipline and prepares you for faster passages.`,
+    quiz: [
+      { question: 'What defines clean note articulation?', options: ['Notes overlapping', 'Notes ringing clearly with no buzz', 'Playing as loud as possible', 'Using lots of distortion'], correctAnswer: 1 },
+      { question: 'What should you do if your notes start to blur together?', options: ['Keep playing', 'Stop and correct immediately', 'Play faster', 'Turn up the volume'], correctAnswer: 1 },
+      { question: 'Clean playing is a prerequisite for:', options: ['Tuning', 'Faster passages', 'Buying a new pick', 'Singing'], correctAnswer: 1 }
+    ]
+  },
+  'Consistent Picking': {
+    title: 'Consistent Picking',
+    content: `Pick each note with uniform motion and strength. Uneven picking causes timing and tone inconsistencies. Practice slowly, building consistency before speed.`,
+    quiz: [
+      { question: 'What happens when picking is uneven?', options: ['Faster playing', 'Timing and tone inconsistencies', 'Better dynamics', 'Reduced string wear'], correctAnswer: 1 },
+      { question: 'What should be uniform when picking notes?', options: ['The color of the pick', 'Motion and strength', 'The length of the note only', 'The angle of the guitar'], correctAnswer: 1 },
+      { question: 'Before building speed, a guitarist should build:', options: ['Strength', 'Consistency', 'Complexity', 'Callouses'], correctAnswer: 1 }
+    ]
+  },
+  'Ascending and Descending Control': {
+    title: 'Ascending and Descending Control',
+    content: `Practice scales both up and down the neck. Descending exposes weaknesses in coordination and finger control. Aim for identical cleanliness and timing in both directions.`,
+    quiz: [
+      { question: 'Why is practicing descending scales important?', options: ['It is faster', 'It exposes coordination weaknesses', 'It is the only way to play blues', 'It makes the guitar stay in tune'], correctAnswer: 1 },
+      { question: 'What is the goal for cleanliness when playing scales?', options: ['Faster ascending than descending', 'Identical cleanliness and timing in both directions', 'Only the first note needs to be clean', 'Loudness over clarity'], correctAnswer: 1 },
+      { question: 'Coordination is often more challenging when:', options: ['Playing ascending', 'Playing descending', 'Playing open strings', 'Using a strap'], correctAnswer: 1 }
+    ]
+  },
+
+  // ---------- BEGINNER LEVEL ----------
+  'Barre Chords': {
+    title: 'Barre Chord Formation',
+    content: `Barre chords are chords where your index finger presses multiple strings across a single fret, allowing you to move the chord shape up and down the neck. To play them cleanly, roll your index finger slightly onto its side, which uses the firmer edge of the finger. Press from your arm and shoulder, not just the fingertip, to reduce fatigue. Position your thumb behind the neck, roughly aligned with your middle finger, to provide leverage. Avoid squeezing too hard—pressure should be enough to make notes ring clearly without unnecessary tension. Practice by pressing a barre chord and strumming slowly, checking that every string sounds clearly.`,
+    quiz: [
+      { question: 'Which part of the index finger is best for barring?', options: ['The flat pad', 'The side/firmer edge', 'The fingertip only', 'The knuckle'], correctAnswer: 1 },
+      { question: 'Where should the pressure come from to avoid hand fatigue?', options: ['Only the thumb', 'The arm and shoulder', 'The fingertips only', 'The wrist'], correctAnswer: 1 },
+      { question: 'How should you check if your barre chord is clean?', options: ['Strum as hard as possible', 'Strum slowly and check every string', 'Only check the bass string', 'If it looks right, it is right'], correctAnswer: 1 }
+    ]
+  },
+  'Partial Barre Control': {
+    title: 'Partial Barre Control',
+    content: `Sometimes you don’t need to barre all six strings. Partial barres (pressing only 2–4 strings with the index finger) reduce strain and make transitions easier. Focus on precision, pressing just the strings you need. Practice forming partial barre chords on different frets and strumming each string individually to ensure clarity. This also teaches you finger economy—press only what’s necessary.`,
+    quiz: [
+      { question: 'What is a benefit of a partial barre?', options: ['It is louder', 'It reduces strain and eases transitions', 'It is only for electric guitars', 'It requires more fingers'], correctAnswer: 1 },
+      { question: 'What does "finger economy" refer to?', options: ['Pressing as hard as possible', 'Pressing only what is necessary', 'Using fewer fingers', 'Buying cheaper strings'], correctAnswer: 1 },
+      { question: 'How many strings does a partial barre typically cover?', options: ['All 6', 'Only 1', '2–4 strings', 'Only the top 2'], correctAnswer: 2 }
+    ]
+  },
+  'Chord Shape Memorization': {
+    title: 'Chord Shape Memorization',
+    content: `Instead of thinking note by note, learn chords as visual and physical shapes. Visualize the hand shape in your mind, then place fingers together. Repetition creates muscle memory, making transitions automatic. Spend time memorizing one chord shape at a time, then move between shapes in common progressions (e.g., G–C–D) until they feel natural.`,
+    quiz: [
+      { question: 'How should you visualize a chord for faster learning?', options: ['As individual note names', 'As a complete visual and physical shape', 'As a math formula', 'By the colors of the strings'], correctAnswer: 1 },
+      { question: 'What makes chord transitions become automatic?', options: ['Thinking hard', 'Repetition and muscle memory', 'Watching videos only', 'Using a capo'], correctAnswer: 1 },
+      { question: 'What is a good way to practice memorized shapes?', options: ['Playing only one chord per day', 'Moving between shapes in common progressions', 'Playing as fast as possible immediately', 'Changing your tuning'], correctAnswer: 1 }
+    ]
+  },
+  'Efficient Finger Lifting': {
+    title: 'Efficient Finger Lifting',
+    content: `When changing chords, lift your fingers just enough to clear the strings. Large or exaggerated movements waste time and energy. Practice moving between chords slowly, watching your fingers lift minimally. Efficiency allows faster, smoother transitions at higher tempos.`,
+    quiz: [
+      { question: 'How much should you lift your fingers during a chord change?', options: ['As high as possible', 'Just enough to clear the strings', 'Not at all', 'Only the index finger should lift'], correctAnswer: 1 },
+      { question: 'What is wasted by large, exaggerated movements?', options: ['Strings', 'Time and energy', 'Volume', 'Tone'], correctAnswer: 1 },
+      { question: 'Minimal finger lifting is a prerequisite for:', options: ['Slower playing', 'Faster, smoother transitions', 'Acoustic guitar only', 'Better tuning'], correctAnswer: 1 }
+    ]
+  },
+  'Smooth Changes at Tempo': {
+    title: 'Smooth Chord Changes at Tempo',
+    content: `Once chord shapes are memorized, practice changing chords to a metronome, even if your fingers land imperfectly at first. The key is to prioritize rhythm over perfect sound—your fingers will naturally learn accuracy as speed increases through consistent repetition. Start at a slow tempo that allows you to execute clean changes, then gradually raise the speed while keeping timing consistent. Move all required fingers together rather than one at a time, and visualize the next chord shape before moving. This anticipation reduces hesitation and trains your hands to respond instinctively. Record yourself to identify timing inconsistencies, and remember that smooth changes require efficiency of motion, not force.`,
+    quiz: [
+      { question: 'When practicing chord changes with a metronome, what should you prioritize?', options: ['Perfect sound', 'Rhythm/Timing', 'Volume', 'Looking at the fretboard'], correctAnswer: 1 },
+      { question: 'How does accuracy typically improve in chord changes?', options: ['By stopping every time you miss a note', 'Naturally as speed increases through rhythmic practice', 'By pressing harder', 'By using a thinner pick'], correctAnswer: 1 },
+      { question: 'What should you do before moving to the next chord?', options: ['Close your eyes', 'Visualize the next chord shape', 'Speed up immediately', 'Stop strumming'], correctAnswer: 1 }
+    ]
+  },
+  'Alternate Strumming': {
+    title: 'Alternate Strumming',
+    content: `Alternate strumming is a down-up-down-up motion that keeps your hand moving continuously. Don’t stop the motion if you miss a string; keeping a steady pattern maintains rhythm. Start slowly, strumming a single chord while counting beats, then progress to changes while keeping upstroke and downstroke motion even.`,
+    quiz: [
+      { question: 'What is the standard motion of alternate strumming?', options: ['Down-Down-Up', 'Down-Up-Down-Up', 'Only Downstrokes', 'Random motion'], correctAnswer: 1 },
+      { question: 'Why should you keep your hand moving even if you miss a string?', options: ['To look like a pro', 'To maintain a steady rhythm and pattern', 'To save energy', 'To warm up the strings'], correctAnswer: 1 },
+      { question: 'What is the first step in practicing alternate strumming?', options: ['Changing chords fast', 'Strumming a single chord while counting', 'Playing a solo', 'Palm muting'], correctAnswer: 1 }
+    ]
+  },
+  'Accent Control': {
+    title: 'Accent Control',
+    content: `Accents are deliberate emphasized strokes that shape the groove. Practice strumming and making certain beats louder—for example, accenting beats 2 and 4 in 4/4 time. Accents create musical dynamics, making even simple strumming patterns feel expressive.`,
+    quiz: [
+      { question: 'What are accents in strumming?', options: ['Muted notes', 'Deliberate emphasized (louder) strokes', 'Missing a beat on purpose', 'A type of pick'], correctAnswer: 1 },
+      { question: 'Which beats are commonly accented in a rock/pop 4/4 groove?', options: ['1 and 3', '2 and 4', 'All beats', 'No beats'], correctAnswer: 1 },
+      { question: 'What do accents help create in music?', options: ['Volume only', 'Musical dynamics and groove', 'Better tuning', 'String tension'], correctAnswer: 1 }
+    ]
+  },
+  'Palm-Muted Strumming': {
+    title: 'Palm-Muted Strumming',
+    content: `Rest the side of your picking hand lightly near the bridge to mute strings. Adjust pressure and placement to vary muting from subtle dampening to complete silence. This technique adds texture and dynamic range. Practice strumming chords with light, medium, and heavy muting to hear the difference.`,
+    quiz: [
+      { question: 'Where should you rest your hand for palm muting?', options: ['On the neck', 'Near the bridge', 'Over the soundhole', 'On the headstock'], correctAnswer: 1 },
+      { question: 'What can you adjust to change the intensity of the mute?', options: ['Pick thickness', 'Pressure and placement of the palm', 'The height of the strap', 'The speed of the song'], correctAnswer: 1 },
+      { question: 'Palm muting is used to add:', options: ['Only volume', 'Texture and dynamic range', 'Brightness', 'Speed'], correctAnswer: 1 }
+    ]
+  },
+  'Simple Syncopation': {
+    title: 'Simple Syncopation',
+    content: `Syncopation emphasizes off-beats or unexpected beats, giving rhythm a “push and pull” feel. Practice leaving intentional gaps in your strumming while keeping your hand moving. This trains your sense of space and groove. Start by accenting upbeats and gradually experiment with leaving some notes silent.`,
+    quiz: [
+      { question: 'What does syncopation emphasize?', options: ['The downbeat always', 'Off-beats or unexpected beats', 'Only the first beat', 'The loudest note'], correctAnswer: 1 },
+      { question: 'What "feel" does syncopation give to rhythm?', options: ['A square feel', 'A "push and pull" feel', 'A boring feel', 'A fast feel'], correctAnswer: 1 },
+      { question: 'How should your strumming hand behave during syncopated gaps?', options: ['Stop moving completely', 'Keep moving to maintain the pulse', 'Grip the pick tighter', 'Switch chords'], correctAnswer: 1 }
+    ]
+  },
+  'Dynamic Volume Control': {
+    title: 'Dynamic Volume Control',
+    content: `Control loudness independently of tempo. Play a chord progression with variations in volume—soft verses, louder choruses—while maintaining rhythm. This teaches musical phrasing, expressiveness, and emotional control.`,
+    quiz: [
+      { question: 'Dynamic control allows you to change volume without changing:', options: ['The chord', 'The tempo/rhythm', 'The pick', 'The strings'], correctAnswer: 1 },
+      { question: 'Why might a guitarist play a verse softly and a chorus loudly?', options: ['To save energy', 'For musical phrasing and emotional impact', 'Because they forgot the notes', 'To tune the guitar'], correctAnswer: 1 },
+      { question: 'What is a common mistake when trying to play louder?', options: ['Using a pick', 'Speeding up the tempo accidentally', 'Playing with a metronome', 'Breathing'], correctAnswer: 1 }
+    ]
+  },
+  'Alternate Picking': {
+    title: 'Alternate-Picked Scales',
+    content: `Alternate picking is consistent down-up motion when plucking strings with a pick, and applying it to scales builds foundational picking technique. Keep your hand relaxed, avoid resetting between strokes, and minimize motion. Start with single-string exercises, then move across strings slowly, focusing on even tone and rhythm. When applying alternate picking to scales, maintain strict down-up alternation regardless of string changes—this develops consistent technique and timing. Practice scales at slow tempos with a metronome, ensuring each note has equal volume and duration before increasing speed.`,
+    quiz: [
+      { question: 'What defines alternate picking?', options: ['Only downstrokes', 'Consistent down-up motion', 'Using fingers only', 'Random picking'], correctAnswer: 1 },
+      { question: 'What should you maintain when picking scales across string changes?', options: ['Only downstrokes', 'Strict down-up alternation', 'Random patterns', 'Economy picking only'], correctAnswer: 1 },
+      { question: 'Where should alternate picking practice begin?', options: ['Fast solos', 'Single-string exercises at slow speeds', 'Complex chords', 'Playing without a metronome'], correctAnswer: 1 }
+    ]
+  },
+  'Basic Fingerpicking Patterns': {
+    title: 'Basic Fingerpicking Patterns',
+    content: `Use your thumb for bass strings (E, A, D) and fingers for treble strings (G, B, e). Keep thumb steady and independent from your fingers. Practice simple patterns, like thumb–index–middle–index, ensuring each note is clean. Focus on balance between thumb and fingers.`,
+    quiz: [
+      { question: 'Which strings does the thumb typically handle in fingerstyle?', options: ['G, B, e', 'E, A, D (Bass strings)', 'Only the high E', 'All 6 strings'], correctAnswer: 1 },
+      { question: 'What is a key requirement for the thumb in fingerpicking?', options: ['It must be fast', 'It should be steady and independent', 'It should never move', 'It should play the melody'], correctAnswer: 1 },
+      { question: 'What does "balance" refer to in this context?', options: ['Standing on one leg', 'Ensuring the thumb and fingers have appropriate relative volume', 'Using a heavy pick', 'Tuning the guitar'], correctAnswer: 1 }
+    ]
+  },
+  'String-Crossing Accuracy': {
+    title: 'String-Crossing Accuracy',
+    content: `Move between strings cleanly and efficiently, without hitting extra strings. Start slow, plucking from low E to high e and back, paying attention to precision. This skill prevents messy passages and is essential for fingerstyle and hybrid picking.`,
+    quiz: [
+      { question: 'What is the main goal of string-crossing practice?', options: ['To play louder', 'To move between strings without hitting unwanted ones', 'To break strings', 'To play faster chords'], correctAnswer: 1 },
+      { question: 'What does accuracy in string crossing prevent?', options: ['Good tone', 'Messy, noisy passages', 'Internal rhythm', 'Callouses'], correctAnswer: 1 },
+      { question: 'Which techniques rely heavily on string-crossing accuracy?', options: ['Strumming only', 'Fingerstyle and hybrid picking', 'Tuning', 'Changing strings'], correctAnswer: 1 }
+    ]
+  },
+  'Pick Angle Control': {
+    title: 'Pick Angle Control',
+    content: `Hold the pick at a slight angle relative to the string. This reduces resistance and allows smoother contact. Adjust tilt until notes sound even, avoiding harsh, digging strokes. Practicing with different angles helps tone control and speed.`,
+    quiz: [
+      { question: 'Why hold the pick at a slight angle?', options: ['To make it look cool', 'To reduce resistance and allow smoother contact', 'To hit more strings at once', 'To prevent dropping it'], correctAnswer: 1 },
+      { question: 'What kind of stroke should you avoid for clean tone?', options: ['Gliding strokes', 'Harsh, digging strokes', 'Soft strokes', 'Downstrokes'], correctAnswer: 1 },
+      { question: 'What can be improved by mastering pick angle?', options: ['Only volume', 'Tone control and speed', 'The color of the guitar', 'Lyrics'], correctAnswer: 1 }
+    ]
+  },
+  'Travis Picking Fundamentals': {
+    title: 'Travis Picking Fundamentals',
+    content: `Travis picking is a thumb-alternating bass pattern combined with fingers plucking higher strings. Start slow, locking the thumb on a steady bass rhythm while practicing simple finger patterns on top. Independence is key: fingers must pluck without disrupting the thumb’s pulse.`,
+    quiz: [
+      { question: 'What is the characteristic role of the thumb in Travis picking?', options: ['Playing the melody', 'An alternating bass pattern', 'Muting the strings', 'Holding the pick'], correctAnswer: 1 },
+      { question: 'What is the biggest challenge of Travis picking?', options: ['Speed', 'Independence between the thumb and fingers', 'Volume', 'Tuning'], correctAnswer: 1 },
+      { question: 'The thumb should maintain a pulse that is:', options: ['Random', 'Steady and unwavering', 'Faster than the fingers', 'Quiet'], correctAnswer: 1 }
+    ]
+  },
+  'Two-Octave Shapes': {
+    title: 'Two-Octave Scale Shapes',
+    content: `Two-octave scales connect positions on the fretboard, extending melodic range and forcing horizontal thinking rather than relying on isolated box patterns. To practice, play major, minor, and pentatonic scales across two octaves, linking positions smoothly with slides or pivot notes. Maintain consistent fingerings throughout and play slowly, ensuring clean articulation at every note. This approach prepares you for flowing solos that move naturally across the neck, rather than being confined to a single position. Focus on smooth transitions between octaves, making them sound like one continuous musical line rather than two separate sections.`,
+    quiz: [
+      { question: 'What does practicing two-octave scales improve?', options: ['Singing ability', 'Fretboard awareness and horizontal thinking', 'String life', 'Pick grip'], correctAnswer: 1 },
+      { question: 'What techniques help link scale positions smoothly?', options: ['Stopping between octaves', 'Slides or pivot notes', 'A capo', 'Heavy muting'], correctAnswer: 1 },
+      { question: 'Why should you maintain consistent fingerings?', options: ['To confuse yourself', 'To build reliable muscle memory', 'It doesn\'t matter', 'To play louder'], correctAnswer: 1 }
+    ]
+  },
+  'Position-Based Playing': {
+    title: 'Position-Based Scale Playing',
+    content: `Focus on playing a scale within a single fretboard position before moving to others. This develops spatial understanding and builds control over a specific section of the neck. Avoid unnecessary shifts at this stage—position mastery is more important than speed or range. Keep your fingers close to the strings and maintain a consistent hand position throughout the exercise. Once you've thoroughly internalized one position, gradually expand to adjacent positions while maintaining the same level of control and accuracy. This methodical approach builds a solid foundation for seamless fretboard navigation.`,
+    quiz: [
+      { question: 'What does position-based playing help develop?', options: ['Speed only', 'Spatial understanding and localized control', 'Loudness', 'Chord changes only'], correctAnswer: 1 },
+      { question: 'What should you avoid during this stage of practice?', options: ['Using a pick', 'Unnecessary position shifts', 'Closing your eyes', 'Tuning'], correctAnswer: 1 },
+      { question: 'What is more important than speed in position playing?', options: ['Complexity', 'Mastery of the specific position', 'Volume', 'The number of notes played'], correctAnswer: 1 }
+    ]
+  },
+  'Metronome Timing': {
+    title: 'Even Timing with Metronome',
+    content: `Every note should align precisely with a metronome click—this is the foundation of rhythmic discipline. Start slow, allowing yourself to focus entirely on the alignment of each note with the beat. Gradually increase tempo only when accuracy is consistent at the current speed. Timing discipline ensures that scales translate into musical phrases rather than mechanical exercises. Practice with subdivisions (eighth notes, triplets) to develop finer rhythmic control. If you find yourself rushing or dragging, slow down and rebuild the tempo systematically. The metronome reveals timing weaknesses that are otherwise invisible.`,
+    quiz: [
+      { question: 'What should notes align with during scale practice?', options: ['Your heartbeat', 'The metronome click', 'The bass drum only', 'Nothing'], correctAnswer: 1 },
+      { question: 'Why is timing discipline important for scales?', options: ['It makes them faster', 'It ensures they translate into musical phrases', 'It saves strings', 'It helps with tuning'], correctAnswer: 1 },
+      { question: 'What do you do if you find yourself rushing or dragging?', options: ['Ignore it and push through', 'Slow down and rebuild tempo systematically', 'Turn off the metronome', 'Play louder'], correctAnswer: 1 }
+    ]
+  },
+  'Scale Transitions': {
+    title: 'Scale Transitions',
+    content: `Practice moving smoothly between positions or octaves. Avoid pauses or awkward jumps. Use connecting notes (passing tones or slides) to create seamless transitions. This builds fluidity in both practice and improvisation.`,
+    quiz: [
+      { question: 'What should you avoid when moving between scale positions?', options: ['Consistent timing', 'Pauses or awkward jumps', 'Clean notes', 'Looking at the neck'], correctAnswer: 1 },
+      { question: 'What can be used to make a scale transition "seamless"?', options: ['A rest', 'Passing tones or slides', 'Stopping the metronome', 'Changing the pick'], correctAnswer: 1 },
+      { question: 'What does mastering scale transitions build?', options: ['Volume', 'Fluidity in playing and improvisation', 'Stronger fingers only', 'Callouses'], correctAnswer: 1 }
+    ]
+  },
+  // ========================================
+  // ========== ELEMENTARY LEVEL ===========
+  // ========================================
+
+  // ---------- CHORDS ----------
+  'Chord Inversions': {
+    title: 'Chord Inversions on One String Set',
+    content: `Chord inversions are simply the same chord played with a different note in the bass. On guitar, this often means playing the chord on three or four adjacent strings, moving the lowest note to a different string or fret. To practice, play a C major chord and then move the bass note from C to E or G while keeping the other notes the same. Listen carefully to how the chord “colors” change—the chord feels brighter, darker, or more open depending on the inversion. Keep your fingers curved, press just behind the frets, and mute unused strings with your fretting hand to prevent accidental noise. Start slowly, strumming each inversion, then gradually practice switching between them.`,
+    quiz: [
+      { question: 'What defines a chord inversion?', options: ['Playing a different chord', 'Same chord with a different note in the bass', 'Changing the key', 'Tuning the strings differently'], correctAnswer: 1 },
+      { question: 'How do inversions affect the "color" of a chord?', options: ['They change the volume', 'They make the chord sound brighter, darker, or more open', 'They make the chord harder to hear', 'They don’t change the sound at all'], correctAnswer: 1 },
+      { question: 'What is a key technical requirement for clean inversions?', options: ['Muting unused strings', 'Pressing as hard as possible', 'Playing only with downstrokes', 'Using a heavy pick'], correctAnswer: 0 }
+    ]
+  },
+  'Power Chord Muting Control': {
+    title: 'Power Chord Muting Control',
+    content: `Power chords (root + fifth) are simple but can sound messy if not muted properly, especially with distortion. Use your index finger to lightly touch the higher strings you aren’t playing, and your picking-hand palm near the bridge to mute lower strings. Only the intended strings should ring. Practice by strumming a single power chord slowly and listening—if any string buzzes or rings unintentionally, adjust both hands. Muting is a two-hand coordination skill, so practice hands separately, then together.`,
+    quiz: [
+      { question: 'Which finger is used to mute higher unused strings in a power chord?', options: ['Pinky', 'Index finger', 'Middle finger', 'Thumb'], correctAnswer: 1 },
+      { question: 'Where should the picking hand rest for lower-string muting?', options: ['On the neck', 'Near the bridge', 'Over the soundhole', 'On the tuning pegs'], correctAnswer: 1 },
+      { question: 'Why is muting critical for power chords?', options: ['To save energy', 'To prevent messy sound, especially with distortion', 'To make the guitar louder', 'To change the pitch'], correctAnswer: 1 }
+    ]
+  },
+  'Quick Chord Transitions': {
+    title: 'Quick Chord Transitions',
+    content: `Speed comes from preparation, not rushing. Visualize the next chord before moving your hand. Move all fingers as one unit, not individually. Start by practicing transitions without strumming, ensuring your fingers land cleanly. Use a metronome at slow tempo, then gradually increase speed while maintaining accuracy. Always prioritize smooth, clean transitions over raw speed.`,
+    quiz: [
+      { question: 'What is the best way to move fingers during a quick transition?', options: ['One at a time', 'As one unit', 'Index finger first', 'Randomly'], correctAnswer: 1 },
+      { question: 'What should you do before moving your hand to the next chord?', options: ['Strum harder', 'Visualize the next chord shape', 'Close your eyes', 'Take a break'], correctAnswer: 1 },
+      { question: 'What should be prioritized over speed?', options: ['Volume', 'Smooth, clean transitions', 'Complexity', 'Aggression'], correctAnswer: 1 }
+    ]
+  },
+  'Chord Grips Across Neck': {
+    title: 'Chord Grips Across the Neck',
+    content: `Most chords repeat in different positions up the fretboard (for example, an A major shape can move up two frets to become a B major). Instead of memorizing each position separately, recognize repeating shapes. Slide the same shape up the neck while keeping finger placement consistent, making sure notes are clear and unused strings muted. This builds fretboard fluency and makes playing in multiple keys easier.`,
+    quiz: [
+      { question: 'How can you move an A major shape to play a B major chord?', options: ['Change the fingers used', 'Slide the shape up two frets', 'Move it to a different string set', 'You cannot move this shape'], correctAnswer: 1 },
+      { question: 'What is the benefit of recognizing repeating chord shapes?', options: ['Faster tuning', 'Improved fretboard fluency and easier key changes', 'Lower string tension', 'Better lyrics'], correctAnswer: 1 },
+      { question: 'What must be maintained when sliding grips across the neck?', options: ['Random finger placement', 'Consistent finger placement and string muting', 'Maximum volume', 'Constant vibrato'], correctAnswer: 1 }
+    ]
+  },
+  'Fatigue Management': {
+    title: 'Fatigue Management',
+    content: `Guitar playing requires endurance, but fatigue often comes from unnecessary tension. Between chords, briefly relax your grip and reset your hand. If your forearm or wrist tightens, slow down and focus on light pressure. Efficient players look relaxed even while moving quickly, which prevents strain and allows longer practice sessions.`,
+    quiz: [
+      { question: 'What is a primary cause of hand fatigue?', options: ['Playing too fast', 'Unnecessary tension', 'The color of the guitar', 'Lack of a pick'], correctAnswer: 1 },
+      { question: 'What should you do if your wrist tightens during practice?', options: ['Push through the pain', 'Slow down and focus on light pressure', 'Stop playing forever', 'Grip the neck harder'], correctAnswer: 1 },
+      { question: 'How do efficient players typically look when playing?', options: ['Tense and rigid', 'Relaxed', 'Aggressive', 'Confused'], correctAnswer: 1 }
+    ]
+  },
+
+  // ---------- STRUMS ----------
+  'Continuous Motion Strumming': {
+    title: 'Continuous Motion Strumming',
+    content: `Your strumming hand should never stop moving, even when you aren’t striking the strings. Think of your hand as a pendulum, constantly swinging down and up. Only contact the strings selectively, so the rhythm continues uninterrupted. Start slowly, strumming lightly, counting out loud, and gradually add chord changes without pausing motion. This helps maintain steady timing and smooth groove.`,
+    quiz: [
+      { question: 'In continuous strumming, the hand is compared to a:', options: ['Hammer', 'Pendulum', 'Saw', 'Fan'], correctAnswer: 1 },
+      { question: 'How do you create a rhythmic pattern while the hand keeps moving?', options: ['Stop the motion', 'Contact the strings selectively', 'Strum faster', 'Mute with the thumb'], correctAnswer: 1 },
+      { question: 'Continuous motion primarily helps maintain:', options: ['Loudness', 'Steady timing and smooth groove', 'Pick grip', 'Fretboard position'], correctAnswer: 1 }
+    ]
+  },
+  'Swing Strum Feel': {
+    title: 'Swing Strum Feel',
+    content: `Swing strumming creates a “long–short” subdivision of each beat rather than evenly spaced notes. Count slowly as “1–a, 2–a” or feel the triplet pulse underneath. Practice with a swing-enabled metronome or by feeling the rhythm intuitively. Avoid forcing the motion; swing should feel relaxed and natural, not mechanical.`,
+    quiz: [
+      { question: 'What describes the subdivision of a swing feel?', options: ['Even spacing', 'Long–short subdivision', 'Rapid bursts', 'Only downstrokes'], correctAnswer: 1 },
+      { question: 'What is the underlying pulse of a swing rhythm?', options: ['Quarter notes', 'Triplet pulse', 'Sixteenth notes', 'Whole notes'], correctAnswer: 1 },
+      { question: 'How should a swing feel be executed?', options: ['Mechanically', 'Relaxed and natural', 'With maximum force', 'Very fast'], correctAnswer: 1 }
+    ]
+  },
+  'Reggae Strumming': {
+    title: 'Reggae Off-Beat Strumming',
+    content: `Reggae strumming emphasizes upstrokes on off-beats, while downbeats are muted. Lightly mute the strings with your fretting hand, then play crisp upstrokes. Start very slowly, making sure each upstroke is precise and clean, then gradually increase tempo. Accuracy and muting are more important than speed.`,
+    quiz: [
+      { question: 'Which stroke is emphasized in Reggae strumming?', options: ['The downstroke', 'The upstroke on off-beats', 'The palm mute', 'The open string'], correctAnswer: 1 },
+      { question: 'What happens to the downbeats in typical Reggae rhythm?', options: ['They are accented', 'They are muted', 'They are skipped', 'They are played on the body'], correctAnswer: 1 },
+      { question: 'In Reggae technique, what is more important than speed?', options: ['Volume', 'Accuracy and muting', 'The type of pick', 'Distortion'], correctAnswer: 1 }
+    ]
+  },
+  'Percussive Strum Hits': {
+    title: 'Percussive Strum Hits',
+    content: `Percussive strums produce drum-like sounds using muted strings. Use your fretting-hand palm to mute the strings or slap lightly with the side of your thumb. Hit the strings with consistent rhythm, ensuring timing is exact, or it will sound sloppy. Start slow, then integrate percussive hits into simple chord progressions.`,
+    quiz: [
+      { question: 'What type of sound do percussive strums mimic?', options: ['Piano', 'Drum-like sounds', 'Violin', 'Flute'], correctAnswer: 1 },
+      { question: 'What is a common way to achieve a percussive hit?', options: ['Strumming faster', 'Slapping with the side of the thumb', 'Bending the strings', 'Using the tuning keys'], correctAnswer: 1 },
+      { question: 'What is essential for percussive hits to sound professional?', options: ['Exact timing', 'Random hits', 'Maximum volume', 'Heavy distortion'], correctAnswer: 0 }
+    ]
+  },
+  'Groove Consistency': {
+    title: 'Groove Consistency',
+    content: `Groove is your ability to stay locked into the beat, regardless of the pattern. Even a simple rhythm sounds musical if played with perfect timing. Record yourself playing simple strums to hear if you are rushing or dragging. Focus on rhythm control first—complexity is secondary to consistent, tight timing.`,
+    quiz: [
+      { question: 'What is the definition of groove?', options: ['Playing fast', 'Staying locked into the beat consistently', 'Playing complex chords', 'Using effects pedals'], correctAnswer: 1 },
+      { question: 'How can you objectively check your timing?', options: ['Ask a friend', 'Record yourself and listen back', 'Play as loud as possible', 'Assume it is correct'], correctAnswer: 1 },
+      { question: 'What should be the priority before adding complexity?', options: ['Volume', 'Rhythm control and tight timing', 'Finger strength', 'Pick choice'], correctAnswer: 1 }
+    ]
+  },
+
+  // ---------- PLUCKS ----------
+  'Hybrid Picking': {
+    title: 'Hybrid Picking',
+    content: `Hybrid picking combines the pick with fingers to reach non-adjacent strings efficiently. Hold the pick normally while using middle and ring fingers to pluck higher strings. Keep motions small and controlled. Start with simple patterns like root–third–fifth notes and gradually add complexity. Balance volume between pick and fingers so all notes sound even.`,
+    quiz: [
+      { question: 'What does Hybrid Picking combine?', options: ['Two different picks', 'The pick and fingers', 'Only fingers', 'Fingers and a slide'], correctAnswer: 1 },
+      { question: 'Which fingers are typically used for plucking in this technique?', options: ['Pinky and thumb', 'Middle and ring fingers', 'Index only', 'No fingers are used'], correctAnswer: 1 },
+      { question: 'What should be balanced to ensure musicality?', options: ['The length of the strings', 'Volume between pick and fingers', 'The number of notes', 'The speed of the song'], correctAnswer: 1 }
+    ]
+  },
+  'Fingerstyle Pattern Variation': {
+    title: 'Fingerstyle Pattern Variation',
+    content: `Fingerstyle becomes musical when you vary rhythm and accents. Practice the same pattern but shift accents or syncopate notes while maintaining steady timing. Keep your thumb independent—it should stay on the bass strings while fingers move freely. Control and balance are essential to avoid one hand dominating the sound.`,
+    quiz: [
+      { question: 'What makes fingerstyle sound more musical?', options: ['Repeating one pattern', 'Varying rhythm and accents', 'Playing very fast', 'Using a heavy pick'], correctAnswer: 1 },
+      { question: 'What is the role of the thumb in fingerstyle?', options: ['Playing the melody', 'Staying independent on the bass strings', 'Muting all strings', 'It is not used'], correctAnswer: 1 },
+      { question: 'What is essential to avoid "lopsided" fingerstyle sound?', options: ['Complexity', 'Control and balance', 'Heavy strings', 'Speed'], correctAnswer: 1 }
+    ]
+  },
+  'Arpeggio Clarity': {
+    title: 'Arpeggio Clarity',
+    content: `Arpeggios require each note to ring cleanly and fully. Practice slowly, focusing on finger placement and muting adjacent strings. Decide whether notes should ring out or stop cleanly. Sloppy arpeggios usually come from poor muting or uneven picking. Slow repetition builds precision and hand awareness.`,
+    quiz: [
+      { question: 'What is a requirement for high-quality arpeggios?', options: ['Notes overlapping messily', 'Each note ringing cleanly and fully', 'Playing with only the thumb', 'Maximum distortion'], correctAnswer: 1 },
+      { question: 'What is a common cause of sloppy arpeggios?', options: ['Slow practice', 'Poor muting or uneven picking', 'Using a metronome', 'Tuning'], correctAnswer: 1 },
+      { question: 'What does slow repetition help build?', options: ['Fatigue', 'Precision and hand awareness', 'Callouses only', 'Confusion'], correctAnswer: 1 }
+    ]
+  },
+  'Pick-Finger Balance': {
+    title: 'Pick–Finger Balance',
+    content: `When combining pick and fingers, aim for even volume across all notes. Adjust finger pressure and pick attack to match dynamics. Imbalanced lines make phrases sound disconnected, while balanced execution creates a cohesive tone.`,
+    quiz: [
+      { question: 'What is the goal of Pick-Finger balance?', options: ['To make the pick louder', 'To achieve even volume across all notes', 'To play faster than strumming', 'To use only the index finger'], correctAnswer: 1 },
+      { question: 'What makes a phrase sound disconnected in hybrid picking?', options: ['Even dynamics', 'Imbalanced volume between pick and fingers', 'Playing slowly', 'Using a metronome'], correctAnswer: 1 },
+      { question: 'What creates a cohesive tone?', options: ['Random attacks', 'Balanced execution', 'Maximum force', 'Ignoring the fingers'], correctAnswer: 1 }
+    ]
+  },
+  'String Skipping': {
+    title: 'String Skipping',
+    content: `String skipping challenges your accuracy and targeting. Move slowly at first, keeping motions tight and controlled. Do not swing wide to reach the next string. Muting unused strings is critical to prevent accidental noise. Start with small intervals and gradually increase distance.`,
+    quiz: [
+      { question: 'What is the primary challenge of string skipping?', options: ['String tension', 'Accuracy and targeting', 'Fret size', 'Guitar weight'], correctAnswer: 1 },
+      { question: 'How should your picking motion be when skipping strings?', options: ['Wide and swinging', 'Tight and controlled', 'Vertical only', 'Extremely fast'], correctAnswer: 1 },
+      { question: 'Why is muting critical during string skipping?', options: ['To save strings', 'To prevent accidental noise from skipped strings', 'To increase volume', 'To make the guitar look better'], correctAnswer: 1 }
+    ]
+  },
+
+  // ---------- SCALES ----------
+  'Three-Notes-Per-String': {
+    title: 'Three-Notes-Per-String Patterns',
+    content: `These scale patterns assign three notes per string to standardize fingerings across the neck. Use strict alternate picking and keep fingers close to the frets. Practice slowly, ensuring even tone and timing across all strings. Sloppiness is magnified at string changes, so control is crucial.`,
+    quiz: [
+      { question: 'What is standardized in these scale patterns?', options: ['Note pitch', 'Fingerings across the neck', 'Volume', 'Tuning'], correctAnswer: 1 },
+      { question: 'Which picking technique is recommended for this pattern?', options: ['Strict alternate picking', 'All downstrokes', 'Legato only', 'Palm muting'], correctAnswer: 0 },
+      { question: 'Where is sloppiness most visible in these patterns?', options: ['On the first note', 'At string changes', 'In the middle of the string', 'Only on the low E'], correctAnswer: 1 }
+    ]
+  },
+  'Position Shifting Within Scales': {
+    title: 'Position Shifting Within Scales',
+    content: `Shifting is moving smoothly to a new fretboard position mid-scale. Slide your finger lightly instead of lifting abruptly. Maintain a steady rhythm during the shift. Practice sliding between octaves or positions and check that no notes are skipped or muted unintentionally. Clean shifts make solos and exercises sound intentional.`,
+    quiz: [
+      { question: 'How should you move to a new position mid-scale?', options: ['Jump abruptly', 'Slide lightly', 'Stop and reset', 'Switch fingers'], correctAnswer: 1 },
+      { question: 'What should remain steady during a position shift?', options: ['The volume only', 'The rhythm', 'The tuning', 'The pick grip'], correctAnswer: 1 },
+      { question: 'What is the benefit of clean shifting?', options: ['Faster playing only', 'Makes playing sound intentional and fluid', 'Prevents strings from breaking', 'Easier lyrics'], correctAnswer: 1 }
+    ]
+  },
+  'Legato Scale Runs': {
+    title: 'Legato Scale Runs',
+    content: `Legato uses hammer-ons and pull-offs to play notes without picking each one. Focus on finger strength and even volume between picked and unpicked notes. Start slow—control is more important than speed. Legato builds smooth phrasing and fluid technique.`,
+    quiz: [
+      { question: 'What techniques define Legato playing?', options: ['Alternate picking', 'Hammer-ons and pull-offs', 'Palm muting', 'Strumming'], correctAnswer: 1 },
+      { question: 'What is a major challenge in Legato technique?', options: ['Playing too quiet', 'Maintaining even volume between picked and unpicked notes', 'Breaking strings', 'Pick angle'], correctAnswer: 1 },
+      { question: 'What does Legato technique help build?', options: ['Raw power', 'Smooth phrasing and fluid technique', 'Accuracy only', 'Callouses'], correctAnswer: 1 }
+    ]
+  },
+  'Scale Sequencing': {
+    title: 'Scale Sequencing',
+    content: `Break scales into repeating patterns, such as groups of three or four notes (e.g., 1–2–3, 2–3–4). This improves phrasing, finger control, and internalizes scale shapes. Play sequences with a metronome to keep timing consistent. Don’t let patterns interfere with rhythm—timing comes first.`,
+    quiz: [
+      { question: 'What is Scale Sequencing?', options: ['Playing scales as fast as possible', 'Breaking scales into repeating patterns (like groups of 3)', 'Skipping every other note', 'Only playing one octave'], correctAnswer: 1 },
+      { question: 'What does sequencing improve?', options: ['Volume', 'Phrasing, finger control, and scale internalization', 'Guitar tone', 'Tuning speed'], correctAnswer: 1 },
+      { question: 'What must always come first in sequencing?', options: ['Speed', 'Complexity', 'Timing and rhythm', 'Volume'], correctAnswer: 2 }
+    ]
+  },
+  'Speed Consistency Drills': {
+    title: 'Speed Consistency Drills',
+    content: `Practice scales and patterns at gradually increasing tempo. Stop immediately if clarity drops. Fast but sloppy practice reinforces bad habits. Focus on precision, consistent tone, and smooth transitions. Speed comes naturally once control is solid.`,
+    quiz: [
+      { question: 'When should you increase the tempo in a speed drill?', options: ['Whenever you feel like it', 'Gradually, as long as clarity is maintained', 'Only once per year', 'Start at maximum speed'], correctAnswer: 1 },
+      { question: 'What is the danger of "fast but sloppy" practice?', options: ['It breaks the guitar', 'It reinforces bad habits', 'It makes you sound like a pro', 'None'], correctAnswer: 1 },
+      { question: 'What is the foundation for natural speed?', options: ['Muscle mass', 'Solid control and precision', 'Thin strings', 'Expensive picks'], correctAnswer: 1 }
+    ]
+  },
+
+  // ========================================
+  // ========== INTERMEDIATE LEVEL ==========
+  // ========================================
+
+  // ---------- CHORDS ----------
+  'Extended Chord Fingering': {
+    title: 'Extended Chord Fingering Accuracy',
+    content: `Extended chords (e.g., 9ths, 11ths, 13ths) include extra tones beyond the basic triad. These can easily sound muddy if all strings ring indiscriminately. Focus on playing only the notes that define the chord. Use fretting-hand muting for strings you don’t want to ring. Check finger spacing—avoid overlapping fingers or pressing too hard. Practice slowly, strumming each note individually first, then the whole chord. Listening critically for clarity is more important than remembering the full shape.`,
+    quiz: [
+      { question: 'What is an extended chord?', options: ['A chord with extra tones like 9ths or 13ths', 'A chord played on 12 strings', 'A very loud chord', 'A chord with no root'], correctAnswer: 0 },
+      { question: 'What causes extended chords to sound "muddy"?', options: ['Low volume', 'Unwanted strings ringing indiscriminately', 'Playing too slow', 'New strings'], correctAnswer: 1 },
+      { question: 'How should you first practice a new extended chord?', options: ['Strum as hard as possible', 'Strum each note individually to check clarity', 'Only play the root', 'Use a slide'], correctAnswer: 1 }
+    ]
+  },
+  'Minimal-Motion Shifts': {
+    title: 'Minimal-Motion Chord Shifts',
+    content: `Efficiency is key at this level. When moving between chords, your fingers should travel the shortest possible distance. Visualize the path in your mind before moving, and practice slow-motion transitions. Eliminate unnecessary finger lifts or lateral movement. The principle: less motion = faster, cleaner playing. Record yourself to see if efficiency translates to speed and smoothness.`,
+    quiz: [
+      { question: 'What is the "less motion" principle?', options: ['Don’t move your fingers at all', 'Minimize travel distance to increase speed and cleanliness', 'Only use one finger', 'Move fingers as high as possible'], correctAnswer: 1 },
+      { question: 'What is a helpful mental step before a chord shift?', options: ['Close your eyes', 'Visualize the path of the fingers', 'Think about the lyrics', 'Count to ten'], correctAnswer: 1 },
+      { question: 'How should transitions be practiced initially?', options: ['Fast as possible', 'In slow-motion', 'Randomly', 'Without a pick'], correctAnswer: 1 }
+    ]
+  },
+  'Double Stops': {
+    title: 'Double-Stop Chord Fragments',
+    content: `Double-stops are two-note chords, often used melodically or rhythmically. They require exact muting and finger placement because fewer notes mean mistakes are very audible. Start with two adjacent strings, isolate the fragment, and strum lightly. Use your unused fingers to mute neighboring strings. Once accurate, integrate them into chord progressions or licks.`,
+    quiz: [
+      { question: 'What is a double-stop?', options: ['A full 6-string chord', 'A two-note chord fragment', 'Stopping the song twice', 'A type of mute'], correctAnswer: 1 },
+      { question: 'Why are mistakes audible in double-stops?', options: ['They are too loud', 'Fewer notes make inconsistencies stand out', 'They use distortion', 'They are only played on the low E'], correctAnswer: 1 },
+      { question: 'How do you handle neighboring strings?', options: ['Let them ring', 'Mute them with unused fingers', 'Remove them', 'Play them harder'], correctAnswer: 1 }
+    ]
+  },
+  'Chordal Muting': {
+    title: 'Chordal Muting Techniques',
+    content: `Both hands must work together to silence unwanted strings. Fretting-hand fingers lightly touch strings not being played, while the picking-hand controls attack and damping. Practice by strumming chords slowly and checking each string individually—any unwanted string should be muted. Muting is intentional: silence is as important as sound.`,
+    quiz: [
+      { question: 'Which hands are involved in chordal muting?', options: ['Left only', 'Right only', 'Both hands', 'Neither'], correctAnswer: 2 },
+      { question: 'What is the "intentional" aspect of muting?', options: ['Controlling silence as much as sound', 'Accidentally hitting a string', 'Playing as loud as possible', 'Using a noise gate'], correctAnswer: 0 },
+      { question: 'How do you check for effective muting?', options: ['Play fast', 'Strum slowly and check individual strings', 'Look at the strings', 'Turn up the bass'], correctAnswer: 1 }
+    ]
+  },
+  'Dynamic Chord Articulation': {
+    title: 'Dynamic Chord Articulation',
+    content: `Chords are not static—they can “speak” differently depending on attack and release. Practice playing the same chord softly, then aggressively, while maintaining clarity. Vary attack by using the pick closer to the bridge (brighter) or over the soundhole (warmer). Control dynamics to add musical expression rather than just hitting chords mechanically.`,
+    quiz: [
+      { question: 'How does strumming closer to the bridge affect tone?', options: ['Makes it warmer', 'Makes it brighter', 'Makes it quieter', 'No effect'], correctAnswer: 1 },
+      { question: 'What does "articulation" mean in this context?', options: ['How the notes are named', 'How chords are "spoken" via attack and release', 'The brand of the guitar', 'The length of the strap'], correctAnswer: 1 },
+      { question: 'What is the purpose of dynamic control?', options: ['To hide mistakes', 'To add musical expression', 'To play faster', 'To save strings'], correctAnswer: 1 }
+    ]
+  },
+
+  // ---------- STRUMS ----------
+  'Funk Strumming': {
+    title: 'Funk Strumming',
+    content: `Funk strumming requires tight muting and sharp, rhythmically precise strokes. Use fretting-hand muting to dampen non-chord strings and combine it with percussive strokes from the picking hand. Keep the wrist loose but controlled; don’t move the whole arm unnecessarily. Count the beats aloud and record yourself to ensure your timing is exact. Accuracy and feel are more important than flashy speed.`,
+    quiz: [
+      { question: 'What is a hallmark of Funk strumming?', options: ['Heavy distortion', 'Tight muting and precise strokes', 'Very slow tempo', 'No muting'], correctAnswer: 1 },
+      { question: 'Where should the strumming movement come from?', options: ['The whole arm', 'The loose but controlled wrist', 'The fingers only', 'The shoulder'], correctAnswer: 1 },
+      { question: 'In Funk, what is more important than "flashy speed"?', options: ['Loudness', 'Accuracy and feel', 'The number of chords', 'Using a thumb-pick'], correctAnswer: 1 }
+    ]
+  },
+  'Ghost Strums': {
+    title: 'Ghost Strums',
+    content: `Ghost strums are silent strokes that maintain motion and timing. They keep your hand moving even when no notes sound, helping internalize rhythm. To practice, move your strumming hand continuously while deliberately muting the strings. Start slow and count out loud, then gradually integrate ghost strums into chord progressions. Think: motion first, sound second.`,
+    quiz: [
+      { question: 'What is a "Ghost Strum"?', options: ['A very loud strum', 'A silent stroke that maintains motion/timing', 'A strum played on the headstock', 'An accidental note'], correctAnswer: 1 },
+      { question: 'What do ghost strums help internalize?', options: ['Volume', 'Rhythm', 'Note names', 'Tuning'], correctAnswer: 1 },
+      { question: 'What is the primary rule for ghost strums?', options: ['Sound first, motion second', 'Motion first, sound second', 'No motion at all', 'Always use a downstroke'], correctAnswer: 1 }
+    ]
+  },
+  'Odd-Time Strumming': {
+    title: 'Odd-Time Strumming',
+    content: `Strumming in 5/4, 7/8, or other odd meters requires strong internal counting. Break the measure into smaller, audible subdivisions (e.g., 5/4 = 3+2 or 2+3) and feel the pulse. Count out loud, tapping your foot, or use a metronome with odd-time settings. Start slowly—groove emerges after understanding the rhythm, not before.`,
+    quiz: [
+      { question: 'How should you approach a 5/4 meter?', options: ['Just wing it', 'Break it into subdivisions like 3+2', 'Play it as if it were 4/4', 'Skip every 5th beat'], correctAnswer: 1 },
+      { question: 'When does "groove" typically emerge in odd-time?', options: ['Instantly', 'After understanding the rhythm/pulse', 'By playing faster', 'It doesn’t exist'], correctAnswer: 1 },
+      { question: 'What is a helpful tool for odd-time practice?', options: ['A silent tuner', 'A metronome with odd-time settings', 'A heavy pick', 'A glass slide'], correctAnswer: 1 }
+    ]
+  },
+  'Strum Pattern Transitions': {
+    title: 'Strum Pattern Transitions',
+    content: `Switching strum patterns mid-song without breaking timing is essential. First, practice patterns separately, then slowly connect them, keeping the hand in continuous motion. Focus on the flow, not complexity—listeners will notice smooth transitions more than fancy patterns.`,
+    quiz: [
+      { question: 'What is the key to successful pattern transitions?', options: ['Stopping between patterns', 'Continuous hand motion and flow', 'Speeding up', 'Changing picks'], correctAnswer: 1 },
+      { question: 'How should patterns be practiced initially?', options: ['Separately, then connected slowly', 'All at once', 'Only the hardest part', 'Without rhythm'], correctAnswer: 0 },
+      { question: 'What do listeners value most in pattern changes?', options: ['Complexity', 'Smooth transitions', 'Aggression', 'Randomness'], correctAnswer: 1 }
+    ]
+  },
+  'Precision Rhythmic Locking': {
+    title: 'Precision Rhythmic Locking',
+    content: `Locking means playing exactly on the beat, perfectly aligned with the groove. Use a metronome, drum track, or backing track. Small timing errors compound at faster tempos. Record yourself and listen critically: if a strum is even slightly off, adjust. Precision is what separates intermediate from advanced rhythm playing.`,
+    quiz: [
+      { question: 'What does "locking" mean?', options: ['Playing with a locked wrist', 'Playing exactly on the beat with the groove', 'Using a capo', 'Stopping the guitar'], correctAnswer: 1 },
+      { question: 'What happens to timing errors at high speeds?', options: ['They disappear', 'They compound and become obvious', 'They sound better', 'They don’t matter'], correctAnswer: 1 },
+      { question: 'What tool helps separate intermediate from advanced rhythm?', options: ['Distortion', 'Recording and critical listening', 'Expensive cables', 'Thick strings'], correctAnswer: 1 }
+    ]
+  },
+
+  // ---------- PLUCKS ----------
+  'Economy Picking': {
+    title: 'Economy Picking',
+    content: `Economy picking reduces motion by following the natural direction of the string change. When moving to an adjacent string in the same picking direction, continue the stroke without lifting unnecessarily. Keep movements relaxed and intentional. Poor control creates uneven tone and wasted energy. Practice slowly, one string at a time, then combine into scales or licks.`,
+    quiz: [
+      { question: 'How does economy picking reduce motion?', options: ['By skipping strings', 'By following the natural direction of the string change', 'By using only upstrokes', 'By only using the thumb'], correctAnswer: 1 },
+      { question: 'What is a result of poor control in economy picking?', options: ['Faster playing', 'Uneven tone and wasted energy', 'Better rhythm', 'Stronger strings'], correctAnswer: 1 },
+      { question: 'What should the movements be in economy picking?', options: ['Stiff and fast', 'Relaxed and intentional', 'Wide and swinging', 'Random'], correctAnswer: 1 }
+    ]
+  },
+  'Crosspicking': {
+    title: 'Crosspicking',
+    content: `Crosspicking simulates arpeggios using alternate picking. Focus on evenness—each note should sound consistent across strings. Use a slight curve in the pick path to reduce resistance. Start slowly, play each string cleanly, then gradually increase speed while maintaining tone and control.`,
+    quiz: [
+      { question: 'What does crosspicking simulate?', options: ['Chords', 'Arpeggios', 'Bending', 'Muting'], correctAnswer: 1 },
+      { question: 'What should you focus on during crosspicking?', options: ['Maximum speed', 'Evenness and consistency across strings', 'Hitting as many strings as possible', 'Volume only'], correctAnswer: 1 },
+      { question: 'What path should the pick take to reduce resistance?', options: ['Vertical', 'Slightly curved', 'Straight and rigid', 'Diagonal'], correctAnswer: 1 }
+    ]
+  },
+  'Speed-Building Exercises': {
+    title: 'Speed-Building Exercises',
+    content: `Target specific motions (string changes, scale runs, or finger combinations) and isolate them in short bursts. Use a metronome, gradually increasing tempo. Stop immediately when tension or sloppy notes appear. Sustainable speed comes from relaxation, not brute force.`,
+    quiz: [
+      { question: 'How should you isolate speed-building practice?', options: ['Long sections', 'Short bursts of specific motions', 'Full songs', 'Random patterns'], correctAnswer: 1 },
+      { question: 'When should you stop during a speed exercise?', options: ['When you are tired', 'When tension or sloppy notes appear', 'When the song ends', 'Never'], correctAnswer: 1 },
+      { question: 'Sustainable speed is derived from:', options: ['Brute force', 'Relaxation', 'Heavy picks', 'Fast thinking'], correctAnswer: 1 }
+    ]
+  },
+  'Bass Melody Separation': {
+    title: 'Fingerstyle Bass/Melody Separation',
+    content: `When playing fingerstyle, the bass line must remain steady while the melody moves independently—this is the hallmark of mature fingerstyle playing. Practice in three distinct stages: 1) Bass alone until it becomes automatic, 2) Melody alone with proper phrasing and dynamics, 3) Combine both while maintaining clarity and independence. The thumb handles bass notes on the lower strings (E, A, D) while fingers handle melody on higher strings (G, B, e). Focus on ensuring neither voice drowns out the other, and adjust attack strength to balance volume. This technique builds coordination and musicality, transforming the guitar into a polyphonic instrument capable of self-accompaniment.`,
+    quiz: [
+      { question: 'What is the goal of bass/melody separation?', options: ['Both play the same rhythm', 'The bass stays steady while the melody moves independently', 'Muting the melody', 'Playing only the bass'], correctAnswer: 1 },
+      { question: 'What are the three stages of practice for this?', options: ['Bass alone, Melody alone, Combine', 'Strum, Pluck, Tap', 'Slow, Medium, Fast', 'Left hand, Right hand, Eyes closed'], correctAnswer: 0 },
+      { question: 'Which part of the hand typically handles the bass?', options: ['Fingers only', 'The thumb', 'Both equally', 'The palm'], correctAnswer: 1 }
+    ]
+  },
+  'Consistent Tone Strings': {
+    title: 'Consistent Tone Across Strings',
+    content: `Different strings respond differently to pick angle and pressure, and achieving uniform volume and timbre across all strings is essential for professional sound. The lower strings require a different attack than the higher strings due to their thickness and tension. Adjust your pick angle, pressure, and contact point accordingly to produce consistent tone. Record yourself and listen critically—uneven tone makes lines sound amateur even when notes are technically correct. Practice scalar passages and arpeggios slowly, focusing on matching the volume and timbre of each note. Fine-tuning tone is as important as hitting the right notes.`,
+    quiz: [
+      { question: 'Why do strings need technique adjustments?', options: ['They are all the same', 'They respond differently to angle and pressure', 'They are colored differently', 'They break easily'], correctAnswer: 1 },
+      { question: 'What reveals an "amateur" sound in single lines?', options: ['Playing slow', 'Uneven tone across strings', 'Using a tuner', 'Playing clean'], correctAnswer: 1 },
+      { question: 'What is as important as hitting the right notes?', options: ['Speed', 'Fine-tuning tone', 'Looking cool', 'New strings'], correctAnswer: 1 }
+    ]
+  },
+
+  // ---------- SCALES ----------
+  'Modal Scale Execution': {
+    title: 'Modal Scale Execution',
+    content: `Modes are scales with a specific characteristic note. Focus on emphasizing these notes while playing phrases—don’t just run scales mechanically. Practice resolving phrases to modal tones to highlight musical meaning. Modes become expressive when you think horizontally (melodic lines) rather than just vertically (scale shapes).`,
+    quiz: [
+      { question: 'What should you emphasize in modal playing?', options: ['Speed', 'Characteristic notes', 'The lowest string', 'Every note equally'], correctAnswer: 1 },
+      { question: 'How should you think to make modes expressive?', options: ['Vertically only', 'Horizontally (melodic lines)', 'Mechanically', 'Only about the root'], correctAnswer: 1 },
+      { question: 'Where should you resolve phrases in modal playing?', options: ['To random notes', 'To modal tones', 'Only to the low E', 'Never resolve'], correctAnswer: 1 }
+    ]
+  },
+  'String-Skipping Runs': {
+    title: 'String-Skipping Scale Runs',
+    content: `String-skipping improves accuracy and coordination by challenging your ability to target non-adjacent strings cleanly. Keep your pick motion small and controlled—do not swing wide to reach the next string. Muting unused strings is critical to prevent accidental noise from open strings ringing sympathetically. Start with small intervals (skipping one string), then gradually increase distance as control improves. The key is precision over speed; sloppy string-skipping creates messy, undefined passages. Once comfortable, integrate string-skipping into scale practice, arpeggios, and solos to add melodic interest and intervallic variety.`,
+    quiz: [
+      { question: 'What does string-skipping primarily improve?', options: ['Volume', 'Accuracy and coordination', 'Guitar weight', 'String length'], correctAnswer: 1 },
+      { question: 'How should the pick motion be for skips?', options: ['Small and controlled', 'Wide and loose', 'Vertical only', 'Stopped'], correctAnswer: 0 },
+      { question: 'Why is muting unused strings critical in string-skipping?', options: ['To save strings', 'To prevent accidental noise', 'To increase volume', 'To look professional'], correctAnswer: 1 }
+    ]
+  },
+  'Scale Pattern Linking': {
+    title: 'Scale Pattern Linking',
+    content: `Intermediate players must connect multiple scale patterns across the neck without pauses. Think of the fretboard horizontally and vertically, not just in isolated boxes. Practice sliding between positions while maintaining clean notes and even tone.`,
+    quiz: [
+      { question: 'How should intermediate players view the fretboard?', options: ['Isolated boxes', 'Horizontally and vertically connected', 'Only one string', 'Only one fret'], correctAnswer: 1 },
+      { question: 'What should you avoid when moving between patterns?', options: ['Clean notes', 'Pauses', 'Even tone', 'Looking'], correctAnswer: 1 },
+      { question: 'What technique helps link patterns?', options: ['Stopping', 'Sliding between positions', 'Random jumps', 'Changing guitars'], correctAnswer: 1 }
+    ]
+  },
+  'Directional Changes Mid-Scale': {
+    title: 'Directional Changes Mid-Scale',
+    content: `Changing direction mid-run tests control. Practice reversing direction without hesitation, keeping rhythm steady. Use a metronome and play slowly, gradually increasing speed. Smooth, clean reversals make runs sound intentional rather than sloppy.`,
+    quiz: [
+      { question: 'What does changing direction mid-scale test?', options: ['Speed', 'Control', 'Strength', 'Tuning'], correctAnswer: 1 },
+      { question: 'How should a reversal sound?', options: ['Hesitant', 'Smooth and intentional', 'Loud', 'Slow'], correctAnswer: 1 },
+      { question: 'What should be kept steady during the change?', options: ['Volume', 'Rhythm', 'Pick angle', 'Breath'], correctAnswer: 1 }
+    ]
+  },
+  'Precision Higher Tempos': {
+    title: 'Precision at Higher Tempos',
+    content: `High-tempo playing exposes all flaws in technique—what sounds acceptable at moderate speed becomes sloppy and uncontrolled when pushed faster. Practice just below your speed limit, ensuring tone, muting, and timing remain consistent throughout the passage. Speed without control is useless musically; focus on precision first, then increase tempo gradually using small increments. Pay attention to hand tension: if your hands tighten up, slow down immediately. The goal is to play fast while maintaining relaxation, clarity, and musical expression. Recording yourself at various tempos helps identify the threshold where precision breaks down.`,
+    quiz: [
+      { question: 'What does high-tempo playing reveal?', options: ['Good technique only', 'Flaws in technique', 'Tuning', 'Nothing'], correctAnswer: 1 },
+      { question: 'Speed without _____ is useless.', options: ['Loudness', 'Control', 'A pick', 'New strings'], correctAnswer: 1 },
+      { question: 'What should you do if your hands tighten up at high tempo?', options: ['Push through', 'Slow down immediately', 'Squeeze harder', 'Stop practicing'], correctAnswer: 1 }
+    ]
+  },
+
+  // ========================================
+  // ========== PROFICIENT LEVEL ===========
+  // ========================================
+
+  // ---------- CHORDS ----------
+  'Fast Chord Switching Proficient': {
+    title: 'Fast Chord Switching at High Tempo',
+    content: `Fast chord switching is the ability to move between shapes accurately and musically without losing timing, clarity, or tone. Achieving this requires minimizing finger lift and preparing each chord shape before the actual change, visualizing the position of each finger and aligning your thumb behind the neck for leverage. Your hand should remain relaxed, using only the motion necessary to reach the new chord while keeping all unused fingers lifted just enough to avoid muting neighboring strings unintentionally. Practice begins at a tempo slower than your target, focusing on clean transitions and correct fretting, and gradually increases once you can play without errors. The common mistake at this stage is squeezing the hand too hard, which creates tension and slows you down, so always prioritize smooth, efficient motion over brute force.`,
+    quiz: [
+      { question: 'What is a requirement for fast chord switching?', options: ['Maximum finger lift', 'Minimizing finger lift', 'Ignoring the thumb', 'Strumming harder'], correctAnswer: 1 },
+      { question: 'What common mistake slows down chord switching?', options: ['Relaxing the hand', 'Squeezing the hand too hard', 'Looking at the neck', 'Using a pick'], correctAnswer: 1 },
+      { question: 'What should be prioritized over brute force?', options: ['Volume', 'Smooth, efficient motion', 'Complexity', 'Speed'], correctAnswer: 1 }
+    ]
+  },
+  'Wide-Stretch Chords': {
+    title: 'Wide-Stretch Chord Shapes',
+    content: `Wide stretches require flexibility in your fingers, wrist, and thumb placement without introducing tension that can lead to fatigue or injury. To execute large stretches, lower your thumb behind the neck to extend reach, keep your wrist relaxed and slightly bent, and place each finger gradually rather than forcing the shape. Start by warming up with smaller stretches and gradually increase span while maintaining clean note articulation. It is essential to ensure that each note rings clearly while keeping unused strings muted, as messy sound often results from overextension or poor hand positioning. Controlled stretching builds both physical dexterity and mental mapping of the fretboard, allowing you to play complex voicings without strain.`,
+    quiz: [
+      { question: 'How can you extend your reach for wide stretches?', options: ['Raise your thumb', 'Lower your thumb behind the neck', 'Stiffen your wrist', 'Press harder'], correctAnswer: 1 },
+      { question: 'What often causes messy sound in wide-stretch chords?', options: ['Clear notes', 'Overextension or poor hand positioning', 'Low volume', 'Slow playing'], correctAnswer: 1 },
+      { question: 'What does controlled stretching build?', options: ['Injury', 'Physical dexterity and mental mapping', 'Tension', 'Shorter fingers'], correctAnswer: 1 }
+    ]
+  },
+  'Partial Voicings Rhythm': {
+    title: 'Partial Chord Voicings in Rhythm',
+    content: `Partial chord voicings are essential for creating clarity in rhythm playing, as playing every note of an extended chord can often sound cluttered or muddy. The goal is to select only the essential notes needed to convey the chord while muting all other strings with your fretting-hand fingers and controlling attack with your picking hand. Practicing partial voicings requires slow, deliberate movements, focusing on the balance and evenness of the notes, and gradually adding rhythmic patterns as comfort grows. Recording yourself can help identify notes that ring unintentionally or sounds that are uneven, allowing you to fine-tune finger pressure, hand placement, and strumming angle for professional-level clarity.`,
+    quiz: [
+      { question: 'Why use partial voicings in rhythm?', options: ['They are easier', 'Full chords can sound cluttered or muddy', 'They are louder', 'They use more strings'], correctAnswer: 1 },
+      { question: 'What is the goal of a partial voicing?', options: ['Hit every string', 'Select only essential notes', 'Play only the root', 'Break the strings'], correctAnswer: 1 },
+      { question: 'How can you fine-tune partial voicings?', options: ['Play faster', 'Recording yourself to identify unwanted notes', 'Ignore muting', 'Use more distortion'], correctAnswer: 1 }
+    ]
+  },
+  'Chordal Legato': {
+    title: 'Chordal Legato',
+    content: `Chordal legato is the art of connecting chords smoothly without re-striking each note, creating a seamless musical flow. This involves using hammer-ons and pull-offs while maintaining finger pressure to allow notes to ring evenly and sustain naturally. Practicing chordal legato begins with slow transitions between two or three chords, ensuring every note sounds with equal volume, and gradually incorporates strumming or arpeggiation while keeping the hand relaxed. Common mistakes include weak fretting-hand control or uneven volume between notes, which break the illusion of a smooth legato line. Mastering chordal legato allows expressive phrasing, even in fast passages, and is a hallmark of professional rhythm playing.`,
+    quiz: [
+      { question: 'What is Chordal Legato?', options: ['Strumming loudly', 'Connecting chords smoothly via hammer-ons/pull-offs', 'Muting all chords', 'Playing chords as fast as possible'], correctAnswer: 1 },
+      { question: 'What breaks the illusion of a smooth legato line?', options: ['Even volume', 'Weak control or uneven volume between notes', 'Slow practice', 'Relaxed hands'], correctAnswer: 1 },
+      { question: 'Chordal legato is a hallmark of:', options: ['Beginner strumming', 'Professional rhythm playing', 'Poor technique', 'Drumming'], correctAnswer: 1 }
+    ]
+  },
+  'Consistent Tone Voicings': {
+    title: 'Consistent Tone Across Voicings',
+    content: `Consistency of tone across voicings is critical for advanced musical expression, as uneven pressure or pick angle can make some chords sound louder, duller, or muddled. Achieving uniform tone requires paying attention to the precise finger pressure for each string, ensuring each note rings clearly, and adjusting your pick attack so it strikes all intended strings evenly. Practicing in front of a mirror or recording yourself allows critical listening to detect subtle inconsistencies. By internalizing consistent touch and pressure, you ensure that even complex chord progressions maintain a smooth, professional sound that is expressive and musically intentional.`,
+    quiz: [
+      { question: 'What can cause chords to sound "muddled"?', options: ['Uniform pressure', 'Uneven pressure or pick angle', 'Correct tuning', 'New strings'], correctAnswer: 1 },
+      { question: 'How do you detect subtle inconsistencies in tone?', options: ['Play louder', 'Critical listening via recording', 'Ignore it', 'Change picks'], correctAnswer: 1 },
+      { question: 'Consistent touch and pressure ensures:', options: ['Sloppy sound', 'Smooth, professional sound', 'Broken strings', 'No dynamics'], correctAnswer: 1 }
+    ]
+  },
+
+  // ---------- STRUMS ----------
+  'Genre Strumming Control': {
+    title: 'Genre-Specific Strumming Control',
+    content: `Each musical genre has characteristic strumming patterns, accents, and muting techniques, and replicating these requires careful listening and physical mimicry. To learn a genre authentically, isolate recordings, focus on how the strumming hand moves, where muted strokes occur, and how accents are applied, then imitate these movements slowly while counting subdivisions aloud. Once familiar, integrate the patterns into your own playing while maintaining proper muting, relaxed wrist motion, and intentional accents. Generic or uncontrolled strumming destroys stylistic authenticity, so mastering these nuances is key to sounding professional and idiomatic.`,
+    quiz: [
+      { question: 'How do you learn a genre authentically?', options: ['Read about it only', 'Isolate recordings and mimic movements slowly', 'Play any pattern', 'Use a lot of effects'], correctAnswer: 1 },
+      { question: 'What destroys stylistic authenticity?', options: ['Proper muting', 'Generic or uncontrolled strumming', 'Counting subdivisions', 'Slow practice'], correctAnswer: 1 },
+      { question: 'What is key to sounding "idiomatic"?', options: ['Speed only', 'Mastering genre nuances', 'Buying the same guitar', 'Loudness'], correctAnswer: 1 }
+    ]
+  },
+  'Fast-Tempo Endurance': {
+    title: 'Fast-Tempo Endurance',
+    content: `Playing fast passages with endurance requires relaxation more than strength. The wrist must remain loose, the motion minimal, and the forearm stable while maintaining consistent rhythm. Practicing involves long passages slightly below maximum tempo, focusing on keeping tension out of the wrist, fingers, and forearm. Fatigue at this level usually indicates inefficient motion rather than weakness, so frequent short breaks, proper hand positioning, and maintaining relaxed movement are crucial. Over time, controlled endurance allows fast passages to be played cleanly without strain, enabling both speed and musicality.`,
+    quiz: [
+      { question: 'What is required for fast-tempo endurance?', options: ['Brute strength', 'Relaxation', 'Rigid wrist', 'Holding breath'], correctAnswer: 1 },
+      { question: 'Fatigue at a proficient level often indicates:', options: ['Lack of muscle', 'Inefficient motion', 'Strong playing', 'Good tone'], correctAnswer: 1 },
+      { question: 'How should you practice for endurance?', options: ['Maximum speed always', 'Long passages slightly below max tempo', 'Short bursts only', 'With eyes closed'], correctAnswer: 1 }
+    ]
+  },
+  'Strum-Mute Hybrids': {
+    title: 'Strum-Mute Hybrids',
+    content: `Hybrid strumming combines ringing notes with muted hits for rhythmic texture and complexity. Successful execution requires precise coordination between fretting-hand muting and picking-hand attack. Practicing this involves slow repetition, striking muted and open strings deliberately, and gradually integrating into longer passages. Counting aloud ensures timing remains perfect, and recording yourself can help identify unwanted string ringing. Mastery allows for clean, rhythmic articulation that maintains groove while adding percussive nuance.`,
+    quiz: [
+      { question: 'What does hybrid strumming combine?', options: ['Only open strings', 'Ringing notes and muted hits', 'Only bass notes', 'Chords and scales'], correctAnswer: 1 },
+      { question: 'What is required for successful hybrid strumming?', options: ['Random hitting', 'Precise coordination between hands', 'No muting', 'Extreme distortion'], correctAnswer: 1 },
+      { question: 'Mastery of this adds _____ nuance.', options: ['Melodic', 'Percussive', 'Silent', 'Slow'], correctAnswer: 1 }
+    ]
+  },
+  'Complex Accent Displacement': {
+    title: 'Complex Accent Displacement',
+    content: `Accent displacement is the ability to move emphasis away from expected beats, creating rhythmic tension and interest. It requires internal counting and subdivision awareness to execute consistently. Begin by clapping the accent pattern, then apply it to chords, slowly ensuring the rhythmic displacement feels natural. Poor counting or rushed application will break groove, so practicing with a metronome or drum backing is essential. Once internalized, accent displacement allows expressive phrasing that gives a performance depth and style.`,
+    quiz: [
+      { question: 'What is accent displacement?', options: ['Accenting every beat', 'Moving emphasis away from expected beats', 'Stopping the rhythm', 'Playing louder overall'], correctAnswer: 1 },
+      { question: 'What will break the groove during displacement?', options: ['Good counting', 'Poor counting or rushed application', 'Slow tempo', 'Accurate timing'], correctAnswer: 1 },
+      { question: 'What does displacement give a performance?', options: ['Boredom', 'Depth and style', 'Confusion only', 'Loudness'], correctAnswer: 1 }
+    ]
+  },
+  'Expressive Dynamic Phrasing': {
+    title: 'Expressive Dynamic Phrasing',
+    content: `Dynamic phrasing in strumming involves shaping musical sentences with crescendos, decrescendos, and accented notes, creating expressive movement within a passage. Start by planning which beats or notes should be louder or softer, then practice while maintaining consistent tempo to prevent dynamics from affecting timing. Use a metronome to verify rhythm stability and record to analyze whether dynamics feel intentional. Expressive phrasing requires conscious control, and without it, even complex strumming patterns can sound lifeless.`,
+    quiz: [
+      { question: 'What does dynamic phrasing involve?', options: ['Constant volume', 'Crescendos, decrescendos, and accents', 'Fast tempo only', 'No accents'], correctAnswer: 1 },
+      { question: 'What should dynamics NOT affect?', options: ['Volume', 'Timing', 'Tone', 'Intent'], correctAnswer: 1 },
+      { question: 'Without conscious dynamic control, patterns sound:', options: ['Musical', 'Lifeless', 'Better', 'Professional'], correctAnswer: 1 }
+    ]
+  },
+
+  // ---------- PLUCKS ----------
+  'Sweep Picking': {
+    title: 'Sweep Picking',
+    content: `Sweep picking involves a continuous motion across multiple strings to execute arpeggios fluidly, and it requires coordination between picking and fretting hands to avoid overlapping notes. Begin with three-string arpeggios, focusing on keeping the pick relaxed and letting it “fall” naturally across strings while releasing fretting-hand fingers at the right moment. Gradually expand to larger shapes, always emphasizing muting unused strings and maintaining even tone. Poor muting or excessive motion often leads to blurred or noisy execution, so deliberate, controlled practice is essential.`,
+    quiz: [
+      { question: 'What is sweep picking?', options: ['Rapid alternate picking', 'Continuous motion across multiple strings', 'Fingerstyle only', 'Tapping'], correctAnswer: 1 },
+      { question: 'What must you avoid to keep sweep picking clean?', options: ['Clean notes', 'Overlapping notes', 'Using a pick', 'Fretting'], correctAnswer: 1 },
+      { question: 'How should the pick behave during a sweep?', options: ['Rigid and fast', 'Relaxed, "falling" across strings', 'Bouncing', 'Stopping at each string'], correctAnswer: 1 }
+    ]
+  },
+  'Tremolo Picking': {
+    title: 'Tremolo Picking',
+    content: `Tremolo picking is the rapid, continuous striking of a single string using small wrist motion while the forearm remains stable. Start at moderate speed to focus on even attack and volume across all strokes, gradually increasing tempo while maintaining control. Common pitfalls include tension buildup, uneven strokes, and wrist overuse. Proper tremolo is relaxed, controlled, and consistent, forming the foundation for fast melodic lines in advanced music.`,
+    quiz: [
+      { question: 'What is Tremolo picking?', options: ['Slow strumming', 'Rapid, continuous striking of a single string', 'Bending', 'Vibrato'], correctAnswer: 1 },
+      { question: 'Which part of the arm should remain stable?', options: ['Wrist', 'Forearm', 'Shoulder', 'Fingers'], correctAnswer: 1 },
+      { question: 'What is a common pitfall of tremolo?', options: ['Relaxation', 'Tension buildup', 'Even strokes', 'Consistent volume'], correctAnswer: 1 }
+    ]
+  },
+  'Artificial Harmonics': {
+    title: 'Artificial Harmonics',
+    content: `Artificial harmonics are produced by lightly touching a string at a harmonic node while plucking it, creating a bell-like overtone. Precision is key: place the finger exactly at the node, use a consistent plucking motion, and maintain clean fretting hand pressure. Start slowly, isolating each motion, then gradually combine with scales or arpeggios. Small misplacements or inconsistent attack destroy clarity, so patience and repeated focused practice are essential.`,
+    quiz: [
+      { question: 'What do artificial harmonics produce?', options: ['Muted sound', 'Bell-like overtone', 'Deep bass', 'Buzz'], correctAnswer: 1 },
+      { question: 'What is the key to clear harmonics?', options: ['Speed', 'Precision at the harmonic node', 'Brute force', 'New strings'], correctAnswer: 1 },
+      { question: 'What destroys the clarity of a harmonic?', options: ['Consistent attack', 'Small misplacements', 'Slow practice', 'Finger placement'], correctAnswer: 1 }
+    ]
+  },
+  'Fast Hybrid Picking': {
+    title: 'Fast Hybrid Picking',
+    content: `Fast hybrid picking combines pick and fingers to play non-adjacent strings quickly, requiring precise coordination and minimal movement. Keep fingers close to strings, maintain balanced volume between pick and fingers, and practice simple patterns slowly before increasing speed. The goal is even, fluid articulation where each note is heard distinctly. Inconsistent timing or uneven volume breaks musical flow, so deliberate, controlled practice is critical.`,
+    quiz: [
+      { question: 'What does Fast Hybrid Picking require?', options: ['Wide movements', 'Minimal movement and precise coordination', 'Only a pick', 'Only fingers'], correctAnswer: 1 },
+      { question: 'What should be balanced in hybrid picking?', options: ['Volume between pick and fingers', 'String tension', 'Guitar weight', 'Number of frets'], correctAnswer: 0 },
+      { question: 'Inconsistent timing breaks:', options: ['The guitar', 'Musical flow', 'The pick', 'The strings'], correctAnswer: 1 }
+    ]
+  },
+  'Dynamic Articulation Control': {
+    title: 'Dynamic Articulation Control',
+    content: `Articulation involves controlling how each note starts and ends, including attack strength, note length, and release. Practice by isolating a phrase and experimenting with varying attack intensity, staccato versus legato, and dynamic contrast, all while keeping timing steady. Intentional articulation adds expression and musical personality, while uncontrolled playing leads to chaos, even at high speed.`,
+    quiz: [
+      { question: 'What does articulation control?', options: ['Pitch only', 'How each note starts and ends', 'Tuning', 'Strap length'], correctAnswer: 1 },
+      { question: 'Intentional articulation adds:', options: ['Noise', 'Expression and musical personality', 'Speed only', 'Complexity'], correctAnswer: 1 },
+      { question: 'Uncontrolled playing at high speed leads to:', options: ['Melody', 'Chaos', 'Better tone', 'Fame'], correctAnswer: 1 }
+    ]
+  },
+
+  // ---------- SCALES ----------
+  'Advanced Legato Scales': {
+    title: 'Advanced Legato Scales',
+    content: `Advanced legato requires hammer-ons and pull-offs that match picked notes in clarity and volume. Begin with small, slow-scale passages to develop finger strength and independence, gradually incorporating faster passages while maintaining even tone. Momentum must not replace finger control, and attention should be paid to smooth, connected phrasing rather than just speed. Clean legato execution elevates fluidity and musical expression.`,
+    quiz: [
+      { question: 'What is the goal of advanced legato?', options: ['Faster picking', 'Matching unpicked notes to picked notes in clarity/volume', 'Muting every note', 'Ignoring finger strength'], correctAnswer: 1 },
+      { question: 'What should NOT replace finger control?', options: ['Tone', 'Momentum', 'Precision', 'Rhythm'], correctAnswer: 1 },
+      { question: 'Clean legato elevates:', options: ['Noise', 'Fluidity and musical expression', 'Tension', 'Difficulty'], correctAnswer: 1 }
+    ]
+  },
+  'Speed Burst Control': {
+    title: 'Speed Burst Control',
+    content: `Speed bursts are short, rapid passages within slower musical lines. The challenge is maintaining precise rhythm and note clarity while temporarily increasing tempo. Practice involves isolating the burst, executing cleanly at near-maximum speed, and returning to the slower passage without losing timing. Gradual build-up ensures control and prevents sloppy playing during transitions.`,
+    quiz: [
+      { question: 'What are speed bursts?', options: ['Constant fast playing', 'Short, rapid passages within slower lines', 'A type of rest', 'A scale'], correctAnswer: 1 },
+      { question: 'What is the main challenge of a speed burst?', options: ['Loudness', 'Maintaining precise rhythm and clarity', 'Tuning', 'Changing strings'], correctAnswer: 1 },
+      { question: 'Gradual build-up prevents:', options: ['Speed', 'Sloppy playing', 'Rhythm', 'Muscle growth'], correctAnswer: 1 }
+    ]
+  },
+  'Odd-Meter Scale Runs': {
+    title: 'Odd-Meter Scale Runs',
+    content: `Playing scales in odd meters requires strong internal subdivision and counting, as each measure may not conform to regular patterns. Begin by clapping or tapping the subdivision while counting aloud, then slowly apply scale runs within the meter. Practice until the feel becomes internalized, then gradually increase tempo. Losing count or rushing is the most common failure, so consistent attention to subdivision is crucial.`,
+    quiz: [
+      { question: 'What is required for odd-meter scales?', options: ['No counting', 'Strong internal subdivision and counting', 'Standard 4/4 timing', 'Random playing'], correctAnswer: 1 },
+      { question: 'What is a common failure in odd-meter playing?', options: ['Playing too clean', 'Losing count or rushing', 'Correct timing', 'Even volume'], correctAnswer: 1 },
+      { question: 'Internalizing the feel starts with:', options: ['Fast scales', 'Clapping/tapping and counting aloud', 'Ignoring the meter', 'Playing with a pick'], correctAnswer: 1 }
+    ]
+  },
+  'Scale Accent Displacement': {
+    title: 'Accent Displacement in Scales',
+    content: `Accent displacement within scale runs creates musical interest and phrasing sophistication by shifting emphasis away from predictable downbeats. To master this, plan which notes receive emphasis before playing, then execute slowly while keeping overall timing steady. Practice with a metronome to ensure displaced accents don't disrupt the underlying pulse. Gradually integrate displacement into longer passages, experiment with different accent patterns (every 3rd note, every 5th note, syncopated groupings), and listen critically to how the displacement affects the musical feel. Random or uneven accents sound chaotic—deliberate control and consistent listening are essential for making displacement sound intentional and musical.`,
+    quiz: [
+      { question: 'What does accent displacement create?', options: ['Boredom', 'Musical interest and phrasing sophistication', 'Broken rhythm', 'Silent scales'], correctAnswer: 1 },
+      { question: 'How should you plan displacement?', options: ['Don’t plan, play randomly', 'Plan which notes receive emphasis', 'Accent every note', 'Accent only the root'], correctAnswer: 1 },
+      { question: 'Random accents in scales sound:', options: ['Professional', 'Chaotic', 'Melodic', 'Better'], correctAnswer: 1 }
+    ]
+  },
+  'Scale Articulation Control': {
+    title: 'Scale Articulation Control',
+    content: `Articulation in scales involves deciding how notes connect—staccato, legato, or mixed—and practicing all styles deliberately. Focus on clarity, volume consistency, and musical intention. Proper articulation allows you to shape phrases with personality and expression, while default articulation limits musicality and can make technically correct passages sound mechanical.`,
+    quiz: [
+      { question: 'What does scale articulation involve?', options: ['Only speed', 'Deciding how notes connect (staccato, legato, etc.)', 'Tuning', 'Pick brand'], correctAnswer: 1 },
+      { question: 'Proper articulation allows for:', options: ['Mechanical sound', 'Phrasing with personality and expression', 'No dynamics', 'Faster string breaks'], correctAnswer: 1 },
+      { question: 'What is a drawback of "default" articulation?', options: ['Too much expression', 'Limits musicality and sounds mechanical', 'Makes notes too clear', 'Improves speed'], correctAnswer: 1 }
+    ]
+  },
+
+  // ========================================
+  // ========== ADVANCED LEVEL ===========
+  // ========================================
+
+  // ---------- CHORDS ----------
+  'Complex Jazz Chord Grips': {
+    title: 'Complex Jazz Chord Grips',
+    content: `Advanced jazz chords often involve tight, altered, or extended voicings that can easily become muddy if finger placement and muting are neglected. Executing these grips requires using minimal finger pressure while ensuring each note rings clearly, focusing only on the tones that define the chord. Surrounding strings must be muted with adjacent fingers or the palm of the hand to prevent accidental ringing, and the thumb behind the neck should act as support rather than force. Begin by isolating each chord shape, practicing slowly to identify which notes are essential and which strings require muting. Once clean, integrate the chords into progressions, focusing on smooth movement and tonal balance. Mastering these grips allows the guitarist to play harmonically dense music without losing clarity, which is the hallmark of professional jazz and fusion playing.`,
+    quiz: [
+      { question: 'What makes complex jazz chords sound muddy?', options: ['Too much volume', 'Neglected finger placement and muting', 'New strings', 'Standard tuning'], correctAnswer: 1 },
+      { question: 'What should the thumb do for advanced grips?', options: ['Force the fingers down', 'Act as support rather than force', 'Stay off the guitar', 'Wrap around the top'], correctAnswer: 1 },
+      { question: 'What is the hallmark of professional jazz playing regarding chords?', options: ['Playing fast', 'Clarity in harmonically dense music', 'Only using major chords', 'Using a heavy pick'], correctAnswer: 1 }
+    ]
+  },
+  'Chordal Tapping': {
+    title: 'Chordal Tapping',
+    content: `Chordal tapping uses both hands to articulate harmonic shapes, extending the fretboard’s melodic and harmonic possibilities. To perform this, coordinate timing precisely: the fretting hand forms the chord shape while the picking hand taps notes in rhythm. Light, controlled taps produce clean, ringing tones, while excessive force creates noise and uneven volume. Start slowly with single-note taps within a chord, then expand to multi-note sequences, focusing on finger placement, timing, and muting unused strings. Both hands must act as independent yet synchronized units, and consistent practice is essential for reliability. Chordal tapping allows advanced textures and polyphonic effects, enabling expressive harmonic layering that cannot be achieved with standard fretting alone.`,
+    quiz: [
+      { question: 'What does Chordal Tapping use?', options: ['One hand', 'Both hands to articulate shapes', 'Only a pick', 'The feet'], correctAnswer: 1 },
+      { question: 'What creates noise in tapping?', options: ['Light taps', 'Excessive force', 'Correct timing', 'Muting'], correctAnswer: 1 },
+      { question: 'Tapping allows for _____ effects.', options: ['Single note', 'Polyphonic and layered', 'Silent', 'Standard'], correctAnswer: 1 }
+    ]
+  },
+  'Thumb-Over Chord Technique': {
+    title: 'Thumb-Over Chord Technique',
+    content: `The thumb-over technique involves fretting bass notes with the thumb while the fingers handle higher chord tones. Proper execution requires a slight rotation of the wrist to align the thumb naturally with the neck and using just enough pressure to produce a clean note without tension. This technique is highly situational: it allows certain voicings that would be impossible otherwise, but overuse can cause fatigue or strain in the hand. Begin by practicing simple chords like F major or dominant 7ths with the thumb fretting, ensuring that each string rings cleanly and muting unwanted strings. Gradually incorporate more complex chords as hand flexibility improves. Mastering thumb-over chords increases the guitarist’s ability to voice chords in unconventional positions while maintaining ergonomic efficiency.`,
+    quiz: [
+      { question: 'What does the thumb do in this technique?', options: ['Mute all strings', 'Fret bass notes', 'Play the melody', 'Nothing'], correctAnswer: 1 },
+      { question: 'What rotation is required for proper execution?', options: ['Shoulder rotation', 'Slight wrist rotation', 'No rotation', 'Finger rotation'], correctAnswer: 1 },
+      { question: 'What is a risk of overusing thumb-over technique?', options: ['Faster playing', 'Fatigue or hand strain', 'Better tone', 'Stronger strings'], correctAnswer: 1 }
+    ]
+  },
+  'Hybrid Chord Shapes': {
+    title: 'Hybrid Chord Shapes',
+    content: `Hybrid chords combine fretted notes, open strings, and even taps or harmonics into a single voicing, creating unique textures and expanded harmonic possibilities. Executing these shapes requires careful planning of finger placement, muting unused strings, and maintaining control over attack and release. Start by practicing each element separately—fretted notes, open strings, and taps—then combine them slowly, listening critically to each note. Gradually increase tempo while ensuring that clarity and muting remain consistent. Hybrid chords reward precision and patience: sloppy execution destroys harmonic coherence, but mastery opens the door to sophisticated arrangements and contemporary styles.`,
+    quiz: [
+      { question: 'What do hybrid chord shapes combine?', options: ['Only fretted notes', 'Fretted notes, open strings, and taps/harmonics', 'Only open strings', 'Scales only'], correctAnswer: 1 },
+      { question: 'Sloppy execution of hybrid chords destroys:', options: ['The guitar', 'Harmonic coherence', 'Volume', 'Tempo'], correctAnswer: 1 },
+      { question: 'What does mastery of hybrid chords open?', options: ['Standard chords', 'Sophisticated arrangements', 'Easier practice', 'Nothing'], correctAnswer: 1 }
+    ]
+  },
+  'Precision Voicing Isolation': {
+    title: 'Precision Voicing Isolation',
+    content: `At this level, each note within a chord must be individually controlled to shape the harmonic color. This involves intentionally letting certain tones ring while muting others, using both fretting-hand fingers and picking-hand techniques. Practice starts by isolating single chord tones within complex shapes, slowly sounding each note and adjusting finger pressure to ensure even volume. Combine these isolated tones into full chords once control is reliable, experimenting with dynamics and articulation. Precision voicing allows for expressive playing where each chord communicates intent, transforming complex chords from a dense block of sound into a transparent, musical texture.`,
+    quiz: [
+      { question: 'What is controlled in precision voicing isolation?', options: ['The whole chord only', 'Each individual note within the chord', 'The tempo', 'The tuner'], correctAnswer: 1 },
+      { question: 'What does this technique transform?', options: ['A simple chord into a scale', 'A dense block of sound into a transparent texture', 'A loud song into a quiet one', 'A guitar into a bass'], correctAnswer: 1 },
+      { question: 'Precision voicing allows chords to communicate:', options: ['Nothing', 'Intent', 'Noise', 'Volume only'], correctAnswer: 1 }
+    ]
+  },
+
+  // ---------- STRUMS ----------
+  'Polyrhythmic Strumming': {
+    title: 'Polyrhythmic Strumming',
+    content: `Polyrhythms layer multiple rhythmic ideas simultaneously, demanding acute subdivision awareness and independence between hands. Learning polyrhythms begins by counting each layer aloud and internalizing the pulse before attempting guitar execution. Break down the strumming hand’s motions into manageable units, first practicing one rhythm in isolation and then layering the second. Focus on clean execution, muting strings where necessary, and keeping motion continuous. Precision is non-negotiable: even minor deviations disrupt the interaction of rhythms. Polyrhythmic strumming allows a guitarist to play complex textures typical in progressive, jazz, and modern fusion music, creating the sensation of multiple instruments from a single player.`,
+    quiz: [
+      { question: 'What is Polyrhythmic strumming?', options: ['One rhythm only', 'Layering multiple rhythmic ideas simultaneously', 'Slow strumming', 'Random hits'], correctAnswer: 1 },
+      { question: 'What must you do before attempting guitar execution of a polyrhythm?', options: ['Play fast', 'Count each layer aloud and internalize the pulse', 'Ignore the rhythm', 'Change strings'], correctAnswer: 1 },
+      { question: 'Polyrhythms create the sensation of:', options: ['One instrument', 'Multiple instruments', 'Silence', 'A drum kit only'], correctAnswer: 1 }
+    ]
+  },
+  'Flamenco Rasgueado': {
+    title: 'Flamenco Rasgueado',
+    content: `Rasgueado is a flamenco technique that produces rapid, percussive strums using individual fingers in succession. Each finger flicks the strings independently while the wrist remains relaxed, maintaining fluid motion. Beginners often use too much arm motion or uneven finger pressure, which results in a chaotic or weak sound. To practice, isolate each finger, striking strings slowly while counting subdivisions, then increase speed gradually, focusing on clarity, evenness, and percussive attack. Proper rasgueado adds intense rhythmic drive, texture, and energy, making it a signature technique in flamenco and advanced rhythmic guitar styles.`,
+    quiz: [
+      { question: 'What is Rasgueado?', options: ['Using a pick', 'Rapid, percussive strums using individual fingers in succession', 'Bending notes', 'A type of scale'], correctAnswer: 1 },
+      { question: 'What mistake do beginners often make with Rasgueado?', options: ['Using a relaxed wrist', 'Too much arm motion or uneven pressure', 'Playing too slow', 'Using too many fingers'], correctAnswer: 1 },
+      { question: 'What does Rasgueado add to rhythmic style?', options: ['Softness', 'Intense rhythmic drive and energy', 'Silence', 'Simplicity'], correctAnswer: 1 }
+    ]
+  },
+  'Percussive Acoustic Strumming': {
+    title: 'Percussive Acoustic Strumming',
+    content: `Percussive strumming blends conventional strumming with muted hits, body taps, and slap techniques, transforming the guitar into both a harmonic and rhythmic instrument. Start by isolating muted strokes and body taps while maintaining steady pulse. Integrate these with ringing chords slowly, counting carefully to keep timing exact. Coordination of hand motion and muting is crucial; any misalignment produces a messy rhythm. Mastering this technique gives the guitarist full control over rhythm and tonal texture, allowing complex rhythmic patterns while maintaining harmonic clarity.`,
+    quiz: [
+      { question: 'What does percussive strumming blend with conventional strumming?', options: ['Nothing', 'Muted hits, body taps, and slap techniques', 'Scales', 'Only open strings'], correctAnswer: 1 },
+      { question: 'Misalignment in percussive strumming produces:', options: ['A clean sound', 'A messy rhythm', 'A better groove', 'A higher pitch'], correctAnswer: 1 },
+      { question: 'What instrument does this technique make the guitar mimic?', options: ['A flute', 'A harmonic and rhythmic instrument (like drums)', 'A piano only', 'A bass only'], correctAnswer: 1 }
+    ]
+  },
+  'Advanced Rhythmic Layering': {
+    title: 'Advanced Rhythmic Layering',
+    content: `Layering multiple rhythmic ideas in a single strum pattern requires splitting mental and physical tasks: the fretting hand may emphasize one groove, while the strumming hand accents another. Practice involves breaking each hand’s role down separately, counting and internalizing their rhythms, then gradually combining them while keeping motion fluid. Overlayering without control leads to timing collapse, so integration must be deliberate. Achieving mastery allows simultaneous grooves, creating depth and polyrhythmic complexity in a solo guitar context.`,
+    quiz: [
+      { question: 'What is required for advanced rhythmic layering?', options: ['One hand stays still', 'Splitting mental and physical tasks between hands', 'Using two picks', 'Playing as loud as possible'], correctAnswer: 1 },
+      { question: 'Overlayering without control leads to:', options: ['Perfect timing', 'Timing collapse', 'Better sound', 'More volume'], correctAnswer: 1 },
+      { question: 'Layering creates depth in a:', options: ['Band setting only', 'Solo guitar context', 'No context', 'Fast song only'], correctAnswer: 1 }
+    ]
+  },
+  'Independent Rhythm Articulation': {
+    title: 'Independent Rhythm Articulation',
+    content: `Developing true rhythmic independence means each hand can execute distinct rhythmic ideas simultaneously. Start by practicing simple combinations, such as a steady quarter-note bass with syncopated chord hits, counting each layer aloud. Focus on maintaining pulse while allowing the hands to operate independently yet cohesively. This trains neural coordination and physical control, unlocking the ability to play intricate, multi-layered passages without losing timing or clarity.`,
+    quiz: [
+      { question: 'What is rhythmic independence?', options: ['Playing with one hand only', 'Each hand executing distinct rhythmic ideas simultaneously', 'Following a drummer', 'Playing randomly'], correctAnswer: 1 },
+      { question: 'What does this technique train?', options: ['Muscle growth only', 'Neural coordination and physical control', 'Reading speed', 'Ear tuning'], correctAnswer: 1 },
+      { question: 'Independence allows you to play multi-layered passages without:', options: ['A metronome', 'Losing timing or clarity', 'A guitar', 'Fingers'], correctAnswer: 1 }
+    ]
+  },
+
+  // ---------- PLUCKS ----------
+  'Two-Hand Tapping': {
+    title: 'Two-Hand Tapping',
+    content: `Two-hand tapping extends melodic and harmonic possibilities across the fretboard. Both hands must strike notes with equal control and consistent volume, requiring strict timing and muting discipline to avoid unwanted string noise. Begin with simple single-line tapping, focusing on hand synchronization and clarity, then move to multi-note chords and arpeggios. Precision, finger independence, and coordination are critical: sloppy execution creates a cluttered texture. Mastery enables extended melodic runs, counterpoint, and rapid sequences impossible with conventional fretting.`,
+    quiz: [
+      { question: 'What does Two-Hand Tapping extend?', options: ['The guitar length', 'Melodic and harmonic possibilities', 'String life', 'Tuning range'], correctAnswer: 1 },
+      { question: 'What is required to avoid unwanted string noise?', options: ['Playing louder', 'Strict timing and muting discipline', 'No muting', 'Using a slide'], correctAnswer: 1 },
+      { question: 'Sloppy two-hand tapping creates a _____ texture.', options: ['Clean', 'Cluttered', 'Smooth', 'Silent'], correctAnswer: 1 }
+    ]
+  },
+  'Hybrid Tapping': {
+    title: 'Hybrid Tapping',
+    content: `Hybrid tapping combines conventional picking, fingerstyle, and tapping to play complex passages fluidly. The key is smooth integration: the transition between pick, fingers, and taps must be seamless, maintaining rhythmic and dynamic consistency. Start slowly, practicing each component individually, then gradually merge them while monitoring muting, attack, and volume balance. Clean, controlled execution allows fast, expressive lines that mix legato and percussive textures in a single performance.`,
+    quiz: [
+      { question: 'What does Hybrid Tapping combine?', options: ['Only tapping and strumming', 'Picking, fingerstyle, and tapping', 'Picking and bending', 'Harmonics and scales'], correctAnswer: 1 },
+      { question: 'What is the key to successful hybrid tapping?', options: ['Fast jumps', 'Smooth, seamless integration of techniques', 'Playing only tapped notes', 'Ignoring volume'], correctAnswer: 1 },
+      { question: 'Hybrid tapping allows for a mix of _____ and percussive textures.', options: ['Staccato', 'Legato', 'Silent', 'Slow'], correctAnswer: 1 }
+    ]
+  },
+  'Advanced Fingerstyle Compositions': {
+    title: 'Advanced Fingerstyle Compositions',
+    content: `Fingerstyle at this level involves independent voices: melody, harmony, and bass must remain distinct while interacting musically. Practice each voice separately, ensuring clarity and balance, then gradually combine, adjusting finger pressure and attack to achieve a cohesive texture. Attention to dynamics, articulation, and muting is essential; uncontrolled fingers lead to muddy sound. Mastery creates rich polyphonic textures where each voice is articulated clearly, giving solo guitar arrangements orchestral depth.`,
+    quiz: [
+      { question: 'What must remain distinct in advanced fingerstyle?', options: ['Melody only', 'Melody, harmony, and bass', 'Only the bass', 'Nothing'], correctAnswer: 1 },
+      { question: 'Uncontrolled fingers in fingerstyle lead to:', options: ['Clean sound', 'Muddy sound', 'Better tone', 'Fame'], correctAnswer: 1 },
+      { question: 'Advanced fingerstyle can give solo guitar _____ depth.', options: ['Minimal', 'Orchestral', 'No', 'Loud'], correctAnswer: 1 }
+    ]
+  },
+  'Multi-String Sweep Control': {
+    title: 'Multi-String Sweep Control',
+    content: `Sweeping across multiple strings demands precise muting and fretting-hand timing. Notes must be released immediately after sounding to prevent overlap, while the picking hand executes a smooth, relaxed motion. Begin with small, controlled sweeps, monitoring muting and tonal clarity, then expand across wider stretches. Inadequate control results in noise or uneven volume. Correct technique allows fast, clean arpeggios across multiple strings, essential for advanced lead and fusion playing.`,
+    quiz: [
+      { question: 'What must you do after a note sounds during a sweep?', options: ['Hold it', 'Release it immediately', 'Bend it', 'Mute it with the thumb'], correctAnswer: 1 },
+      { question: 'Inadequate control in sweeping results in:', options: ['Clarity', 'Noise or uneven volume', 'Better speed', 'New strings'], correctAnswer: 1 },
+      { question: 'Sweeping is essential for _____ and fusion playing.', options: ['Acoustic rhythm', 'Advanced lead', 'Slow blues', 'Standard rock'], correctAnswer: 1 }
+    ]
+  },
+  'Extended Plucking Techniques': {
+    title: 'Extended Plucking Techniques',
+    content: `Extended plucking techniques involve unconventional methods, including slap, pop, harmonics, and percussive effects. Approach these experimentally but deliberately: focus first on control and consistency rather than speed or volume. Each extended technique should be integrated rhythmically and tonally into a musical context. Sloppy execution undermines musicality; careful, intentional practice transforms extended techniques into expressive tools.`,
+    quiz: [
+      { question: 'What do extended plucking techniques include?', options: ['Downstrokes only', 'Slap, pop, and harmonics', 'Only fingerstyle', 'Standard alternate picking'], correctAnswer: 1 },
+      { question: 'What should you focus on first with extended techniques?', options: ['Speed', 'Control and consistency', 'Volume', 'Looking cool'], correctAnswer: 1 },
+      { question: 'Careful practice transforms these into _____ tools.', options: ['Useless', 'Expressive', 'Standard', 'Difficult'], correctAnswer: 1 }
+    ]
+  },
+
+  // ---------- SCALES ----------
+  'Sweep-Integrated Scale Runs': {
+    title: 'Sweep-Integrated Scale Runs',
+    content: `Combining sweep picking with scalar motion requires perfect synchronization between hands. Start slowly, ensuring each note is clear, and the sweep and fretting-hand motion are coordinated. Avoid rushing transitions or overlapping notes, focusing on clean tone and even timing. This technique allows highly fluid scalar passages that integrate speed with legato musicality.`,
+    quiz: [
+      { question: 'What does this technique combine?', options: ['Strumming and tapping', 'Sweep picking and scalar motion', 'Only alternate picking', 'Tuning and scales'], correctAnswer: 1 },
+      { question: 'Synchronization must be _____ between hands.', options: ['Loose', 'Perfect', 'Slow', 'Optional'], correctAnswer: 1 },
+      { question: 'This allows scalar passages to integrate speed with:', options: ['Noise', 'Legato musicality', 'Standard rhythm', 'Volume'], correctAnswer: 1 }
+    ]
+  },
+  'Tapping-Based Scale Execution': {
+    title: 'Tapping-Based Scale Execution',
+    content: `Tapping scales extends range and speed, but rhythm and phrasing must remain intact. Begin by practicing simple tapping sequences, ensuring each note is precisely timed, then expand into scale runs and patterns. Muting unused strings is critical, as is maintaining volume and tone balance. Proper execution allows tapping to enhance melodic lines without compromising musicality.`,
+    quiz: [
+      { question: 'What is extended by tapping scales?', options: ['Guitar neck', 'Range and speed', 'String life', 'Finger length'], correctAnswer: 1 },
+      { question: 'What is critical when tapping scales?', options: ['Ignoring the beat', 'Muting unused strings', 'Playing as loud as possible', 'Bending every note'], correctAnswer: 1 },
+      { question: 'Proper tapping enhances _____ lines.', options: ['Bass', 'Melodic', 'Strummed', 'Silent'], correctAnswer: 1 }
+    ]
+  },
+  'Wide-Interval Scale Patterns': {
+    title: 'Wide-Interval Scale Patterns',
+    content: `Playing scales with wide intervals challenges precision and finger independence. Start very slowly, focusing on hitting target notes accurately, maintaining even tone and muting unused strings. Gradually increase tempo while ensuring spacing between notes remains controlled. This skill enables dramatic leaps and expressive phrasing not possible in stepwise scales.`,
+    quiz: [
+      { question: 'What does wide-interval playing challenge?', options: ['Only speed', 'Precision and finger independence', 'Guitar weight', 'Tuning'], correctAnswer: 1 },
+      { question: 'Wide intervals enable _____ and expressive phrasing.', options: ['Simple', 'Dramatic leaps', 'Silent', 'Stepwise'], correctAnswer: 1 },
+      { question: 'What should be maintained despite the jumps?', options: ['Random volume', 'Even tone and muting', 'Loudness only', 'Speed only'], correctAnswer: 1 }
+    ]
+  },
+  'Polyrhythmic Scale Phrasing': {
+    title: 'Polyrhythmic Scale Phrasing',
+    content: `Applying polyrhythms to scales adds layers of rhythmic complexity. Begin by subdividing beats and practicing scale runs against different rhythmic patterns, counting each layer aloud. Consistency and timing take precedence over speed. Once mastered, polyrhythmic scale phrasing produces highly sophisticated, musically engaging lines.`,
+    quiz: [
+      { question: 'What does applying polyrhythms to scales add?', options: ['Simplicity', 'Layers of rhythmic complexity', 'Silence', 'Standard timing'], correctAnswer: 1 },
+      { question: 'In polyrhythmic scales, what takes precedence over speed?', options: ['Loudness', 'Consistency and timing', 'Number of notes', 'Pick brand'], correctAnswer: 1 },
+      { question: 'Mastered polyrhythmic phrasing produces _____ lines.', options: ['Boring', 'Sophisticated and engaging', 'Messy', 'Simple'], correctAnswer: 1 }
+    ]
+  },
+  'Extreme Tempo Stability': {
+    title: 'Extreme Tempo Stability',
+    content: `Maintaining stability at extreme tempos is the culmination of control, relaxation, and endurance. Practice at slightly below maximum speed to ensure finger, wrist, and arm relaxation, then gradually increase tempo, monitoring note clarity and rhythm. Any tension disrupts timing and tone. Mastery allows playing at blazing speeds while maintaining articulation, dynamic control, and musical expression.`,
+    quiz: [
+      { question: 'Extreme tempo stability is the culmination of:', options: ['Anger', 'Control, relaxation, and endurance', 'Strength only', 'Luck'], correctAnswer: 1 },
+      { question: 'What disrupts timing at high speed?', options: ['Relaxation', 'Any tension', 'Clean notes', 'A metronome'], correctAnswer: 1 },
+      { question: 'Mastery allows blazing speeds while maintaining:', options: ['Chaos', 'Articulation and musical expression', 'Noise', 'Low volume'], correctAnswer: 1 }
+    ]
+  },
+
+  // ========================================
+  // ========== EXPERT LEVEL ===========
+  // ========================================
+
+  // ---------- CHORDS ----------
+  'Full-Neck Chord Fluency': {
+    title: 'Full-Neck Chord Fluency',
+    content: `At the expert level, full-neck chord fluency means being able to locate and play any chord instantly anywhere on the fretboard without hesitation. Achieving this requires developing a mental map of chord shapes, intervals, and inversions across all strings and positions. Start by practicing familiar chord families in multiple positions, gradually increasing complexity by re-voicing chords across the neck in real time. Muscle memory is critical: repeat transitions slowly at first, then accelerate, always focusing on clean tone, muting unwanted strings, and maintaining relaxed hand posture. This fluency allows you to respond musically in live settings or improvisation without being constrained by familiar positions, creating seamless harmonic movement across the instrument.`,
+    quiz: [
+      { question: 'What is Full-Neck Chord Fluency?', options: ['Knowing one way to play C', 'Locating any chord instantly anywhere on the neck', 'Playing chords only on the first 3 frets', 'Using a capo for every key'], correctAnswer: 1 },
+      { question: 'What is critical for achieving this fluency?', options: ['Speed only', 'Muscle memory and a mental map of shapes', 'Looking at your fingers constantly', 'Playing loud'], correctAnswer: 1 },
+      { question: 'This fluency allows you to respond musically without being:', options: ['In tune', 'Constrained by familiar positions', 'A professional', 'Loud'], correctAnswer: 1 }
+    ]
+  },
+  'Instant Chord Re-Voicing': {
+    title: 'Instant Chord Re-Voicing',
+    content: `Expert players must adapt chord voicings instantly to suit the musical context, whether changing harmony mid-phrase or accommodating other instruments. This requires constant listening, anticipation, and fingerboard awareness. Practice by taking a basic chord progression and improvising multiple voicings for each chord, emphasizing clarity, muting, and spacing. Train your hands to respond without premeditation: if the bass moves or another instrument adds tension, your fingers should already know alternative voicings. Instant re-voicing elevates musical responsiveness, turning chords from static shapes into dynamic, expressive tools.`,
+    quiz: [
+      { question: 'Why must experts re-voice chords instantly?', options: ['To confuse others', 'To suit the musical context/instruments', 'Because they forget the original', 'To tune the guitar'], correctAnswer: 1 },
+      { question: 'What does this technique require?', options: ['Constant listening and anticipation', 'Random finger placement', 'No practice', 'Only using major chords'], correctAnswer: 0 },
+      { question: 'Re-voicing turns chords from static shapes into:', options: ['Scales', 'Dynamic, expressive tools', 'Solid blocks of noise', 'Single notes'], correctAnswer: 1 }
+    ]
+  },
+  'Custom Fingering Systems': {
+    title: 'Custom Chord Fingering Systems',
+    content: `At this level, personal anatomy and ergonomics dictate fingerings for chord voicings. Instead of forcing standard positions, experiment with finger assignments that maximize comfort, speed, and consistency for complex chord shapes. Start by playing complex chords slowly, observing strain points, then adjust finger placement and motion until movements feel natural and efficient. Over time, develop a personal chord fingering system that allows endurance during long sessions, rapid transitions between voicings, and expressive nuance. This approach prioritizes sustainability, precision, and musical freedom, letting your hands become extensions of your musical intent when playing sophisticated harmonic passages.`,
+    quiz: [
+      { question: 'What dictates custom fingerings at the expert level?', options: ['Guitar books only', 'Personal anatomy and ergonomics', 'Tradition only', 'A teacher'], correctAnswer: 1 },
+      { question: 'What should you observe to develop a custom system?', options: ['The audience', 'Strain points and efficiency', 'The pick color', 'The tuning pegs'], correctAnswer: 1 },
+      { question: 'Custom fingerings prioritize:', options: ['Shorter songs', 'Sustainability and musical freedom', 'Using only the index finger', 'Standardization'], correctAnswer: 1 }
+    ]
+  },
+  'Ultra-Efficient Motion Economy': {
+    title: 'Ultra-Efficient Motion Economy',
+    content: `Every motion in expert-level playing must have purpose. Avoid lifting fingers higher than necessary or shifting the wrist excessively. Begin by analyzing slow chord transitions, noting any wasted movement, then eliminate these with micro-adjustments. Focus on minimal finger travel while maintaining clean articulation. Practice with metronome and recording to ensure efficiency doesn’t compromise tone. Mastering motion economy enhances speed, precision, and endurance, allowing complex passages to be executed effortlessly without fatigue.`,
+    quiz: [
+      { question: 'What is the goal of motion economy?', options: ['Move fingers more', 'Ensure every motion has purpose and minimize travel', 'Play only downstrokes', 'Move the whole arm'], correctAnswer: 1 },
+      { question: 'Wasted movement is eliminated through:', options: ['Playing fast', 'Micro-adjustments and analysis', 'Closing your eyes', 'Stopping practice'], correctAnswer: 1 },
+      { question: 'Mastering motion economy allows you to play:', options: ['Slower', 'Effortlessly without fatigue', 'Noisier', 'With fewer fingers'], correctAnswer: 1 }
+    ]
+  },
+  'Signature Chordal Execution Style': {
+    title: 'Signature Chordal Execution Style',
+    content: `At the pinnacle, technique becomes identity. Voicing choices, touch, and dynamics define a guitarist’s sound. Experiment with how fingers attack strings, how chords resonate, and how subtle muting shapes tone. Record and evaluate your playing to identify consistent stylistic traits. Deliberate, consistent execution transforms technique into a personal voice, making your harmonic approach instantly recognizable. Your chords no longer just serve notes—they convey expression, personality, and intent.`,
+    quiz: [
+      { question: 'What defines a guitarist’s "identity" at the expert level?', options: ['The guitar brand', 'Voicing choices, touch, and dynamics', 'How fast they tune', 'The color of the strap'], correctAnswer: 1 },
+      { question: 'What is transformed into a "personal voice"?', options: ['The amp', 'The technique', 'The strings', 'The lyrics'], correctAnswer: 1 },
+      { question: 'Expert chords convey expression, personality, and:', options: ['Loudness only', 'Intent', 'Noise', 'Simplicity'], correctAnswer: 1 }
+    ]
+  },
+
+  // ---------- STRUMS ----------
+  'Original Strumming Systems': {
+    title: 'Original Strumming Systems',
+    content: `Expert strumming transcends patterns found in books. Create systems that reflect your musical voice, integrating downstrokes, upstrokes, muted hits, and dynamics into cohesive, original rhythmic language. Begin by improvising strums over simple progressions, experimenting with motion, accents, and syncopation, then refine until control is complete. Every stroke should have intent; randomness becomes deliberate nuance. Original strumming systems allow you to make rhythm a signature part of your style rather than a functional accompaniment.`,
+    quiz: [
+      { question: 'What does expert strumming transcend?', options: ['Rhythm', 'Patterns found in books', 'The guitar strings', 'The bridge'], correctAnswer: 1 },
+      { question: 'In original systems, randomness becomes:', options: ['Chaos', 'Deliberate nuance', 'A mistake', 'Volume'], correctAnswer: 1 },
+      { question: 'Expert strumming systems make rhythm a:', options: ['Background noise', 'Signature part of your style', 'Functional task only', 'Silent part'], correctAnswer: 1 }
+    ]
+  },
+  'Extreme Rhythmic Precision': {
+    title: 'Extreme Rhythmic Precision',
+    content: `At this level, micro-timing matters: even milliseconds of deviation can disrupt groove. Practice with metronome, drum tracks, or click subdivisions to lock in absolute timing. Analyze each stroke to ensure attack, release, and muting occur precisely on the intended beat. Precision here allows you to execute complex grooves and polyrhythms flawlessly, giving your rhythm a professional, unmistakable feel.`,
+    quiz: [
+      { question: 'What is "micro-timing"?', options: ['Playing small guitars', 'Millisecond-level precision in note placement', 'Playing very fast', 'Timing the whole song'], correctAnswer: 1 },
+      { question: 'What can disrupt the groove at an expert level?', options: ['Clean notes', 'Milliseconds of deviation', 'New strings', 'Good tuning'], correctAnswer: 1 },
+      { question: 'Extreme precision allows you to execute _____ flawlessly.', options: ['Simple songs', 'Complex grooves and polyrhythms', 'Only one chord', 'A basic 4/4'], correctAnswer: 1 }
+    ]
+  },
+  'Cross-Cultural Rhythm Mastery': {
+    title: 'Cross-Cultural Strumming Mastery',
+    content: `Expert players understand and authentically integrate rhythms from multiple traditions—African, Latin, Indian, Flamenco, or contemporary jazz. Study recordings, transcribe rhythms, and practice them slowly, emphasizing timing, accents, and phrasing before integrating into musical contexts. Respecting nuance ensures that borrowed patterns feel authentic, not superficial. Cross-cultural strumming mastery expands your rhythmic vocabulary, allowing expressive and sophisticated strumming that transcends genre boundaries while honoring the original cultural context of each rhythm.`,
+    quiz: [
+      { question: 'What is cross-cultural rhythm mastery?', options: ['Playing only rock', 'Integrating rhythms from multiple global traditions', 'Buying foreign guitars', 'Singing in other languages'], correctAnswer: 1 },
+      { question: 'What ensures that borrowed patterns feel authentic?', options: ['Playing them fast', 'Respecting nuances of timing and phrasing', 'Using lots of distortion', 'Ignoring the source'], correctAnswer: 1 },
+      { question: 'Cross-cultural mastery allows strumming to transcend:', options: ['The guitar', 'Genre boundaries', 'Volume limits', 'Fretboards'], correctAnswer: 1 }
+    ]
+  },
+  'Experimental Strumming Textures': {
+    title: 'Experimental Strumming Textures',
+    content: `Explore unconventional textures such as hybrid muted strikes, body percussion, or finger-rolls. Begin slowly, isolating each motion and testing its effect on tone and rhythm. Every addition should be deliberate; sloppy experimentation creates noise, not music. Controlled exploration allows you to develop strumming textures that are innovative yet playable, giving your rhythm parts a creative edge.`,
+    quiz: [
+      { question: 'What is an example of an experimental texture?', options: ['A standard downstroke', 'Hybrid muted strikes or body percussion', 'A simple upstroke', 'A basic power chord'], correctAnswer: 1 },
+      { question: 'Sloppy experimentation creates _____ instead of music.', options: ['Art', 'Noise', 'Groove', 'Volume'], correctAnswer: 1 },
+      { question: 'Controlled exploration gives rhythm parts a:', options: ['Boring feel', 'Creative edge', 'Standard sound', 'Silent tone'], correctAnswer: 1 }
+    ]
+  },
+  'Signature Rhythmic Identity': {
+    title: 'Signature Rhythmic Identity',
+    content: `Your rhythm should be instantly recognizable, reflecting your feel, accent placement, and touch. Achieve this by combining technical precision, dynamic control, and personal nuance, practicing consistently until your strumming patterns are both flexible and unique. This identity allows your rhythm to become as expressive as melody, contributing directly to your musical signature.`,
+    quiz: [
+      { question: 'What is Signature Rhythmic Identity?', options: ['Using a specific brand of pick', 'Rhythm that is instantly recognizable and unique to you', 'Copying a famous drummer', 'Playing only in 4/4'], correctAnswer: 1 },
+      { question: 'Identity allows rhythm to be as expressive as:', options: ['The amp', 'Melody', 'The guitar case', 'Tuning'], correctAnswer: 1 },
+      { question: 'A rhythmic signature is achieved through:', options: ['Precision, control, and personal nuance', 'Random playing', 'No practice', 'Only loud volume'], correctAnswer: 0 }
+    ]
+  },
+
+  // ---------- PLUCKS ----------
+  'Extreme Speed Consistency': {
+    title: 'Extreme Speed Consistency',
+    content: `Expert plucking demands clarity at any tempo. Practice by isolating fast passages and emphasizing relaxed hand posture, minimizing tension while ensuring every note rings evenly. Use slow, methodical buildup to identify weak points, then incrementally increase tempo. Mastering extreme speed with control ensures that technical prowess serves musical expression, not just velocity.`,
+    quiz: [
+      { question: 'Expert plucking demands _____ at any tempo.', options: ['Noise', 'Clarity', 'Speed only', 'Low volume'], correctAnswer: 1 },
+      { question: 'What should be minimized during fast passages?', options: ['Volume', 'Tension', 'Number of notes', 'Pick size'], correctAnswer: 1 },
+      { question: 'Technical prowess should serve:', options: ['Velocity only', 'Musical expression', 'Showing off', 'Nothing'], correctAnswer: 1 }
+    ]
+  },
+  'Multi-Voice Independence': {
+    title: 'Multi-Voice Independence',
+    content: `At the highest level, your fingers must manage multiple melodic and harmonic lines simultaneously. Practice each voice separately, perfecting timing, articulation, and dynamics, then combine them gradually. Adjust finger attack and muting so each line maintains clarity. Independence allows you to create polyphonic textures on a single guitar, transforming fingerstyle into orchestral-level musicality.`,
+    quiz: [
+      { question: 'What is Multi-Voice Independence?', options: ['Using two guitars', 'Managing multiple melodic/harmonic lines simultaneously', 'Playing only melody', 'Using only the thumb'], correctAnswer: 1 },
+      { question: 'Independence transforms fingerstyle into _____ musicality.', options: ['Orchestral-level', 'Simple', 'Background', 'Standard'], correctAnswer: 0 },
+      { question: 'How should you begin practicing multiple voices?', options: ['All at once', 'Each voice separately', 'Only the loudest one', 'With your eyes closed'], correctAnswer: 1 }
+    ]
+  },
+  'Original Plucking Mechanics': {
+    title: 'Original Plucking Mechanics',
+    content: `Develop mechanics tailored to your hands, combining picking, hybrid picking, tapping, and fingerstyle efficiently. Focus on ergonomics and consistency, refining each motion until it becomes automatic, effortless, and reliable. Original mechanics enable faster, cleaner execution while reducing fatigue and strain, supporting long-term mastery and personalized expression.`,
+    quiz: [
+      { question: 'Why develop original mechanics?', options: ['To look different', 'Tailored ergonomics/efficiency for your hands', 'Because books are wrong', 'To play only one genre'], correctAnswer: 1 },
+      { question: 'Original mechanics reduce:', options: ['Volume', 'Fatigue and strain', 'Speed', 'Clarity'], correctAnswer: 1 },
+      { question: 'Mechanics should be refined until they are:', options: ['Difficult', 'Automatic and reliable', 'Random', 'Loud'], correctAnswer: 1 }
+    ]
+  },
+  'Experimental Articulation': {
+    title: 'Experimental Articulation',
+    content: `Deliberate experimentation with dynamics, touch, and attack creates unique sonic colors. Practice each articulation type slowly, ensuring control before applying it in musical contexts. Experimentation without precision leads to chaos; precise articulation allows innovation. Mastery transforms these subtle variations into signature textures that define your artistic voice.`,
+    quiz: [
+      { question: 'What creates unique sonic colors?', options: ['New strings only', 'Experimentation with dynamics, touch, and attack', 'Playing the same way always', 'Higher volume'], correctAnswer: 1 },
+      { question: 'Experimentation without _____ leads to chaos.', options: ['Speed', 'Precision', 'A pick', 'Distortion'], correctAnswer: 1 },
+      { question: 'Subtle variations transform into:', options: ['Signature textures', 'Standard notes', 'Mistakes', 'Silence'], correctAnswer: 0 }
+    ]
+  },
+  'Signature Right-Hand Technique': {
+    title: 'Signature Right-Hand Technique',
+    content: `At the expert level, your right-hand touch becomes a defining characteristic. Every attack, pull, or pluck communicates intention. Practice developing consistent tone, dynamic sensitivity, and control across all techniques. This signature technique allows your hands to express your musical identity in ways no transcription can convey.`,
+    quiz: [
+      { question: 'What is the signature of an expert right hand?', options: ['The speed', 'The touch and communication of intent', 'The strength of the fingers', 'The color of the pick'], correctAnswer: 1 },
+      { question: 'What can transcription NOT convey?', options: ['Notes', 'Your musical identity/touch', 'Rhythm', 'Tempo'], correctAnswer: 1 },
+      { question: 'The right-hand touch is a _____ characteristic.', options: ['Defining', 'Minor', 'Theoretical', 'Silent'], correctAnswer: 0 }
+    ]
+  },
+
+  // ---------- SCALES ----------
+  'Full-Neck Scale Fluency': {
+    title: 'Full-Neck Scale Fluency',
+    content: `Expert scale fluency removes hesitation anywhere on the fretboard. Practice scales in every position, ensuring even tone, consistent fingerings, and muting of unused strings. Integrate scales across octaves and string sets, moving seamlessly between positions. This fluency allows complete harmonic and melodic freedom, enabling spontaneous improvisation and expressive phrasing without positional limitations.`,
+    quiz: [
+      { question: 'What is Full-Neck Scale Fluency?', options: ['Knowing one box pattern', 'Removing hesitation anywhere on the fretboard', 'Playing only open strings', 'Reading music fast'], correctAnswer: 1 },
+      { question: 'Fluency allows complete _____ freedom.', options: ['Physical', 'Harmonic and melodic', 'Financial', 'Silent'], correctAnswer: 1 },
+      { question: 'What should be ensured in every position?', options: ['Inconsistency', 'Even tone and consistent fingerings', 'Maximum volume', 'Using only the thumb'], correctAnswer: 1 }
+    ]
+  },
+  'Instant Pattern Switching': {
+    title: 'Instant Pattern Switching',
+    content: `Switching between scale patterns mid-phrase requires anticipatory thinking and hand flexibility. Practice combining scales of different shapes in single lines, ensuring smooth transitions, consistent tone, and accurate timing. Develop the ability to react musically rather than mechanically, allowing improvisation to flow naturally.`,
+    quiz: [
+      { question: 'What is required for instant pattern switching?', options: ['Stiff hands', 'Anticipatory thinking and flexibility', 'A capo', 'Stopping between patterns'], correctAnswer: 1 },
+      { question: 'How should improvisation feel at this level?', options: ['Mechanical', 'Fluid and natural', 'Slow', 'Random'], correctAnswer: 1 },
+      { question: 'Switching happens:', options: ['Between songs', 'Mid-phrase', 'Every minute', 'Never'], correctAnswer: 1 }
+    ]
+  },
+  'Custom Scale Systems': {
+    title: 'Custom Scale Fingering Systems',
+    content: `Design personal scale systems that reflect your style, combining theory, intervallic awareness, and ergonomic fingering tailored to your hand anatomy. Instead of forcing standard positions, experiment with finger assignments that maximize comfort, speed, and consistency. Start by playing complex scales slowly, observing strain points, then adjust finger placement and motion until movements feel natural and efficient. These systems support improvisation, composition, and technical execution by providing reliable, repeatable frameworks across the neck. Custom fingering systems enable fluid, creative phrasing while retaining precise control over notes and rhythms, and allow endurance during long sessions without fatigue.`,
+    quiz: [
+      { question: 'What do custom scale systems reflect?', options: ['Your teacher’s style', 'Your personal style and ergonomics', 'Standard textbook rules', 'Random notes'], correctAnswer: 1 },
+      { question: 'What do these systems support?', options: ['Only speed', 'Improvisation, composition, and execution', 'Reading sheet music', 'Tuning the guitar'], correctAnswer: 1 },
+      { question: 'Custom systems allow for _____ phrasing.', options: ['Stiff', 'Fluid and creative', 'Silent', 'Stepwise only'], correctAnswer: 1 }
+    ]
+  },
+  'Ultra-Clean Speed Scales': {
+    title: 'Ultra-Clean Extreme-Speed Execution',
+    content: `Executing scales at extreme tempos requires rigorous attention to articulation, muting, and hand synchronization. Practice just below maximum speed, focusing on every note’s clarity and rhythmic alignment. Only increase tempo when precision remains intact. This control allows performance at blistering speed without sacrificing musicality or tone.`,
+    quiz: [
+      { question: 'What is required for ultra-clean speed?', options: ['Luck', 'Rigorous attention to articulation and muting', 'New strings', 'Only downstrokes'], correctAnswer: 1 },
+      { question: 'When should you increase the tempo?', options: ['When it sounds noisy', 'Only when precision remains intact', 'Every day', 'As fast as possible immediately'], correctAnswer: 1 },
+      { question: 'Speed should not sacrifice _____ or tone.', options: ['Volume', 'Musicality', 'The pick', 'The guitar'], correctAnswer: 1 }
+    ]
+  },
+  'Signature Scalar Phrasing': {
+    title: 'Signature Scalar Phrasing Style',
+    content: `At the expert level, your phrasing choices—how you emphasize, slide, bend, or accent notes—become identifiable. Practice shaping scales musically, experimenting with dynamics, articulation, and rhythmic variation, until your phrases reflect a personal voice. Mastery ensures that scales are not mechanical exercises but tools for individual expression, turning technique into signature artistry.`,
+    quiz: [
+      { question: 'What makes scalar phrasing "identifiable"?', options: ['The volume', 'Unique choices in emphasis, slides, and bends', 'The length of the scale', 'The string gauge'], correctAnswer: 1 },
+      { question: 'Mastery ensures scales are tools for:', options: ['Mechanical exercises', 'Individual expression', 'Tuning', 'Breaking strings'], correctAnswer: 1 },
+      { question: 'Artistry is achieved through:', options: ['Random notes', 'Dynamics, articulation, and rhythmic variation', 'Playing as fast as possible', 'Following a book exactly'], correctAnswer: 1 }
+    ]
+  }
+};
+
+// ============================================================================
+// ========================== THEORY CONTENT ==================================
+// ============================================================================
+export const theoryContent: Record<string, LessonContent> = {
+  // ========================================
+  // ========== NOVICE LEVEL ================
+  // ========================================
+
+  'Parts of the Guitar': {
+    title: 'Parts of the Guitar',
+    content: `The guitar has three main functional areas: the headstock, neck, and body. The headstock holds the tuning machines, which adjust string pitch. The neck contains frets, which divide pitch into fixed steps and guide finger placement. The body amplifies the sound, either acoustically or through electronics. Understanding these parts helps you troubleshoot problems like buzzing, tuning instability, or poor sustain. Practically, this knowledge allows you to adjust technique and instrument setup to get consistent sound, whether strumming chords or playing single-note lines.`,
+    quiz: [
+      { question: 'What part of the guitar holds the tuning machines?', options: ['The Neck', 'The Body', 'The Headstock', 'The Bridge'], correctAnswer: 2 },
+      { question: 'What is the purpose of frets on the neck?', options: ['To amplify sound', 'To divide pitch into fixed steps', 'To hold strings in place', 'To change the guitar’s color'], correctAnswer: 1 },
+      { question: 'Which part is responsible for amplifying the sound?', options: ['The Headstock', 'The Body', 'The Tuning Machines', 'The Nut'], correctAnswer: 1 }
+    ]
+  },
+  'String Names': {
+    title: 'String Names (E–A–D–G–B–E)',
+    content: `Standard tuning runs from the lowest-pitched string (6th) to the highest (1st) as E–A–D–G–B–E. These notes were chosen for a balance of playability, comfortable finger stretches, and harmonic spacing. Memorizing the string names allows guitarists to locate notes, build chords correctly, and communicate with other musicians. A simple exercise: pick any fret and string, name the note, then find the same note on another string. Repeating this builds a mental map of the neck.`,
+    quiz: [
+      { question: 'What is the name of the thickest string (6th string)?', options: ['A', 'D', 'E', 'G'], correctAnswer: 2 },
+      { question: 'What is the standard string order from 6th to 1st?', options: ['A-B-C-D-E-F', 'E-A-D-G-B-E', 'E-B-G-D-A-E', 'D-G-B-E-A-D'], correctAnswer: 1 },
+      { question: 'Why were these specific notes chosen for standard tuning?', options: ['Randomly', 'For historical reasons only', 'Balance of playability and harmonic spacing', 'To make strings cheaper'], correctAnswer: 2 }
+    ]
+  },
+  'Pitch and Notes': {
+    title: 'What Pitch and Notes Are',
+    content: `Pitch is how high or low a sound is, determined by vibration frequency. A note is a named pitch that lets us organize and communicate music. Theory doesn’t create sounds—it gives names and patterns so you can control them. Practically, understanding pitch helps you tune by ear, recognize intervals, and build melodies. Start by plucking a string, naming its pitch, and playing it elsewhere on the neck to hear the same note in different octaves.`,
+    quiz: [
+      { question: 'What determines the pitch of a sound?', options: ['Volume', 'Vibration frequency', 'The color of the guitar', 'The length of the pick'], correctAnswer: 1 },
+      { question: 'A named pitch used to organize music is called a:', options: ['Chord', 'Note', 'Rhythm', 'Tempo'], correctAnswer: 1 },
+      { question: 'Understanding pitch is most helpful for:', options: ['Buying a strap', 'Tuning by ear and recognizing intervals', 'Cleaning the guitar', 'Reading lyrics'], correctAnswer: 1 }
+    ]
+  },
+  'Reading Chord Diagrams': {
+    title: 'Reading Chord Diagrams',
+    content: `Chord diagrams are visual maps of the fretboard. Vertical lines represent strings, horizontal lines represent frets, and dots show where to place fingers. “X” means don’t play that string, “O” means play it open. Learning diagrams develops spatial awareness and links theoretical knowledge (which notes belong in a chord) to physical execution. Beginners practice by slowly forming each chord shape, plucking strings individually, then strumming the whole chord while keeping correct finger pressure.`,
+    quiz: [
+      { question: 'On a chord diagram, vertical lines represent:', options: ['Frets', 'Strings', 'Finger numbers', 'Tempo'], correctAnswer: 1 },
+      { question: 'What does the "X" symbol above a string mean?', options: ['Play it open', 'Don’t play that string', 'Press it hard', 'It is a sharp note'], correctAnswer: 1 },
+      { question: 'The dots on a diagram indicate:', options: ['Where to place fingers', 'Which strings to cut', 'Volume levels', 'Rest periods'], correctAnswer: 0 }
+    ]
+  },
+  'Musical Alphabet': {
+    title: 'Basic Musical Alphabet (A–G)',
+    content: `Western music uses seven note names: A, B, C, D, E, F, G. After G, the sequence repeats at a higher pitch. Understanding this cycle helps guitarists see patterns in scales, chords, and keys. Practice by locating each note on every string and observing how letters repeat across octaves. This builds the foundation for scale navigation, chord construction, and transposition.`,
+    quiz: [
+      { question: 'How many notes are in the basic Western musical alphabet?', options: ['5', '7', '12', '10'], correctAnswer: 1 },
+      { question: 'What happens after the note "G" in the sequence?', options: ['The sequence ends', 'It repeats starting at A', 'It goes to H', 'It skips to C'], correctAnswer: 1 },
+      { question: 'The alphabet repeating at higher pitches allows us to find:', options: ['Different note names', 'Octaves', 'Broken strings', 'The bridge'], correctAnswer: 1 }
+    ]
+  },
+  'Guitar Vocabulary': {
+    title: 'Guitar Vocabulary (Notes, Chords, Scales, Motifs)',
+    content: `Guitar vocabulary is the language used to describe music. Notes are individual sounds; chords are multiple notes played together; scales are organized sequences of notes; motifs are short musical ideas that repeat. Understanding this vocabulary allows you to follow lessons, read charts, and communicate ideas. Practice by labeling the notes in a chord, the scale degrees in a riff, and identifying repeated motifs in songs. This builds a conceptual map that bridges theory and performance.`,
+    quiz: [
+      { question: 'What is a short, repeating musical idea called?', options: ['A chord', 'A scale', 'A motif', 'An alphabet'], correctAnswer: 2 },
+      { question: 'Multiple notes played together are known as a:', options: ['Note', 'Motif', 'Chord', 'Tuning machine'], correctAnswer: 2 },
+      { question: 'Learning this vocabulary helps you:', options: ['Play faster', 'Follow lessons and communicate ideas', 'Clean your guitar', 'Buy new gear'], correctAnswer: 1 }
+    ]
+  },
+  'Why You Need Theory': {
+    title: 'Why You Need Theory',
+    content: `Music theory is the toolkit for making your own music. It explains why certain notes, chords, and rhythms sound good together, and allows you to invent melodies, chord progressions, and solos intentionally rather than guessing. Beginners can start applying theory immediately: create a simple chord progression in C major, improvise a melody using the C major scale, and notice how knowledge of intervals, chords, and rhythm guides your choices. Theory empowers creativity by turning trial-and-error into deliberate musical decisions.`,
+    quiz: [
+      { question: 'Theory is described as a "toolkit" for:', options: ['Fixing guitars', 'Making your own music', 'Singing louder', 'Changing strings'], correctAnswer: 1 },
+      { question: 'What does theory turn "trial-and-error" into?', options: ['More errors', 'Deliberate musical decisions', 'Confusion', 'Random guessing'], correctAnswer: 1 },
+      { question: 'When can a beginner start applying theory?', options: ['After 5 years', 'Immediately', 'Only in a band', 'Never'], correctAnswer: 1 }
+    ]
+  },
+  'What a Chord Is': {
+    title: 'What a Chord Is',
+    content: `A chord is two or more notes played together, forming harmony. Chords provide emotional context for melodies and underpin the structure of songs. Guitarists learn to create chords by stacking notes from a scale, usually in intervals of thirds. Practice by building a C major triad (C–E–G), playing the notes individually, then strumming them together.`,
+    quiz: [
+      { question: 'A chord creates _____ in music.', options: ['Pitch', 'Harmony', 'Tempo', 'Silence'], correctAnswer: 1 },
+      { question: 'How many notes are required to form a basic chord?', options: ['One', 'Two or more', 'Exactly six', 'Ten'], correctAnswer: 1 },
+      { question: 'Chords are usually built by stacking notes in:', options: ['Seconds', 'Thirds', 'Fifths', 'Octaves'], correctAnswer: 1 }
+    ]
+  },
+  'Major Chords': {
+    title: 'Major Chords',
+    content: `Major chords are bright and stable, built from a root, major third, and perfect fifth. They often anchor songs and provide resolution. Guitarists practice by forming open C, G, and D major chords, strumming smoothly, and noting the “happy” sound they produce.`,
+    quiz: [
+      { question: 'The mood of a major chord is usually described as:', options: ['Sad', 'Bright and happy', 'Tense', 'Scary'], correctAnswer: 1 },
+      { question: 'What are the components of a major triad?', options: ['Root, minor 3rd, 5th', 'Root, major 3rd, perfect 5th', 'Root and 5th only', 'Root and octave'], correctAnswer: 1 },
+      { question: 'Which chord is a common major open chord?', options: ['Am', 'C', 'Dm', 'Em'], correctAnswer: 1 }
+    ]
+  },
+  'Minor Chords': {
+    title: 'Minor Chords',
+    content: `Minor chords lower the third of a major chord by a half step, giving a darker or introspective quality. Guitarists practice by forming Am, Em, and Dm chords, comparing the sound to major chords to internalize the emotional shift.`,
+    quiz: [
+      { question: 'What note is altered to turn a major chord into a minor chord?', options: ['The root', 'The third', 'The fifth', 'The octave'], correctAnswer: 1 },
+      { question: 'How is the emotional quality of a minor chord usually described?', options: ['Bright', 'Dark or introspective', 'Angry', 'Boring'], correctAnswer: 1 },
+      { question: 'By how much is the third lowered in a minor chord?', options: ['A whole step', 'A half step', 'Two frets', 'An octave'], correctAnswer: 1 }
+    ]
+  },
+  'Power Chords': {
+    title: 'Power Chords',
+    content: `Power chords use only the root and fifth, omitting the third, making them tonally neutral. They’re strong and clear under distortion. Practice by playing a G5 chord (3rd fret E string + 5th fret A string), moving it around the neck to see how shape and root note determine pitch.`,
+    quiz: [
+      { question: 'Which note is omitted in a power chord?', options: ['The root', 'The third', 'The fifth', 'The seventh'], correctAnswer: 1 },
+      { question: 'Why are power chords "tonally neutral"?', options: ['They are quiet', 'They lack the third that defines major/minor', 'They have no pitch', 'They only use one string'], correctAnswer: 1 },
+      { question: 'Power chords are particularly effective when using:', options: ['Clean tones', 'Distortion', 'A capo', 'Nylon strings'], correctAnswer: 1 }
+    ]
+  },
+  'Open-Position Chords': {
+    title: 'Open-Position Chords',
+    content: `Open chords include at least one open string, creating resonance and ease of play. They form the foundation of rhythm playing and early songwriting. Practice by learning C, G, D, A, and E open chords, strumming them cleanly, and transitioning smoothly between them.`,
+    quiz: [
+      { question: 'Open chords are characterized by:', options: ['Using all 6 fingers', 'Including at least one open string', 'Being played at the 12th fret', 'No bass notes'], correctAnswer: 1 },
+      { question: 'What is a benefit of open chords?', options: ['They are harder to play', 'Natural resonance and ease of play', 'They don\'t require tuning', 'They are only for solos'], correctAnswer: 1 },
+      { question: 'Open chords are often the foundation for:', options: ['Shredding', 'Rhythm playing and songwriting', 'Replacing the drummer', 'None of the above'], correctAnswer: 1 }
+    ]
+  },
+  'What a Scale Is': {
+    title: 'What a Scale Is',
+    content: `A scale is a sequence of notes chosen from all available pitches. Scales define which notes sound stable and which create tension. Guitarists practice by playing scales slowly, ascending and descending, and hearing which notes naturally resolve to the root.`,
+    quiz: [
+      { question: 'A sequence of notes chosen from available pitches is a:', options: ['Chord', 'Scale', 'Rhythm', 'Strum'], correctAnswer: 1 },
+      { question: 'What do scales help define in music?', options: ['Stability and tension', 'Volume only', 'The brand of the guitar', 'String height'], correctAnswer: 0 },
+      { question: 'How should you practice scales to hear their resolution?', options: ['As fast as possible', 'Slowly, ascending and descending', 'Only one note at a time', 'Randomly'], correctAnswer: 1 }
+    ]
+  },
+  'Major Scale': {
+    title: 'Major Scale',
+    content: `The major scale follows a pattern of whole and half steps (W–W–H–W–W–W–H). It creates balance and a sense of completion. Guitarists practice by playing C major across the fretboard in one-octave patterns, focusing on finger placement and note recognition rather than speed.`,
+    quiz: [
+      { question: 'What is the pattern of steps for the Major Scale?', options: ['W-H-W-W-H-W-W', 'W-W-H-W-W-W-H', 'H-H-H-H-H-H-H', 'W-W-W-W-W-W-W'], correctAnswer: 1 },
+      { question: 'What "sense" does the major scale provide?', options: ['Confusion', 'Balance and completion', 'Dread', 'Speed'], correctAnswer: 1 },
+      { question: 'Novices should focus on _____ over speed when practicing scales.', options: ['Loudness', 'Note recognition and placement', 'String gauge', 'Fret polishing'], correctAnswer: 1 }
+    ]
+  },
+  'Minor Scale': {
+    title: 'Minor Scale',
+    content: `Minor scales alter specific steps of the major scale to create darker tones. Guitarists practice by playing A natural minor and comparing it to C major, noticing the lowered 3rd, 6th, and 7th degrees.`,
+    quiz: [
+      { question: 'Which scale degrees are lowered to create a natural minor scale?', options: ['1st and 5th', '3rd, 6th, and 7th', '2nd and 4th', 'None'], correctAnswer: 1 },
+      { question: 'Minor scales generally sound _____ than major scales.', options: ['Brighter', 'Darker', 'Happier', 'Clearer'], correctAnswer: 1 },
+      { question: 'A natural minor is often compared to which major scale?', options: ['G major', 'C major', 'D major', 'F major'], correctAnswer: 1 }
+    ]
+  },
+  'Scale Degrees': {
+    title: 'Scale Degrees',
+    content: `Scale degrees number notes relative to the root: 1 (root), 2, 3, etc. Each has a functional role (some stable, some wanting to move). Practicing by singing or naming degrees while playing a scale trains recognition, transposition, and improvisational awareness.`,
+    quiz: [
+      { question: 'What is the number given to the root note of a scale?', options: ['0', '1', '5', '8'], correctAnswer: 1 },
+      { question: 'Why train using scale degrees?', options: ['To avoid learning notes', 'To improve recognition, transposition, and improvisation', 'To play fewer chords', 'For visual appeal'], correctAnswer: 1 },
+      { question: 'Scale degrees help you understand a note\'s _____ in a scale.', options: ['Weight', 'Functional role', 'Color', 'Volume'], correctAnswer: 1 }
+    ]
+  },
+  'One-Octave Scales': {
+    title: 'One-Octave Scales',
+    content: `One-octave scales teach note order and finger coordination without overwhelming the player. Guitarists practice small patterns, gradually expanding to connect multiple octaves and positions.`,
+    quiz: [
+      { question: 'How many notes (including the octave) are in a one-octave scale?', options: ['5', '8', '12', '4'], correctAnswer: 1 },
+      { question: 'What is the main benefit of practicing one-octave scales first?', options: ['Playing fast', 'Note order and coordination without overwhelm', 'Learning the whole neck in one day', 'Tuning skills'], correctAnswer: 1 },
+      { question: 'One-octave scales serve as building blocks to:', options: ['Buying a new amp', 'Multiple octaves and positions', 'Stopping practice', 'Singing'], correctAnswer: 1 }
+    ]
+  },
+  'Counting Beats': {
+    title: 'Counting Beats',
+    content: `Beats are steady pulses in music. Counting aloud while strumming or plucking notes trains timing and prevents rushing or dragging. Start by counting 1–2–3–4 over simple chord progressions.`,
+    quiz: [
+      { question: 'Steady pulses in music are called:', options: ['Notes', 'Beats', 'Keys', 'Tabs'], correctAnswer: 1 },
+      { question: 'Counting aloud helps prevent:', options: ['Broken strings', 'Rushing or dragging', 'Loud volume', 'Finger pain'], correctAnswer: 1 },
+      { question: 'What is the most common count for a simple progression?', options: ['1-2', '1-2-3-4', '1-2-3-4-5-6-7-8', 'No counting needed'], correctAnswer: 1 }
+    ]
+  },
+  'Tempo': {
+    title: 'Tempo',
+    content: `Tempo is the speed of the beat in beats per minute (BPM). Guitarists practice the same progression at different tempos to understand how speed affects feel and phrasing.`,
+    quiz: [
+      { question: 'What does "BPM" stand for?', options: ['Bars Per Measure', 'Beats Per Minute', 'Bends Per Melody', 'Basics Per Music'], correctAnswer: 1 },
+      { question: 'Tempo measures the _____ of the beat.', options: ['Volume', 'Speed', 'Pitch', 'Intensity'], correctAnswer: 1 },
+      { question: 'Practicing at different tempos helps you understand _____ and phrasing.', options: ['Lyrics', 'Feel', 'Guitar brands', 'String age'], correctAnswer: 1 }
+    ]
+  },
+  'Time Signatures': {
+    title: 'Time Signatures',
+    content: `Time signatures group beats into measures, defining rhythmic feel. For example, 4/4 (common time) feels square, while 3/4 feels waltz-like. Practice by strumming a chord progression while counting beats according to the time signature.`,
+    quiz: [
+      { question: 'What do time signatures group beats into?', options: ['Scales', 'Measures', 'Chords', 'Notes'], correctAnswer: 1 },
+      { question: 'How does a 3/4 time signature usually feel?', options: ['Square', 'Waltz-like', 'Fast', 'Aggressive'], correctAnswer: 1 },
+      { question: '4/4 time is often referred to as:', options: ['Odd time', 'Common time', 'Small time', 'Fast time'], correctAnswer: 1 }
+    ]
+  },
+  'Metronome Use': {
+    title: 'Metronome Use',
+    content: `A metronome provides a consistent pulse. Practicing with it builds accuracy and confidence. Start slowly, then increase tempo as coordination improves.`,
+    quiz: [
+      { question: 'What is the primary function of a metronome?', options: ['To tune strings', 'To provide a consistent pulse', 'To record music', 'To amplify sound'], correctAnswer: 1 },
+      { question: 'When should you increase the tempo on a metronome?', options: ['Immediately', 'As coordination and accuracy improve', 'Only when playing solos', 'Never'], correctAnswer: 1 },
+      { question: 'Metronome practice builds timing _____ and confidence.', options: ['Volume', 'Accuracy', 'Complexity', 'Pitch'], correctAnswer: 1 }
+    ]
+  },
+  'Basic Note Durations': {
+    title: 'Basic Note Durations',
+    content: `Notes have lengths: whole, half, quarter, eighth, etc. Guitarists practice by clapping rhythms, then transferring them to the guitar, aligning note length with strumming or picking. Understanding duration is essential for reading music and maintaining groove.`,
+    quiz: [
+      { question: 'Which note length usually lasts for four beats in 4/4 time?', options: ['Quarter note', 'Whole note', 'Half note', 'Eighth note'], correctAnswer: 1 },
+      { question: 'How many quarter notes are in one half note?', options: ['One', 'Two', 'Four', 'Eight'], correctAnswer: 1 },
+      { question: 'Understanding note durations is essential for maintaining:', options: ['Tuning', 'Groove', 'Volume', 'Pitch'], correctAnswer: 1 }
+    ]
+  },
+
+  // ========================================
+  // ========== BEGINNER LEVEL ==============
+  // ========================================
+
+  'Half Steps and Whole Steps': {
+    title: 'Half Steps and Whole Steps',
+    content: `A half step is the smallest pitch distance in Western music, equivalent to one fret on the guitar. A whole step is two half steps, or two frets. All scales and chords are built from combinations of these distances. Guitarists practice by picking a note and moving up or down one fret (half step) or two frets (whole step) to hear the difference. For example, C to C# is a half step, C to D is a whole step. Recognizing these distances helps in building scales, playing melodies, and constructing chords anywhere on the fretboard.`,
+    quiz: [
+      { question: 'A half step on the guitar is equal to how many frets?', options: ['One', 'Two', 'Three', 'Zero'], correctAnswer: 0 },
+      { question: 'How many half steps are in one whole step?', options: ['One', 'Two', 'Four', 'Twelve'], correctAnswer: 1 },
+      { question: 'Moving from the 3rd fret to the 5th fret is a:', options: ['Half step', 'Whole step', 'Octave', 'Rhythm'], correctAnswer: 1 }
+    ]
+  },
+  'Sharps and Flats': {
+    title: 'Sharps and Flats',
+    content: `Sharps (#) raise a note by a half step; flats (b) lower a note by a half step. They exist because the natural letters (A–G) aren’t enough to cover all 12 pitches in an octave. Understanding sharps and flats helps guitarists read sheet music, chord charts, and play in keys with accidentals. To practice, take a C note on any string and locate C# (sharp) and B (flat) nearby. Repeat this across strings and octaves until the visual and auditory connections are automatic.`,
+    quiz: [
+      { question: 'What does a sharp (#) do to a note?', options: ['Lowers it by a half step', 'Raises it by a half step', 'Makes it an octave higher', 'Stops the sound'], correctAnswer: 1 },
+      { question: 'What does a flat (b) do to a note?', options: ['Raises it', 'Lowers it by a half step', 'Keeps it the same', 'Doubles the volume'], correctAnswer: 1 },
+      { question: 'Sharps and flats are necessary because:', options: ['They look cool', 'Natural letters only cover 7 of the 12 pitches', 'Strings are different colors', 'Guitars have 6 strings'], correctAnswer: 1 }
+    ]
+  },
+  'Octaves on the Fretboard': {
+    title: 'Octaves on the Fretboard',
+    content: `Octaves are notes with the same name at different pitches. Recognizing octave shapes allows you to locate any note across the neck quickly and link melodies and chords. Guitarists practice by picking a root note and finding its octave on another string (for example, C on 3rd fret A string and C on 5th fret G string). This skill is essential for soloing, chord voicings, and navigating the fretboard efficiently.`,
+    quiz: [
+      { question: 'What is an octave?', options: ['A different note name', 'The same note name at a different pitch', 'A type of chord', 'A fast rhythm'], correctAnswer: 1 },
+      { question: 'Finding octaves helps a guitarist:', options: ['Change strings', 'Locate notes across the neck quickly', 'Buy a pick', 'Sing louder'], correctAnswer: 1 },
+      { question: 'C on the 3rd fret of the A string has an octave on which fret of the G string?', options: ['3rd', '5th', '7th', '1st'], correctAnswer: 1 }
+    ]
+  },
+  'Tuning Systems': {
+    title: 'Tuning Systems',
+    content: `Standard tuning (E–A–D–G–B–E) balances range and playability. Alternate tunings (DADGAD, Open G, Drop D, etc.) change string intervals, altering chord shapes and sonic possibilities. Understanding tuning explains why patterns work the way they do. Guitarists practice by exploring a simple chord in standard tuning, then retuning strings and discovering how shapes shift. This builds a deep intuitive understanding of the fretboard’s structure.`,
+    quiz: [
+      { question: 'What is the notes for standard guitar tuning?', options: ['D-G-C-F-A-D', 'E-A-D-G-B-E', 'A-B-C-D-E-F', 'E-B-G-D-A-E'], correctAnswer: 1 },
+      { question: 'What do alternate tunings change?', options: ['The color of the guitar', 'String intervals and chord shapes', 'The weight of the strings', 'The brand of the guitar'], correctAnswer: 1 },
+      { question: 'Drop D tuning typically involves lowering which string?', options: ['1st string', '6th string', '3rd string', 'All strings'], correctAnswer: 1 }
+    ]
+  },
+  'Note Values': {
+    title: 'Note Values',
+    content: `Note values define how long a note is held—quarter, half, whole, eighth, sixteenth, etc. Rhythm comes from combining different values, not just playing notes. Guitarists practice by clapping or strumming a steady beat while holding different note lengths. For example, play a simple quarter-note riff, then convert it to eighths, focusing on accuracy. Mastery improves timing, groove, and phrasing.`,
+    quiz: [
+      { question: 'Note values primarily define:', options: ['Pitch', 'Duration (how long a note is held)', 'Volume', 'Tone'], correctAnswer: 1 },
+      { question: 'How many eighth notes fit into the space of one quarter note?', options: ['One', 'Two', 'Four', 'Half'], correctAnswer: 1 },
+      { question: 'Mastery of note values improves timing, ____, and phrasing.', options: ['Speed', 'Groove', 'Pitch', 'Tuning'], correctAnswer: 1 }
+    ]
+  },
+  'Triads': {
+    title: 'Triads (Root, 3rd, 5th)',
+    content: `Triads are three-note chords made of a root, a third, and a fifth. They are the building blocks of harmony; all complex chords are extensions of triads. Guitarists practice by forming C major (C–E–G), A minor (A–C–E), and G major (G–B–D) across the fretboard. Singing or playing each note individually helps internalize the sound, making it easier to construct and recognize chords anywhere.`,
+    quiz: [
+      { question: 'How many notes make up a triad?', options: ['Two', 'Three', 'Four', 'Six'], correctAnswer: 1 },
+      { question: 'What notes make up a major triad?', options: ['1-2-3', '1-3-5', '1-4-5', '1-3-7'], correctAnswer: 1 },
+      { question: 'Triads are considered the basic building blocks of:', options: ['Scales', 'Harmony', 'Rhythm', 'Tempo'], correctAnswer: 1 }
+    ]
+  },
+  'Diminished and Augmented Chords': {
+    title: 'Diminished and Augmented Chords',
+    content: `Diminished chords compress intervals (1–b3–b5), creating tension. Augmented chords widen intervals (1–3–#5), creating instability. Guitarists use these chords to transition between stable chords or add drama. Practice by inserting diminished or augmented chords into a simple progression like C–G–Am, noticing how the tension resolves when you return to a stable chord.`,
+    quiz: [
+      { question: 'What note is altered in an augmented chord compared to major?', options: ['Flat 3rd', 'Sharp 5th', 'Flat 5th', 'Natural 7th'], correctAnswer: 1 },
+      { question: 'Diminished chords are often used to create:', options: ['Resolution', 'Tension', 'Boredom', 'Happiness'], correctAnswer: 1 },
+      { question: 'An augmented triad consists of which scale degrees?', options: ['1-b3-b5', '1-3-#5', '1-3-5', '1-4-5'], correctAnswer: 1 }
+    ]
+  },
+  'Basic Chord Symbols': {
+    title: 'Basic Chord Symbols',
+    content: `Chord symbols shorthand instructions: “C” is a C major, “Am” is A minor, “G7” is G dominant seventh. Understanding symbols allows quick interpretation of charts. Guitarists practice by reading a simple song chart, identifying chord symbols, and playing each chord while singing the melody. Over time, symbol recognition becomes instantaneous.`,
+    quiz: [
+      { question: 'What does the symbol "Am" typically mean?', options: ['A major', 'A minor', 'A diminished', 'A augmented'], correctAnswer: 1 },
+      { question: 'In chord shorthand, a letter by itself (e.g., "G") implies:', options: ['Minor', 'Major', 'Power chord', 'Seventh'], correctAnswer: 1 },
+      { question: 'Chord symbols are used for:', options: ['Naming strings', 'Shorthand instructions on charts', 'Measuring speed', 'Tuning'], correctAnswer: 1 }
+    ]
+  },
+  'Chord Families': {
+    title: 'Chord Families',
+    content: `Chords from the same key belong to a family. For example, in C major: C (I), Dm (ii), Em (iii), F (IV), G (V), Am (vi), Bdim (vii°). These chords naturally sound good together. Guitarists practice by playing progressions using only chords from the same family, creating smooth transitions and learning to improvise harmonically within a key.`,
+    quiz: [
+      { question: 'Chord families consist of chords that:', options: ['Have the same root', 'Belong to the same key', 'Use the same fingers', 'Are all minor'], correctAnswer: 1 },
+      { question: 'In the key of C major, which chord is the "V" (five) chord?', options: ['F', 'G', 'Am', 'Dm'], correctAnswer: 1 },
+      { question: 'Practicing chord families helps you:', options: ['Play louder', 'Improvise harmonically and create smooth progressions', 'Clean your fretboard', 'Change strings'], correctAnswer: 1 }
+    ]
+  },
+  'Common Progressions': {
+    title: 'Common Progressions (I–V–vi–IV)',
+    content: `Some chord sequences are common because they balance tension and resolution. The I–V–vi–IV (C–G–Am–F in C major) is ubiquitous in pop and rock. Guitarists practice by looping the progression and experimenting with strumming, picking patterns, or improvising melodies on top. Understanding the progression’s function allows you to transpose it to any key easily.`,
+    quiz: [
+      { question: 'What is the "vi" chord in a standard C major I-V-vi-IV progression?', options: ['F', 'Am', 'Dm', 'Em'], correctAnswer: 1 },
+      { question: 'Why is the I-V-vi-IV progression so popular?', options: ['It is very difficult', 'It balances tension and resolution perfectly', 'It only uses two chords', 'It is a jazz-only progression'], correctAnswer: 1 },
+      { question: 'Understanding a progression\'s function makes it easier to:', options: ['Buy a new guitar', 'Transpose to any key', 'Snap a string', 'Tune'], correctAnswer: 1 }
+    ]
+  },
+  'Natural Minor Scale': {
+    title: 'Natural Minor Scale',
+    content: `The natural minor scale is derived from the major scale by lowering the 3rd, 6th, and 7th degrees. It sounds darker and more introspective. Guitarists practice by playing the A minor scale across the neck, using ascending and descending patterns. Focus on hearing the tonal center (A) and improvising simple melodies to internalize the sound.`,
+    quiz: [
+      { question: 'How is the natural minor scale different from major?', options: ['Raised 4th', 'Lowered 3rd, 6th, and 7th', 'Raised 7th', 'No difference'], correctAnswer: 1 },
+      { question: 'The mood of a natural minor scale is often:', options: ['Happy', 'Dark or introspective', 'Neutral', 'Aggressive'], correctAnswer: 1 },
+      { question: 'To internalize the minor sound, you should focus on hearing the:', options: ['Volume', 'Tonal center', 'Pick noise', 'String color'], correctAnswer: 1 }
+    ]
+  },
+  'Pentatonic Scale': {
+    title: 'Pentatonic Scale',
+    content: `The pentatonic scale removes unstable notes, leaving five notes per octave. It’s ideal for beginners and improvisation because it’s hard to hit wrong notes. Guitarists practice by playing A minor pentatonic across positions, connecting shapes horizontally, and improvising over simple backing tracks. Experiment with bends, slides, and hammer-ons to add expression.`,
+    quiz: [
+      { question: 'How many notes are in a pentatonic scale?', options: ['Seven', 'Five', 'Twelve', 'Eight'], correctAnswer: 1 },
+      { question: 'Why is the pentatonic scale great for beginners?', options: ['It is the loudest', 'It removes unstable notes, making it hard to hit "wrong" ones', 'It only uses open strings', 'It has no sharps'], correctAnswer: 1 },
+      { question: 'Minor pentatonic is commonly used in which genre?', options: ['Classical only', 'Blues and Rock', 'None', 'Only pop'], correctAnswer: 1 }
+    ]
+  },
+  'Scale Patterns': {
+    title: 'Scale Patterns',
+    content: `Scale patterns organize notes into shapes that repeat across the fretboard. Guitarists practice by memorizing one box (e.g., the 5th fret minor pentatonic) and then linking it to adjacent boxes. This creates a visual and tactile roadmap of the neck, making soloing and improvisation intuitive.`,
+    quiz: [
+      { question: 'What do scale patterns create for a guitarist?', options: ['Complexity', 'A visual and tactile roadmap of the neck', 'Noise', 'Stronger strings'], correctAnswer: 1 },
+      { question: 'A common first step is to memorize a specific scale:', options: ['Song', 'Box', 'Chord', 'Alphabet'], correctAnswer: 1 },
+      { question: 'Linking adjacent boxes together improves:', options: ['Tuning', 'Intuitive soloing and improvisation', 'Guitar weight', 'String length'], correctAnswer: 1 }
+    ]
+  },
+  'Key-Based Scale Use': {
+    title: 'Key-Based Scale Use',
+    content: `Playing scales within a key ensures notes match the underlying harmony, preventing clashes. Guitarists practice by taking a chord progression (C–Am–F–G) and playing only notes from the C major scale. Emphasize chord tones on strong beats to make lines sound connected to harmony.`,
+    quiz: [
+      { question: 'Why play scales within a specific key?', options: ['To play faster', 'To ensure notes match the underlying harmony', 'To avoid using the pick', 'Because keys are heavy'], correctAnswer: 1 },
+      { question: 'Which scale matches a C-Am-F-G chord progression?', options: ['G major', 'C major', 'D major', 'A minor only'], correctAnswer: 1 },
+      { question: 'Emphasizing _____ on strong beats connects your lines to the harmony.', options: ['Random notes', 'Chord tones', 'The bridge', 'Muted hits'], correctAnswer: 1 }
+    ]
+  },
+  'Scale-to-Chord Matching': {
+    title: 'Scale-to-Chord Matching',
+    content: `Matching scales to chords ensures melodies support the harmony. Guitarists practice by taking each chord in a progression and improvising a small lick emphasizing that chord’s notes. For example, over C major, highlight C, E, and G. Over Am, highlight A, C, and E. This makes improvisation sound intentional and musical.`,
+    quiz: [
+      { question: 'Scale-to-chord matching makes improvisation sound:', options: ['Random', 'Intentional and musical', 'Loud', 'Slow'], correctAnswer: 1 },
+      { question: 'If playing over an Am chord, you should emphasize:', options: ['G, B, D', 'A, C, E', 'F, A, C', 'E, G, B'], correctAnswer: 1 },
+      { question: 'A "chord tone" is a note that is part of the:', options: ['Scale only', 'Current chord', 'Next measure', 'String name'], correctAnswer: 1 }
+    ]
+  },
+  'Eighth Notes': {
+    title: 'Eighth Notes',
+    content: `Eighth notes split a beat into two equal parts, adding motion and flow. Guitarists practice by strumming steady eighth notes over a metronome, accenting different beats to build groove and rhythmic awareness. Alternate chord strums with muted strings to add dynamics.`,
+    quiz: [
+      { question: 'An eighth note splits one beat into how many parts?', options: ['One', 'Two', 'Four', 'Three'], correctAnswer: 1 },
+      { question: 'Eighth notes add _____ and flow to a rhythm.', options: ['Volume', 'Motion', 'Pitch', 'Silence'], correctAnswer: 1 },
+      { question: 'Counting eighth notes in 4/4 usually sounds like:', options: ['1 2 3 4', '1 & 2 & 3 & 4 &', '1-e-&-a', '1 2 3'], correctAnswer: 1 }
+    ]
+  },
+  'Rests (Rhythm)': {
+    title: 'Rests',
+    content: `Rests are intentional silences that shape phrasing. Guitarists practice by inserting rests in simple riffs or strumming patterns, noticing how pauses create tension and release. Learning to “play the spaces” improves groove and musicality.`,
+    quiz: [
+      { question: 'What is a rest in music?', options: ['A long note', 'Intentional silence', 'A type of chord', 'A fast beat'], correctAnswer: 1 },
+      { question: 'What do rests help create in a musical phrase?', options: ['Noise', 'Tension and release', 'High pitch', 'Volume'], correctAnswer: 1 },
+      { question: 'Learning to "play the spaces" primarily improves:', options: ['Speed', 'Groove and musicality', 'Tuning', 'Strength'], correctAnswer: 1 }
+    ]
+  },
+  'Basic Strumming Timing': {
+    title: 'Basic Strumming Timing',
+    content: `Strumming aligns rhythm with harmony. Guitarists practice by keeping a steady pulse while alternating downstrokes, upstrokes, or muted strums. Start simple, then gradually add syncopation or accents. Consistency ensures rhythm guitar locks tightly with drums or backing tracks.`,
+    quiz: [
+      { question: 'Strumming primarily aligns rhythm with:', options: ['Lyrics', 'Harmony', 'Pick thickness', 'String age'], correctAnswer: 1 },
+      { question: 'What is essential for rhythm guitar to lock with drums?', options: ['Volume', 'Consistency', 'Distortion', 'A capo'], correctAnswer: 1 },
+      { question: 'You should start rhythm practice with _____ patterns.', options: ['Complex', 'Simple', 'Fast', 'Silent'], correctAnswer: 1 }
+    ]
+  },
+  'Downbeat vs Upbeat': {
+    title: 'Downbeat vs Upbeat',
+    content: `Downbeats feel grounded (beats 1 and 3 in 4/4), while upbeats feel lighter (beats 2 and 4). Guitarists practice by emphasizing downbeats with chords and strumming light upbeats, creating push and pull in rhythm. Understanding this adds dynamic control and feel.`,
+    quiz: [
+      { question: 'In 4/4 time, which beats are generally the grounded "downbeats"?', options: ['1 and 3', '2 and 4', 'All beats', 'No beats'], correctAnswer: 0 },
+      { question: 'Upbeats (like beats 2 and 4) usually feel:', options: ['Grounded', 'Lighter', 'Heavy', 'Boring'], correctAnswer: 1 },
+      { question: 'Combining downbeats and upbeats creates _____ in the rhythm.', options: ['Static sound', 'Push and pull', 'Noise', 'Higher pitch'], correctAnswer: 1 }
+    ]
+  },
+  'Simple Rhythm Patterns': {
+    title: 'Simple Rhythm Patterns',
+    content: `Simple patterns train consistency and groove. Guitarists practice by creating short, repeating patterns combining quarter, eighth, and sixteenth notes. Start slow, use a metronome, then gradually increase speed. Mastery here prepares you for syncopation, swing, and more complex rhythmic ideas.`,
+    quiz: [
+      { question: 'What do simple repeating patterns help train?', options: ['Strength', 'Consistency and groove', 'Lyrics', 'Note names'], correctAnswer: 1 },
+      { question: 'What tool is best for practicing rhythmic patterns?', options: ['A tuner', 'A metronome', 'A strap', 'A pick holder'], correctAnswer: 1 },
+      { question: 'Mastery of simple patterns is a prerequisite for:', options: ['Tuning', 'Syncopation and swing', 'Breaking strings', 'Buying pedals'], correctAnswer: 1 }
+    ]
+  },
+
+  // ========================================
+  // ========== ELEMENTARY LEVEL ============
+  // ========================================
+
+  'Intervals': {
+    title: 'Intervals (2nd, 3rd, 5th, Octave)',
+    content: `Intervals are the distance between two notes, and they define both melody and harmony. A major third (C–E) sounds bright, while a minor third (C–Eb) sounds darker; perfect fifths create stability, and octaves reinforce tonality. Guitarists benefit from recognizing intervals both by ear and fretboard layout. To practice, pick a root note and play each interval above it across the neck, both melodically (one note at a time) and harmonically (both notes together). Sing the interval as you play it to internalize the sound. Over time, this skill allows you to construct chords and melodies anywhere without relying on shapes.`,
+    quiz: [
+      { question: 'What describes an interval?', options: ['The volume of a note', 'The distance between two notes', 'The color of a guitar', 'The speed of a song'], correctAnswer: 1 },
+      { question: 'A major third interval usually sounds:', options: ['Dark', 'Bright', 'Dissonant', 'Silent'], correctAnswer: 1 },
+      { question: 'Recognizing intervals by ear allows you to construct melodies without:', options: ['Strings', 'Relying on shapes', 'A pick', 'A strap'], correctAnswer: 1 }
+    ]
+  },
+  'Key Signatures': {
+    title: 'Key Signatures',
+    content: `Key signatures indicate which notes are consistently sharp or flat in a piece. Understanding them helps guitarists know which notes belong naturally and which will sound “outside.” To practice, pick a key like D major and play its diatonic scale across the neck. Then identify any “accidental” notes that don’t belong. Compose short licks or riffs emphasizing diatonic tones while inserting occasional accidentals to hear tension and release. This builds both predictive and expressive awareness.`,
+    quiz: [
+      { question: 'What does a key signature tell you?', options: ['The tempo', 'Which notes are sharp or flat in a piece', 'The length of the song', 'The volume'], correctAnswer: 1 },
+      { question: 'An "accidental" is a note that:', options: ['Is always in the key signature', 'Does not belong to the current key signature', 'Is played by mistake', 'Is the root note'], correctAnswer: 1 },
+      { question: 'A key signature helps a player know which notes sound:', options: ['Loud', 'Natural or "outside"', 'Broken', 'High-pitched'], correctAnswer: 1 }
+    ]
+  },
+  'Major vs Minor Sound': {
+    title: 'Major vs Minor Sound',
+    content: `Major and minor are structural differences, not just emotional labels. Major scales have wider intervals early on, giving a bright, open sound; minor scales compress intervals, giving a darker feel. Guitarists can train their ears by alternating between major and minor scales in the same key, playing melodies emphasizing the key’s defining tones (like 3rd and 6th degrees). Recognizing these differences allows you to intentionally shape mood and expression in solos and chord progressions.`,
+    quiz: [
+      { question: 'The structural difference between major and minor scales is based on:', options: ['Volume', 'Intervals', 'Speed', 'Guitar brand'], correctAnswer: 1 },
+      { question: 'Which scale is associated with a "compressed" darker feel?', options: ['Major', 'Minor', 'Chromatic', 'Whole tone'], correctAnswer: 1 },
+      { question: 'Recognizing major vs minor sounds allows you to shape:', options: ['Tuning', 'Mood and expression', 'Pick size', 'Fret count'], correctAnswer: 1 }
+    ]
+  },
+  'Simple Time Signatures': {
+    title: 'Simple Time Signatures (4/4, 3/4)',
+    content: `Time signatures define how beats are grouped. 4/4 feels square and balanced; 3/4 feels circular and rolling. Guitarists use this understanding to phrase strums, arpeggios, and melodies naturally. To practice, clap and count the beats while strumming chords in both 4/4 and 3/4. Then accent strong beats differently, play melodies that land on weak beats, and gradually add syncopation. Understanding meter lets you phrase naturally rather than forcing patterns.`,
+    quiz: [
+      { question: 'Which time signature feels "square and balanced"?', options: ['3/4', '4/4', '7/8', '5/4'], correctAnswer: 1 },
+      { question: '3/4 time signature is often described as feeling:', options: ['Square', 'Circular and rolling', 'Jagged', 'Static'], correctAnswer: 1 },
+      { question: 'Understanding time signatures allows for natural:', options: ['Tuning', 'Phrasing', 'Strength', 'Speed'], correctAnswer: 1 }
+    ]
+  },
+  'Circle of Fifths': {
+    title: 'Circle of Fifths (Basic Use)',
+    content: `The Circle of Fifths shows how keys relate via shared notes. Keys next to each other differ by one note, making transitions smooth. Guitarists use it to choose compatible chords, modulate keys, and understand why some progressions feel natural. To practice, write out the circle and pick a starting key. Play its diatonic chords, then move to the adjacent key using pivot chords. Experiment with melodies that follow the modulation, hearing how shared notes make the change seamless.`,
+    quiz: [
+      { question: 'Adjacent keys on the Circle of Fifths differ by how many notes?', options: ['Zero', 'One', 'Five', 'Twelve'], correctAnswer: 1 },
+      { question: 'The Circle of Fifths is primarily used to understand how:', options: ['Strings break', 'Keys relate to one another', 'Picks are made', 'To sing'], correctAnswer: 1 },
+      { question: 'Moving between adjacent keys on the circle makes transitions:', options: ['Harsh', 'Smooth', 'Impossible', 'Loud'], correctAnswer: 1 }
+    ]
+  },
+  'Seventh Chords': {
+    title: 'Seventh Chords (maj7, dom7, min7)',
+    content: `Seventh chords add a fourth note to triads, increasing harmonic complexity. Major 7ths (Cmaj7) feel smooth, dominant 7ths (G7) pull toward resolution, and minor 7ths (Am7) sound relaxed but expressive. Guitarists practice by taking simple progressions and replacing triads with seventh chords. Focus on voice leading—how each note moves to the next chord—to hear tension, release, and subtle color in your harmonies.`,
+    quiz: [
+      { question: 'How many notes are in a basic seventh chord?', options: ['Three', 'Four', 'Seven', 'Five'], correctAnswer: 1 },
+      { question: 'Which seventh chord is known for "pulling toward resolution"?', options: ['Major 7th', 'Dominant 7th', 'Minor 7th', 'Diminished 7th'], correctAnswer: 1 },
+      { question: 'Seventh chords increase harmonic _____ compared to triads.', options: ['Volume', 'Complexity', 'Speed', 'Simplicity'], correctAnswer: 1 }
+    ]
+  },
+  'Chord Inversions': {
+    title: 'Chord Inversions',
+    content: `Inversions rearrange which chord note is in the bass. They don’t change the chord’s identity but influence motion and smoothness. On guitar, practice inversions by playing C major root position (C–E–G), first inversion (E–G–C), and second inversion (G–C–E). Apply this across a progression to avoid awkward jumps, creating seamless transitions. Over time, inversions make chord movement fluid and professional-sounding.`,
+    quiz: [
+      { question: 'An inversion changes which note is in the:', options: ['Middle', 'Bass', 'Highest pitch', 'Tuning machine'], correctAnswer: 1 },
+      { question: 'Does an inversion change the identity of a chord (e.g., C major becomes G major)?', options: ['Yes', 'No', 'Only in minor keys', 'Only on electric guitar'], correctAnswer: 1 },
+      { question: 'Using inversions helps make chord progressions sound:', options: ['Jagged', 'Fluid and professional', 'Loud', 'Broken'], correctAnswer: 1 }
+    ]
+  },
+  'Chord Construction Formulas': {
+    title: 'Chord Construction Formulas',
+    content: `Chord formulas describe intervals relative to the root. For example, a major chord = 1–3–5, minor = 1–b3–5. Learning formulas allows guitarists to build chords anywhere without diagrams. To practice, pick a root on any string, then add intervals logically to form major, minor, and seventh chords. Experiment with extensions like 9ths and 13ths using the same formula logic to gain full fretboard flexibility.`,
+    quiz: [
+      { question: 'What is the formula for a Major triad?', options: ['1-2-3', '1-3-5', '1-b3-5', '1-4-5'], correctAnswer: 1 },
+      { question: 'What is the formula for a Minor triad?', options: ['1-3-5', '1-b3-5', '1-3-#5', '1-b3-b5'], correctAnswer: 1 },
+      { question: 'Formulas allow you to build chords without relying on:', options: ['Strings', 'Diagrams', 'A pick', 'The bridge'], correctAnswer: 1 }
+    ]
+  },
+  'Barre Chord Theory': {
+    title: 'Barre Chord Theory',
+    content: `Barre chords demonstrate that chord shapes are movable structures. By pressing all strings at a fret (barre), you shift the harmonic structure up the neck. This reveals the fretboard’s repetitive and organized nature. Guitarists practice by moving E major and A major shapes up and down the neck, applying them to progressions in different keys. Understanding this unlocks instant transposition and opens improvisation and songwriting possibilities.`,
+    quiz: [
+      { question: 'Barre chords show that chord shapes are:', options: ['Fixed', 'Movable', 'Only for acoustic', 'Always minor'], correctAnswer: 1 },
+      { question: 'Moving a barre chord up the neck changes the:', options: ['Type of chord', 'Key (Pitch)', 'Number of strings', 'Hand size'], correctAnswer: 1 },
+      { question: 'Understanding barre chords unlocks instant:', options: ['Tuning', 'Transposition', 'Cleaning', 'Volume'], correctAnswer: 1 }
+    ]
+  },
+  'Voice Leading Basics': {
+    title: 'Voice Leading Basics',
+    content: `Voice leading focuses on the smooth movement of individual notes between chords. Minimizing motion makes progressions sound connected and professional. Guitarists practice by playing two- or three-chord sequences and adjusting finger positions to move as few notes as possible to the next chord. Gradually add inversions, extensions, or suspensions while maintaining minimal motion. This makes rhythm parts and comping sound intentional rather than blocky.`,
+    quiz: [
+      { question: 'Voice leading focuses on the movement of:', options: ['The whole hand', 'Individual notes', 'The drummer', 'The pick'], correctAnswer: 1 },
+      { question: 'Good voice leading usually involves _____ motion between chords.', options: ['Maximum', 'Minimal', 'Random', 'Fast'], correctAnswer: 1 },
+      { question: 'Proper voice leading makes rhythm parts sound _____ rather than blocky.', options: ['Noisier', 'Intentional', 'Quiet', 'Broken'], correctAnswer: 1 }
+    ]
+  },
+  'Harmonic Minor Scale': {
+    title: 'Harmonic Minor Scale',
+    content: `The harmonic minor scale raises the 7th degree, creating a strong pull toward the root. It’s dramatic and directional, perfect for leading tones and tension-resolution. Guitarists practice by mapping the scale across the fretboard, emphasizing the raised 7th in both melodic lines and arpeggios. Use it over minor chord progressions to hear its natural tension and learn how to target chord tones intentionally.`,
+    quiz: [
+      { question: 'Which note is altered in the harmonic minor scale compared to natural minor?', options: ['Lowered 2nd', 'Raised 7th', 'Raised 4th', 'Lowered 5th'], correctAnswer: 1 },
+      { question: 'The harmonic minor scale is known for creating a strong pull toward the:', options: ['Fifth', 'Root', 'Octave', 'Lead singer'], correctAnswer: 1 },
+      { question: 'This scale is useful for creating _____ and resolution.', options: ['Boredom', 'Tension', 'Silence', 'Simplicity'], correctAnswer: 1 }
+    ]
+  },
+  'Melodic Minor Scale': {
+    title: 'Melodic Minor Scale',
+    content: `The melodic minor scale differs ascending and descending in traditional theory, smoothing melodic motion while preserving harmonic function. It balances expressive flexibility with structural control. Guitarists practice ascending and descending versions across positions, then incorporate it into solos. Focus on how lines resolve to chord tones and how the scale’s unique intervals create direction and sophistication.`,
+    quiz: [
+      { question: 'Traditional melodic minor scales change based on:', options: ['Volume', 'Direction (ascending vs descending)', 'Speed', 'Pick angle'], correctAnswer: 1 },
+      { question: 'The scale is used to smooth out melodic _____ while maintaining harmony.', options: ['Pitch', 'Motion', 'Noise', 'Tuning'], correctAnswer: 1 },
+      { question: 'Practicing this scale helps solos sound more:', options: ['Aggressive', 'Sophisticated', 'Loud', 'Beginner'], correctAnswer: 1 }
+    ]
+  },
+  'Blues Scale': {
+    title: 'Blues Scale',
+    content: `The blues scale adds expressive tension notes (b3, b5, b7) that slightly clash with harmony, creating grit and character. Guitarists practice by soloing over a simple 12-bar blues, emphasizing bends, slides, and microtonal inflections. The focus is phrasing and emotion rather than technical “correctness.” Use the scale sparingly to highlight tension and release, enhancing feel and musical storytelling.`,
+    quiz: [
+      { question: 'What note is the unique addition in a Blues Scale (relative to minor pentatonic)?', options: ['The 2nd', 'The flat 5th (blue note)', 'The major 3rd', 'The natural 7th'], correctAnswer: 1 },
+      { question: 'The blues scale is focused more on _____ than technical correctness.', options: ['Speed', 'Phrasing and emotion', 'Tuning', 'Reading music'], correctAnswer: 1 },
+      { question: 'Which intervals are commonly flat in a blues scale?', options: ['1, 3, 5', 'b3, b5, b7', '2, 4, 6', 'None'], correctAnswer: 1 }
+    ]
+  },
+  'Two-Octave Scales': {
+    title: 'Two-Octave Scales',
+    content: `Two-octave scales connect positions on the fretboard, extending melodic range. They force horizontal thinking rather than relying on box patterns. Guitarists practice by playing major, minor, and pentatonic scales across two octaves, linking positions smoothly with slides or pivot notes. This prepares you for flowing solos that move across the neck naturally.`,
+    quiz: [
+      { question: 'Two-octave scales connect different _____ on the fretboard.', options: ['Guitars', 'Positions', 'Picks', 'Strings only'], correctAnswer: 1 },
+      { question: 'These scales encourage _____ thinking instead of just box patterns.', options: ['Vertical', 'Horizontal', 'Static', 'Random'], correctAnswer: 1 },
+      { question: 'What is a common technique used to link scale positions smoothly?', options: ['Stopping', 'Slides or pivot notes', 'Muting', 'Retuning'], correctAnswer: 1 }
+    ]
+  },
+  'Position Shifting (Theory)': {
+    title: 'Position Shifting',
+    content: `Position shifting is the skill of moving between fretboard areas seamlessly. It’s essential for connecting scales, chord shapes, and arpeggios. Guitarists practice by playing a riff or scale in one position, then sliding or stepping into the next position without breaking the line. Focus on target notes to maintain melodic coherence, building confidence in fluid fretboard navigation.`,
+    quiz: [
+      { question: 'Position shifting is essential for moving between fretboard _____ seamlessly.', options: ['Notes', 'Areas', 'Strings', 'Frets only'], correctAnswer: 1 },
+      { question: 'What should you focus on to maintain melodic coherence during a shift?', options: ['Loudness', 'Target notes', 'Pick speed', 'Hand size'], correctAnswer: 1 },
+      { question: 'Position shifting helps build confidence in _____ navigation.', options: ['Stiff', 'Fluid fretboard', 'Slow', 'Random'], correctAnswer: 1 }
+    ]
+  },
+  'Syncopation (Rhythm)': {
+    title: 'Syncopation',
+    content: `Syncopation emphasizes unexpected beats or subdivisions to create groove and forward motion. Guitarists practice by accenting offbeats in chord patterns, riffs, or solos. Start simple with quarter-note accents, then layer eighth-note and sixteenth-note syncopation. Listen critically to how placement affects feel, making rhythm lively and expressive rather than mechanical.`,
+    quiz: [
+      { question: 'Syncopation emphasizes _____ beats or subdivisions.', options: ['Predicted', 'Unexpected', 'Only the first', 'No'], correctAnswer: 1 },
+      { question: 'What does syncopation help create in a rhythm?', options: ['Pitch', 'Groove and forward motion', 'Static sound', 'Silence'], correctAnswer: 1 },
+      { question: 'In syncopation, accents are often placed on:', options: ['Downbeats only', 'Offbeats', 'Rests only', 'The root note'], correctAnswer: 1 }
+    ]
+  },
+  'Triplets': {
+    title: 'Triplets',
+    content: `Triplets divide a beat into three equal parts, introducing swing and rhythmic elasticity. Guitarists practice by playing straight rhythms and then subdividing beats into triplets. Incorporate triplets into riffs, fills, or solo lines, feeling the subtle tension they create. This expands rhythmic vocabulary beyond simple straight or swung patterns.`,
+    quiz: [
+      { question: 'A triplet divides a single beat into how many equal parts?', options: ['Two', 'Three', 'Four', 'Six'], correctAnswer: 1 },
+      { question: 'Triplets introduce a sense of rhythmic _____ and elasticity.', options: ['Stiffness', 'Swing', 'Volume', 'Pitch'], correctAnswer: 1 },
+      { question: 'Using triplets expands your rhythmic _____ beyond straight patterns.', options: ['Speed', 'Vocabulary', 'Volume', 'Tone'], correctAnswer: 1 }
+    ]
+  },
+  'Swing Feel (Theory)': {
+    title: 'Swing Feel',
+    content: `Swing feel delays certain subdivisions slightly to create a relaxed, human groove. It’s not random; it’s controlled imbalance. Guitarists practice by converting straight eighths into swung patterns (long–short), then experiment with varying microtiming for style. Swing feel teaches nuance, internalizing groove rather than reading strict notation.`,
+    quiz: [
+      { question: 'Swing feel is described as a _____ imbalance in the rhythm.', options: ['Chaotic', 'Controlled', 'Useless', 'Loud'], correctAnswer: 1 },
+      { question: 'In swing feel, straight eighth notes are converted into _____ patterns.', options: ['Short-short', 'Long-short', 'Long-long', 'Random'], correctAnswer: 1 },
+      { question: 'Swing feel is more about internalizing _____ than reading strict notation.', options: ['Pitch', 'Groove', 'Volume', 'Note names'], correctAnswer: 1 }
+    ]
+  },
+  'Accent Placement (Rhythm)': {
+    title: 'Accent Placement',
+    content: `Accents guide listener attention and shape rhythm and melody. Guitarists practice by emphasizing certain notes in a riff or phrase, then shifting accents to create push/pull or tension/release. Subtle variations make simple parts sound expressive, dynamic, and professional.`,
+    quiz: [
+      { question: 'Accents are used to guide _____ attention.', options: ['The drummer\'s', 'Listener', 'The teacher\'s', 'No one\'s'], correctAnswer: 1 },
+      { question: 'Shifting accents creates a sense of _____ in the music.', options: ['Boredom', 'Push/pull or tension/release', 'Higher pitch', 'Static volume'], correctAnswer: 1 },
+      { question: 'Accents make simple guitar parts sound more:', options: ['Amateur', 'Expressive and professional', 'Muted', 'Random'], correctAnswer: 1 }
+    ]
+  },
+  'Rhythm Reading': {
+    title: 'Rhythm Reading',
+    content: `Reading rhythm independently of pitch develops timing precision and ensemble readiness. Guitarists practice by clapping or tapping rhythms from notation, then apply them to the fretboard. Start with simple patterns, then expand to syncopated, triplet, or mixed-meter exercises. Accurate reading supports confident timing in solos, comping, and group playing.`,
+    quiz: [
+      { question: 'Rhythm reading should be practiced independently of:', options: ['Tempo', 'Pitch', 'The metronome', 'Volume'], correctAnswer: 1 },
+      { question: 'Clapping or tapping rhythms helps develop timing _____ .', options: ['Noise', 'Precision', 'Loudness', 'Strength'], correctAnswer: 1 },
+      { question: 'Rhythm reading is helpful for:', options: ['Only solo playing', 'Solos, comping, and ensemble playing', 'Changing strings', 'Cleaning the guitar'], correctAnswer: 1 }
+    ]
+  },
+
+  // ========================================
+  // ========== INTERMEDIATE LEVEL ==========
+  // ========================================
+
+  'Relative Major and Minor Keys': {
+    title: 'Relative Major and Minor Keys',
+    content: `Every major key has a relative minor key that shares the exact same notes—for example, C major and A minor. The difference lies in tonal emphasis: C major feels bright, while A minor feels darker, even though the notes are identical. Guitarists use this relationship to shift emotional states without changing the underlying pitch material, allowing smooth transitions between moods. To practice, take a simple progression in C major (C–F–G–C) and play the same chords with A minor as the tonal focus. Emphasize A, C, and E notes in your melody lines to bring out the minor feeling while keeping the same notes under your fingers. Experiment switching back and forth to hear the emotional transformation.`,
+    quiz: [
+      { question: 'Relative keys share the exact same:', options: ['Chords only', 'Notes', 'Tempo', 'Volume'], correctAnswer: 1 },
+      { question: 'What is the relative minor of C major?', options: ['G minor', 'A minor', 'D minor', 'E minor'], correctAnswer: 1 },
+      { question: 'The difference between relative keys is primarily one of tonal:', options: ['Speed', 'Emphasis', 'Accuracy', 'Complexity'], correctAnswer: 1 }
+    ]
+  },
+  'Harmonic Function (Intermediate)': {
+    title: 'Harmonic Function (I, IV, V)',
+    content: `Chords have specific “jobs” within a key: the tonic (I) feels stable and resolves tension, the subdominant (IV) introduces movement, and the dominant (V) creates tension that demands resolution. Recognizing function explains why chord progressions sound natural instead of relying on memorization. Guitarists can practice this by playing a C major progression: C (I)–F (IV)–G (V)–C (I). Sing or play melodies emphasizing chord tones to internalize the function. Once comfortable, try substituting chords with equivalents that maintain the same role (e.g., F → Dm for subdominant) to understand harmonic flexibility.`,
+    quiz: [
+      { question: 'Which chord function "resolves tension"?', options: ['Dominant (V)', 'Tonic (I)', 'Subdominant (IV)', 'Diminished'], correctAnswer: 1 },
+      { question: 'What is the role of the Dominant (V) chord?', options: ['Static stability', 'Creating tension that demands resolution', 'Starting a song only', 'Providing a waltz feel'], correctAnswer: 1 },
+      { question: 'A chord that "introduces movement" is usually the:', options: ['Tonic', 'Subdominant', 'Octave', 'Tuner'], correctAnswer: 1 }
+    ]
+  },
+  'Syncopation (Intermediate)': {
+    title: 'Syncopation (Deeper Use)',
+    content: `Syncopation is accenting weak beats or offbeats to create rhythmic push-and-pull. At a deeper level, it’s intentional and musical, not accidental. Guitarists use it to enhance groove and make rhythms feel alive. To practice, start with a simple 4/4 strumming pattern and accent offbeats (e.g., the “and” of each beat). Then layer chordal or melodic motifs that deliberately clash with strong beats. Experiment with rests and delayed accents to hear how tension and groove emerge. Over time, syncopation becomes an expressive tool rather than a complication.`,
+    quiz: [
+      { question: 'Syncopation creates a rhythmic _____ feel.', options: ['Static', 'Push-and-pull', 'Broken', 'Square'], correctAnswer: 1 },
+      { question: 'Syncopated accents are placed on:', options: ['Strong beats only', 'Weak beats or offbeats', 'Only beat 1', 'Rests'], correctAnswer: 1 },
+      { question: 'At an intermediate level, syncopation should be _____ and musical.', options: ['Accidental', 'Intentional', 'Loud', 'Slow'], correctAnswer: 1 }
+    ]
+  },
+  'Simple Modulation': {
+    title: 'Simple Modulation',
+    content: `Modulation changes the tonal center within a song. Simple modulation often moves to closely related keys, which share many notes, making the transition feel natural. Guitarists can practice by choosing a key, such as C major, and modulating to G major (a fifth above, closely related). Play a pivot chord that exists in both keys, like D minor or G major, to connect the keys smoothly. Experiment with melodies emphasizing new tonal centers to reinforce the shift while keeping the motion subtle and musical.`,
+    quiz: [
+      { question: 'What is modulation?', options: ['Changing string gauge', 'Changing the tonal center (key) within a song', 'Tuning to a metronome', 'Playing faster'], correctAnswer: 1 },
+      { question: 'Simple modulation moves to _____ keys.', options: ['Unrelated', 'Closely related', 'Higher volume', 'Minor only'], correctAnswer: 1 },
+      { question: 'A chord that exists in both the original and new key is called a:', options: ['Power chord', 'Pivot chord', 'Final chord', 'Slash chord'], correctAnswer: 1 }
+    ]
+  },
+  'Accidentals in Context': {
+    title: 'Accidentals in Context',
+    content: `Accidentals temporarily alter notes outside the current key, adding color and tension. They are effective when used deliberately to emphasize motion, highlight chord tones, or create chromatic interest. Guitarists practice by taking a diatonic line (e.g., C major scale) and inserting half-step passing notes or chromatic approaches to target tones (e.g., B–Bb–A resolving to G). Play slowly, listening for whether the accidental adds expression without sounding random. The goal is musical sophistication rather than clutter.`,
+    quiz: [
+      { question: 'Accidentals alter notes to be _____ the current key.', options: ['Always inside', 'Temporarily outside', 'Fixed in', 'Silent in'], correctAnswer: 1 },
+      { question: 'What do accidentals add to a musical line?', options: ['Loudness only', 'Color and tension', 'Broken rhythm', 'Octaves'], correctAnswer: 1 },
+      { question: 'Using accidentals as passing notes helps create _____ interest.', options: ['Harmonic', 'Chromatic', 'Mechanical', 'Negative'], correctAnswer: 1 }
+    ]
+  },
+  'Extended Chords': {
+    title: 'Extended Chords (9, 11, 13)',
+    content: `Extended chords add scale tones beyond the basic triad or seventh, creating richer harmonic textures. For example, Cmaj9 adds D, C11 adds F, and C13 adds A. Guitarists use these chords to add emotional depth and sophistication without losing the underlying identity. To practice, start with a basic triad, then gradually add tensions using finger-friendly voicings. Experiment with inversions and voice leading, emphasizing the added notes at strong points in a progression to see how they color the harmony.`,
+    quiz: [
+      { question: 'Extended chords add notes beyond the basic triad or _____ .', options: ['Fifth', 'Seventh', 'Root', 'Octave'], correctAnswer: 1 },
+      { question: 'Adding a 9th, 11th, or 13th creates _____ textures.', options: ['Thinner', 'Richer harmonic', 'Muted', 'Standard'], correctAnswer: 1 },
+      { question: 'Extended chords add emotional depth and _____ .', options: ['Confusion', 'Sophistication', 'Volume', 'Speed'], correctAnswer: 1 }
+    ]
+  },
+  'Suspended Chords': {
+    title: 'Suspended Chords',
+    content: `Suspended chords replace the third with either a second (sus2) or fourth (sus4), removing tonal clarity and creating anticipation. Resolving the suspended note back to the third restores stability. Guitarists use them to create tension or openness in a phrase. To practice, play C–Csus4–C progression and feel the lift and resolution. Experiment with suspending different notes in extended chords, and combine with rhythmic accentuation for dramatic effect.`,
+    quiz: [
+      { question: 'Suspended chords replace the _____ with a 2nd or 4th.', options: ['Root', 'Third', 'Fifth', 'Seventh'], correctAnswer: 1 },
+      { question: 'The primary effect of a suspended chord is:', options: ['Stability', 'Anticipation and tension', 'Sadness', 'Loudness'], correctAnswer: 1 },
+      { question: 'A sus4 chord resolves by moving the 4th note to the:', options: ['5th', '3rd', 'Root', 'Octave'], correctAnswer: 1 }
+    ]
+  },
+  'Secondary Dominants': {
+    title: 'Secondary Dominants',
+    content: `Secondary dominants temporarily emphasize a chord other than the tonic by preceding it with its own dominant. For example, in C major, D7 can act as V7/ii, leading to G minor. Guitarists use this to create forward motion and highlight harmonic direction. To practice, take a simple progression and identify chords you want to emphasize. Add the secondary dominant before them and notice the increased tension and anticipation. Slowly integrate these into improvisation for harmonic sophistication.`,
+    quiz: [
+      { question: 'Secondary dominants emphasize a chord that is NOT the _____ .', options: ['Fifth', 'Tonic (I)', 'Fourth', 'Sixth'], correctAnswer: 1 },
+      { question: 'Secondary dominants help create _____ motion.', options: ['Static', 'Forward', 'Backward', 'Circular'], correctAnswer: 1 },
+      { question: 'Adding a secondary dominant increases tension and _____ .', options: ['Volume', 'Anticipation', 'Speed', 'Pitch'], correctAnswer: 1 }
+    ]
+  },
+  'Borrowed Chords': {
+    title: 'Borrowed Chords',
+    content: `Borrowed chords are taken from parallel keys or modes (e.g., C minor chords in a C major song). They add contrast, color, and surprise without fully changing the key. Guitarists use them to enrich songwriting and evoke new emotions. To practice, take a progression in C major and insert chords from C minor (like Eb or Ab). Pay attention to melody notes that align with borrowed tones. Experiment with different placement to balance novelty with coherence.`,
+    quiz: [
+      { question: 'Borrowed chords come from _____ keys or modes.', options: ['Unrelated', 'Parallel', 'Higher', 'Major only'], correctAnswer: 1 },
+      { question: 'Using borrowed chords adds color and _____ without changing keys.', options: ['Volume', 'Surprise', 'Tempo', 'Pitch'], correctAnswer: 1 },
+      { question: 'An example of borrowing in C major is using a chord from:', options: ['G major', 'C minor', 'D major', 'A major'], correctAnswer: 1 }
+    ]
+  },
+  'Chord Function in Progressions': {
+    title: 'Chord Function in Progressions',
+    content: `Understanding chord function allows you to predict and manipulate harmonic flow. Instead of guessing which chord “works,” you can intentionally guide tension and release. Guitarists practice by labeling functions (tonic, subdominant, dominant) in any progression, then swapping or rearranging chords within the same functional roles. This creates informed reharmonization and helps improvisation feel connected to the underlying harmony.`,
+    quiz: [
+      { question: 'Understanding function allows you to _____ harmonic flow.', options: ['Stop', 'Predict and manipulate', 'Ignore', 'Record'], correctAnswer: 1 },
+      { question: 'Swapping chords within the same functional role is called informed _____ .', options: ['Transposition', 'Reharmonization', 'Substitution (only)', 'Modulation'], correctAnswer: 1 },
+      { question: 'Which role is associated with "tension"?', options: ['Tonic', 'Dominant', 'Subdominant', 'Octave'], correctAnswer: 1 }
+    ]
+  },
+  'Modes of the Major Scale': {
+    title: 'Modes of the Major Scale',
+    content: `Modes are rotations of the major scale where the tonal center changes. For instance, D Dorian uses all the notes of C major but centers on D. Each mode emphasizes different scale degrees and produces a distinct mood. Guitarists practice by taking one scale shape and starting on each degree, noticing how melodies over the same chord set feel different. This develops modal awareness and allows flexible melodic interpretation over static or changing harmonies.`,
+    quiz: [
+      { question: 'Modes are _____ of the major scale.', options: ['Substitutes', 'Rotations', 'Opposites', 'Notes'], correctAnswer: 1 },
+      { question: 'What changes when you play a different mode of the same scale?', options: ['The notes', 'The tonal center', 'The guitar strings', 'The pick size'], correctAnswer: 1 },
+      { question: 'Modes allow for flexible _____ interpretation.', options: ['Rhythmic', 'Melodic', 'Volume', 'Tempo'], correctAnswer: 1 }
+    ]
+  },
+  'Dorian Mode': {
+    title: 'Dorian Mode',
+    content: `Dorian is a minor-sounding mode with a raised sixth, giving it a brighter quality than natural minor. It balances darkness with motion, making it common in funk, jazz, and rock. To practice, map the Dorian scale across the fretboard in one key, then improvise over a minor chord vamp. Emphasize the characteristic raised sixth to bring out the Dorian color, and experiment with phrasing that highlights its mix of tension and brightness.`,
+    quiz: [
+      { question: 'Dorian is a minor-sounding mode with a raised _____ .', options: ['Fourth', 'Sixth', 'Seventh', 'Second'], correctAnswer: 1 },
+      { question: 'Compared to natural minor, Dorian sounds:', options: ['Darker', 'Brighter', 'Aggressive', 'Empty'], correctAnswer: 1 },
+      { question: 'Dorian is common in jazz, rock, and _____ .', options: ['Classical only', 'Funk', 'Country only', 'Opera'], correctAnswer: 1 }
+    ]
+  },
+  'Mixolydian Mode': {
+    title: 'Mixolydian Mode',
+    content: `Mixolydian is major-sounding but with a lowered seventh, producing a relaxed, bluesy feel. It’s widely used in blues, rock, and jazz. Guitarists can practice by mapping the Mixolydian scale over dominant-seventh chords. Focus on the b7 against the major tonic to bring out the characteristic tension, and incorporate bends and slides to emphasize the flavor. Improvising in Mixolydian helps create melodic lines that feel grounded yet flexible.`,
+    quiz: [
+      { question: 'Mixolydian is a major-sounding mode with a lowered _____ .', options: ['Third', 'Seventh', 'Sixth', 'Fifth'], correctAnswer: 1 },
+      { question: 'What feel does Mixolydian produce?', options: ['Tense and scary', 'Relaxed and bluesy', 'Sad and dark', 'Neutral'], correctAnswer: 1 },
+      { question: 'Which chord type is Mixolydian commonly played over?', options: ['Major triad', 'Dominant-seventh', 'Minor-seventh', 'Augmented'], correctAnswer: 1 }
+    ]
+  },
+  'Modal Application': {
+    title: 'Modal Application',
+    content: `Using modes effectively means aligning scale flavor with chord context. Guitarists practice this by analyzing a progression and choosing a mode that complements each chord. For example, over Dm7 use D Dorian instead of C major pentatonic. This ensures melody and harmony cohere, rather than sounding disconnected. Gradually experiment with multiple modes in a single progression to internalize their moods.`,
+    quiz: [
+      { question: 'Effective modal application aligns scale flavor with chord _____ .', options: ['Name', 'Context', 'Volume', 'Speed'], correctAnswer: 1 },
+      { question: 'Using the correct mode ensures melody and harmony _____ .', options: ['Conflict', 'Cohere', 'Sound random', 'Are silent'], correctAnswer: 1 },
+      { question: 'Over a Dm7 chord, which mode is suggested for a jazzy feel?', options: ['C Major', 'D Dorian', 'E Phrygian', 'G Mixolydian'], correctAnswer: 1 }
+    ]
+  },
+  'Connecting Scale Shapes (Intermediate)': {
+    title: 'Connecting Scale Shapes',
+    content: `Connecting scale shapes breaks visual boundaries on the fretboard, allowing continuous movement. Instead of thinking in isolated boxes, you can move fluidly along the neck. Guitarists practice by mapping scales in multiple positions and linking them with slides, passing tones, or pivot notes. This encourages melodic thinking beyond horizontal or vertical constraints, enabling longer, more expressive lines.`,
+    quiz: [
+      { question: 'Connecting scale shapes helps break _____ boundaries on the neck.', options: ['Sonic', 'Visual', 'Theoretical', 'String'], correctAnswer: 1 },
+      { question: 'What allows for continuous movement along the neck?', options: ['Only one box', 'Linking multiple positions', 'New picks', 'Tuning'], correctAnswer: 1 },
+      { question: 'This technique enables longer, more _____ melodic lines.', options: ['Random', 'Expressive', 'Mechanical', 'Stiff'], correctAnswer: 1 }
+    ]
+  },
+  'Subdivisions': {
+    title: 'Subdivisions',
+    content: `Subdividing beats increases precision and groove control. For instance, a quarter-note beat can be subdivided into eighths, triplets, or sixteenths, allowing more rhythmic complexity. Guitarists practice with a metronome, clapping subdivisions while playing chords or lines. Experiment with accenting different subdivisions to understand rhythmic tension and placement. Mastery improves both soloing and ensemble tightness.`,
+    quiz: [
+      { question: 'Subdividing beats increases precision and _____ control.', options: ['Volume', 'Groove', 'Pitch', 'Tuning'], correctAnswer: 1 },
+      { question: 'Which is an example of a subdivision?', options: ['Chorus', 'Triplets', 'Major chord', 'The bridge'], correctAnswer: 1 },
+      { question: 'Mastery of subdivisions improves soloing and _____ .', options: ['Lyrics', 'Ensemble tightness', 'Hand size', 'String age'], correctAnswer: 1 }
+    ]
+  },
+  'Polyrhythm Basics': {
+    title: 'Polyrhythm Basics',
+    content: `Polyrhythms layer contrasting rhythmic subdivisions simultaneously, like 3 against 4. When executed intentionally, they add complexity without chaos. Guitarists can practice by playing a steady 4/4 strum while tapping a 3-beat pattern with another hand or foot. Once comfortable, integrate melodic lines that align with one layer but not the other. This develops independence and internal pulse control.`,
+    quiz: [
+      { question: 'A polyrhythm layers _____ rhythmic subdivisions simultaneously.', options: ['Identical', 'Contrasting', 'Simple', 'Slow'], correctAnswer: 1 },
+      { question: 'What is a common basic polyrhythm?', options: ['1 against 1', '3 against 4', '4 against 4', '1 against 2'], correctAnswer: 1 },
+      { question: 'Practicing polyrhythms develops internal _____ control.', options: ['Volume', 'Pulse', 'Pitch', 'Tuning'], correctAnswer: 1 }
+    ]
+  },
+  'Groove Theory': {
+    title: 'Groove Theory',
+    content: `Groove is the intentional placement of notes relative to a steady pulse, not mere accuracy. It balances repetition and variation to create feel. Guitarists practice by recording a simple riff and experimenting with timing micro-adjustments—slightly ahead, behind, or on top of the beat. Focus on listening critically: does the groove feel “alive” or stiff? Adjust subtle timing to taste.`,
+    quiz: [
+      { question: 'Groove is the _____ placement of notes relative to a pulse.', options: ['Accidental', 'Intentional', 'Random', 'Theoretical'], correctAnswer: 1 },
+      { question: 'Where can notes be placed relative to the beat for groove?', options: ['Only on top', 'Ahead, behind, or on top', 'Only behind', 'Only ahead'], correctAnswer: 1 },
+      { question: 'Groove balances _____ and variation.', options: ['Mistakes', 'Repetition', 'Silence', 'Complexity'], correctAnswer: 1 }
+    ]
+  },
+  'Rhythmic Phrasing': {
+    title: 'Rhythmic Phrasing',
+    content: `Rhythmic phrasing shapes musical sentences using both sound and silence. Space and rests are as important as notes. Guitarists practice by improvising short phrases over a chord progression, deliberately leaving pauses or syncopating endings. This teaches musical breathing and dynamic shaping, making solos and comping more expressive.`,
+    quiz: [
+      { question: 'Rhythmic phrasing uses both sound and _____ .', options: ['Volume', 'Silence', 'Pitch', 'Speed'], correctAnswer: 1 },
+      { question: 'What are as important as notes in phrasing?', options: ['Loud sounds', 'Space and rests', 'Heavy picks', 'New strings'], correctAnswer: 1 },
+      { question: 'Proper phrasing teaches musical _____ .', options: ['Sprinting', 'Breathing', 'Shouting', 'Whispering'], correctAnswer: 1 }
+    ]
+  },
+  'Rhythmic Displacement': {
+    title: 'Rhythmic Displacement',
+    content: `Displacement shifts rhythmic patterns across beats or measures, creating tension while maintaining structure. For example, playing a riff starting on beat 2 instead of beat 1 changes perceived phrasing without altering notes. Guitarists practice by taking a motif and moving it gradually across the bar while keeping the pulse steady. This develops rhythmic flexibility and creates surprise in solos and compositions.`,
+    quiz: [
+      { question: 'Rhythmic displacement _____ patterns across beats.', options: ['Locks', 'Shifts', 'Ends', 'Creates'], correctAnswer: 1 },
+      { question: 'What does displacement create in a solo?', options: ['Boredom', 'Tension and surprise', 'Static feel', 'Volume loss'], correctAnswer: 1 },
+      { question: 'Starting a riff on beat 2 instead of beat 1 is an example of:', options: ['Modulation', 'Displacement', 'Transposition', 'Inversion'], correctAnswer: 1 }
+    ]
+  },
+
+  // ========================================
+  // ========== PROFICIENT LEVEL ============
+  // ========================================
+
+  'Modal Theory Overview': {
+    title: 'Modal Theory Overview',
+    content: `Modal theory expands traditional key thinking by treating every scale degree as a potential tonal center. Instead of saying, “This song is in C major,” you can hear melodies and chords temporarily gravitating around other notes of the scale—like D (Dorian) or E (Phrygian)—without changing the underlying pitches. On guitar, this explains why playing the same scale shape over different chords can feel completely different. To practice, take a C major scale shape and play it over a C chord (Ionian), then over a Dm chord (Dorian), and finally over an Em chord (Phrygian). Listen carefully to how the mood and tension change. This trains your ear to feel modal shifts rather than just seeing frets as fixed patterns.`,
+    quiz: [
+      { question: 'Modal theory treats every scale degree as a potential _____ .', options: ['Note', 'Tonal center', 'Octave', 'Chord'], correctAnswer: 1 },
+      { question: 'Do the underlying pitches change when shifting modes of the same scale?', options: ['Yes', 'No', 'Only in minor', 'Only in major'], correctAnswer: 1 },
+      { question: 'Modal theory trains your ear to feel _____ .', options: ['Volume', 'Modal shifts', 'String tension', 'Pick angle'], correctAnswer: 1 }
+    ]
+  },
+  'Harmonic Rhythm (Proficient)': {
+    title: 'Harmonic Rhythm',
+    content: `Harmonic rhythm is how often chords change, independent of tempo. Slow harmonic rhythm—chords held longer—creates space and tension; fast harmonic rhythm—quick changes—increases momentum and excitement. Guitarists can use this to manipulate energy without altering speed or complexity. To practice, take a simple 4/4 progression like C–Am–F–G and experiment with changing chords every measure, every two measures, or every half measure. Notice how the same chords can feel relaxed, driving, or urgent purely by adjusting harmonic rhythm. Gradually integrate melody and see how phrasing interacts with chord motion.`,
+    quiz: [
+      { question: 'What is harmonic rhythm?', options: ['How fast you strum', 'How often chords change', 'The key of the song', 'The volume of the chords'], correctAnswer: 1 },
+      { question: 'Fast harmonic rhythm usually increases _____ .', options: ['Space', 'Momentum and excitement', 'Boredom', 'Pitch'], correctAnswer: 1 },
+      { question: 'Harmonic rhythm is independent of _____ .', options: ['Chords', 'Tempo', 'Dynamics', 'Notes'], correctAnswer: 1 }
+    ]
+  },
+  'Phrase Structure': {
+    title: 'Phrase Structure',
+    content: `Phrases are the musical equivalent of sentences, made of rhythm, pitch, and articulation. Many follow a “question–answer” structure, where tension resolves at the end. Understanding phrase boundaries prevents solos from sounding aimless. On guitar, practice by playing a simple melody or improvisation and consciously marking phrases—pause or bend at the end of each “sentence.” Start with 2- or 4-bar phrases, then experiment with asymmetrical lengths. This teaches your playing to breathe musically and creates satisfying resolutions that feel intentional rather than random.`,
+    quiz: [
+      { question: 'Phrases are compared to musical _____ .', options: ['Alphabet', 'Sentences', 'Words', 'Paragraphs'], correctAnswer: 1 },
+      { question: 'What common structure do many phrases follow?', options: ['Up-down', 'Question-answer', 'Random-static', 'Fast-slow'], correctAnswer: 1 },
+      { question: 'Understanding phrase boundaries prevents solos from sounding _____ .', options: ['Loud', 'Aimless', 'Expressive', 'Fast'], correctAnswer: 1 }
+    ]
+  },
+  'Diatonic Harmony (Proficient)': {
+    title: 'Diatonic Harmony',
+    content: `Diatonic harmony uses chords built strictly from one scale. These chords naturally fit together because they share notes. Guitarists rely on diatonic progressions to predict chord movement and build coherent arrangements. To practice, take a key like C major and play all the diatonic triads (C, Dm, Em, F, G, Am, Bdim) across the neck. Then create short progressions using only these chords. Experiment with voice leading—moving smoothly between shared notes—to reinforce cohesion and internalize the sound of the key.`,
+    quiz: [
+      { question: 'Diatonic harmony uses chords built strictly from _____ .', options: ['Two scales', 'One scale', 'Any notes', 'Power chords'], correctAnswer: 1 },
+      { question: 'Diatonic chords fit together because they share _____ .', options: ['Volume', 'Notes', 'Strings', 'Speed'], correctAnswer: 1 },
+      { question: 'Diatonic progressions help guitarists build _____ arrangements.', options: ['Random', 'Coherent', 'Loud', 'Stiff'], correctAnswer: 1 }
+    ]
+  },
+  'Musical Form': {
+    title: 'Musical Form (Verse / Chorus / Bridge)',
+    content: `Musical form organizes ideas over time. Verses develop story or melody, choruses reinforce identity with repetition, and bridges introduce contrast. Understanding form helps guitarists shape dynamics and pacing. To practice, analyze your favorite songs: identify verse, chorus, and bridge sections. Then try playing or improvising over each part differently—maybe louder dynamics for the chorus, softer for the verse, or rhythmic variation in the bridge. Form awareness ensures solos and comping feel purposeful rather than repetitive.`,
+    quiz: [
+      { question: 'Which part of a song usually introduces contrast?', options: ['Verse', 'Bridge', 'Chorus', 'Intro'], correctAnswer: 1 },
+      { question: 'Form awareness ensures solos feel _____ rather than repetitive.', options: ['Mechanical', 'Purposeful', 'Loud', 'Silent'], correctAnswer: 1 },
+      { question: 'The _____ often reinforces a song\'s identity with repetition.', options: ['Verse', 'Chorus', 'Bridge', 'Outro'], correctAnswer: 1 }
+    ]
+  },
+  'Altered Chords': {
+    title: 'Altered Chords',
+    content: `Altered chords modify one or more chord tones—like raising or lowering the 5th or 9th—to increase tension and create pull toward resolution. For example, a G7 altered chord (G7#5b9) adds drama over a C major resolution. Guitarists use altered chords to heighten expressiveness without abandoning tonal structure. To practice, pick a dominant chord and experiment by altering individual chord tones (b9, #9, b5, #5) while resolving to the tonic. Play slowly and listen for the pull created by each alteration.`,
+    quiz: [
+      { question: 'Altered chords modify tones to increase _____ .', options: ['Resolution', 'Tension', 'Boredom', 'Volume'], correctAnswer: 1 },
+      { question: 'Which chord type is most commonly altered?', options: ['Minor triad', 'Dominant chord', 'Major seventh', 'Power chord'], correctAnswer: 1 },
+      { question: 'Alterations like #5 or b9 create a pull toward _____ .', options: ['Silence', 'Resolution', 'More tension', 'A higher octave'], correctAnswer: 1 }
+    ]
+  },
+  'Tritone Substitution': {
+    title: 'Tritone Substitution',
+    content: `Tritone substitution replaces a dominant chord with another dominant a tritone away. For example, G7 can be replaced with Db7 because both share key tension notes (B–F in G7, F–Cb in Db7). The substitution smooths bass movement and adds sophistication. To practice, play a ii–V–I in C (Dm7–G7–Cmaj7) and replace G7 with Db7. Notice how the melody and tension still resolve naturally. Experiment with moving through different tritone substitutions to create unexpected, jazz-like harmonic motion.`,
+    quiz: [
+      { question: 'Tritone substitution replaces a dominant chord with one a _____ away.', options: ['Whole step', 'Tritone', 'Perfect fifth', 'Minor third'], correctAnswer: 1 },
+      { question: 'A tritone substitution smooths _____ movement.', options: ['Treble', 'Bass', 'Volume', 'Tempo'], correctAnswer: 1 },
+      { question: 'In the key of C, G7 can be replaced by which chord?', options: ['C7', 'Db7', 'F7', 'Ab7'], correctAnswer: 1 }
+    ]
+  },
+  'Quartal Harmony': {
+    title: 'Quartal Harmony',
+    content: `Quartal harmony stacks notes in fourths rather than thirds, producing open, modern-sounding chords. For example, C–F–Bb instead of C–E–G. Guitarists use quartal voicings for modal contexts, open textures, and ambiguous tonal sounds. To practice, pick a root note and stack fourths across the neck. Move the shape through a progression to hear how it differs from traditional triads. Combine with a modal scale to create floating, contemporary textures.`,
+    quiz: [
+      { question: 'Quartal harmony stacks notes in _____ .', options: ['Thirds', 'Fourths', 'Fifths', 'Seconds'], correctAnswer: 1 },
+      { question: 'Quartal harmony sounds more _____ than traditional harmony.', options: ['Old-fashioned', 'Modern and open', 'Sad', 'Tense'], correctAnswer: 1 },
+      { question: 'Quartal voicings are often used in _____ contexts.', options: ['Blues', 'Modal', 'Country', 'Folk'], correctAnswer: 1 }
+    ]
+  },
+  'Slash Chords (Proficient)': {
+    title: 'Slash Chords',
+    content: `Slash chords indicate a chord with a bass note other than the root (e.g., C/E). They guide bass movement and harmonic direction. Guitarists use them to connect progressions smoothly. To practice, take a progression like C–F–G–C and insert C/E between C and F. Play slowly and feel how the bass line moves more naturally. Experiment with different slash bass notes to create smooth transitions or emphasize voice leading.`,
+    quiz: [
+      { question: 'What does the note after the slash indicate?', options: ['The melody', 'The bass note', 'The speed', 'The chord quality'], correctAnswer: 1 },
+      { question: 'Slash chords help guide bass _____ .', options: ['Volume', 'Movement', 'Pitch only', 'Tuning'], correctAnswer: 1 },
+      { question: 'A "C/E" chord is a C major chord with which note in the bass?', options: ['C', 'E', 'G', 'F'], correctAnswer: 1 }
+    ]
+  },
+  'Harmonic Tension and Release': {
+    title: 'Harmonic Tension and Release',
+    content: `Tension arises from unstable intervals, and release restores stability. Guitarists use this balance to guide emotional flow intentionally. To practice, pick a progression like Dm7–G7–Cmaj7. Focus on how each chord creates tension or relaxation. Add chromatic passing chords or suspensions to increase tension, then resolve to stable chords. Listening and feeling this push-pull helps you guide the music emotionally rather than relying on chance.`,
+    quiz: [
+      { question: 'Tension in music arises from _____ intervals.', options: ['Stable', 'Unstable', 'Consonant', 'Octave'], correctAnswer: 1 },
+      { question: 'What restores stability after tension?', options: ['Distortion', 'Release', 'Tempo', 'Volume'], correctAnswer: 1 },
+      { question: 'The balance of tension and release guides _____ flow.', options: ['Rhythmic', 'Emotional', 'Mechanical', 'Random'], correctAnswer: 1 }
+    ]
+  },
+  'Modes of the Melodic Minor Scale': {
+    title: 'Modes of the Melodic Minor Scale',
+    content: `The melodic minor scale has seven modes, each emphasizing unique tensions useful in jazz or fusion. For example, the Lydian dominant mode emphasizes #4 and b7, perfect for dominant chords with altered extensions. Guitarists use these modes for precise melodic targeting over complex chords. To practice, pick a melodic minor mode, map it across the neck, and play over chords that emphasize its characteristic notes. Focus on landing on chord tones on strong beats to integrate it harmonically.`,
+    quiz: [
+      { question: 'How many modes are in the melodic minor scale?', options: ['Five', 'Seven', 'Twelve', 'Two'], correctAnswer: 1 },
+      { question: 'Melodic minor modes are particularly useful in _____ and fusion.', options: ['Classical', 'Jazz', 'Pop', 'Country'], correctAnswer: 1 },
+      { question: 'Lydian dominant emphasizes which unique degrees?', options: ['b2 and b6', '#4 and b7', 'Natural 3 and 7', 'b3 and b5'], correctAnswer: 1 }
+    ]
+  },
+  'Diminished Scale': {
+    title: 'Diminished Scale',
+    content: `The diminished scale alternates whole and half steps, creating symmetry and multiple dominant applications. For example, C diminished scale = C–D–D#–F–F#–G#–A–B. Guitarists use it to navigate complex tension cleanly. To practice, map the scale across the fretboard, then improvise over dominant 7th chords. Experiment with targeting chord tones at resolution points while using the symmetrical tones for passing or tension.`,
+    quiz: [
+      { question: 'The diminished scale alternates whole steps and _____ .', options: ['Whole steps', 'Half steps', 'Thirds', 'Fifths'], correctAnswer: 1 },
+      { question: 'The diminished scale is known for its _____ .', options: ['Simplicity', 'Symmetry', 'Sadness', 'Static feel'], correctAnswer: 1 },
+      { question: 'This scale is often played over which chord type?', options: ['Minor triad', 'Dominant 7th', 'Major triad', 'Power chord'], correctAnswer: 1 }
+    ]
+  },
+  'Whole-Tone Scale': {
+    title: 'Whole-Tone Scale',
+    content: `The whole-tone scale has no half steps (C–D–E–F#–G#–A#–C), eliminating tonal gravity. It creates floating, unresolved sounds perfect for transitional or dreamlike passages. Guitarists use it to momentarily suspend resolution. To practice, play the scale slowly over static chords, experimenting with long slides, bends, and arpeggiations. Notice how the scale creates ambiguity and tension, then resolve to a conventional chord to feel the contrast.`,
+    quiz: [
+      { question: 'The whole-tone scale contains no _____ .', options: ['Whole steps', 'Half steps', 'Roots', 'Octaves'], correctAnswer: 1 },
+      { question: 'What "feel" does the whole-tone scale provide?', options: ['Grounded', 'Floating and unresolved', 'Happy', 'Dark'], correctAnswer: 1 },
+      { question: 'This scale eliminates tonal _____ .', options: ['Volume', 'Gravity', 'Color', 'Speed'], correctAnswer: 1 }
+    ]
+  },
+  'Chromatic Passing Tones': {
+    title: 'Chromatic Passing Tones',
+    content: `Chromatic passing tones connect stable notes with smooth half-step motion, adding sophistication without changing the key. Guitarists use them to create fluid lines. To practice, take a simple C major line and insert chromatic notes between chord tones (C–C#–D). Use passing tones sparingly for emphasis, landing on target chord tones on strong beats. This develops melodic smoothness and harmonic awareness.`,
+    quiz: [
+      { question: 'Chromatic passing tones move in _____ motion.', options: ['Whole-step', 'Half-step', 'Leaping', 'Static'], correctAnswer: 1 },
+      { question: 'Passing tones connect _____ notes.', options: ['Wrong', 'Stable', 'Silent', 'Broken'], correctAnswer: 1 },
+      { question: 'Passing tones add sophistication without changing the _____ .', options: ['Volume', 'Key', 'Tempo', 'Tuning'], correctAnswer: 1 }
+    ]
+  },
+  'Target-Note Soloing': {
+    title: 'Target-Note Soloing',
+    content: `Target-note soloing focuses on landing on chord tones at phrase endings or strong beats, ensuring lines sound intentional and connected to harmony. Guitarists use it to sound melodic at any tempo. To practice, pick a chord progression, identify the chord tones, and improvise, always resolving phrases to a chord tone. Over time, you’ll internalize which notes “hit” and which add tension, making solos sound deliberate and musical.`,
+    quiz: [
+      { question: 'Target-note soloing focuses on landing on _____ tones.', options: ['Scale', 'Chord', 'Random', 'Drum'], correctAnswer: 1 },
+      { question: 'Targeting chord tones ensures solos sound connected to _____ .', options: ['Rhythm', 'Harmony', 'Volume', 'The neck'], correctAnswer: 1 },
+      { question: 'Phrase endings should resolve to a _____ .', options: ['Rest', 'Chord tone', 'Accidental', 'Mute'], correctAnswer: 1 }
+    ]
+  },
+  'Odd Meters (Proficient)': {
+    title: 'Odd Meters',
+    content: `Odd meters like 5/4 or 7/8 group beats asymmetrically, creating tension and unpredictability. Guitarists must internalize the pulse rather than count mechanically. To practice, clap the beat groupings (3+2 for 5/4, 2+2+3 for 7/8) with a metronome, then play riffs or chords over the meter. Accent strong beats to solidify internal sense of time, then gradually add melodies or improvisation to feel natural in the unusual meter.`,
+    quiz: [
+      { question: 'Odd meters group beats _____ .', options: ['Symmetrically', 'Asymmetrically', 'Evenly', 'Staticly'], correctAnswer: 1 },
+      { question: 'An example of an odd meter is:', options: ['4/4', '5/4', '3/4', '2/4'], correctAnswer: 1 },
+      { question: 'In odd meters, you should internalize the _____ .', options: ['Lyrics', 'Pulse', 'Volume', 'Pick noise'], correctAnswer: 1 }
+    ]
+  },
+  'Metric Modulation': {
+    title: 'Metric Modulation',
+    content: `Metric modulation changes the beat subdivision mid-piece, creating the effect of tempo shift without altering the underlying pulse. Guitarists use this to increase rhythmic flexibility. To practice, pick a riff in 4/4 and treat eighth-note triplets as the new quarter-note pulse. Play slowly and feel how the riff can accelerate or decelerate naturally. Experiment with multiple subdivisions and shifts for dramatic effect.`,
+    quiz: [
+      { question: 'Metric modulation creates the effect of a _____ shift.', options: ['Pitch', 'Tempo', 'Key', 'Volume'], correctAnswer: 1 },
+      { question: 'In metric modulation, the underlying _____ remains unchanged.', options: ['Chord', 'Pulse', 'Scale', 'Lyrics'], correctAnswer: 1 },
+      { question: 'Guitarists use this to increase rhythmic _____ .', options: ['Stiffness', 'Flexibility', 'Volume', 'Density'], correctAnswer: 1 }
+    ]
+  },
+  'Advanced Swing': {
+    title: 'Advanced Swing',
+    content: `Advanced swing refines microtiming, varying the length of notes subtly to create style-specific grooves. Different jazz styles swing differently (Chicago vs. New Orleans vs. modern fusion). Guitarists practice by recording themselves, then adjusting timing so “off-beats” land precisely for the intended style. Experiment with triplet subdivisions, anticipating or delaying notes slightly, and feel the groove rather than relying on notation.`,
+    quiz: [
+      { question: 'Advanced swing refines _____ .', options: ['Speed', 'Microtiming', 'Loudness', 'Tuning'], correctAnswer: 1 },
+      { question: 'Style-specific grooves depend on _____ .', options: ['Notation', 'Feel and timing adjustments', 'Pick color', 'Strap height'], correctAnswer: 1 },
+      { question: 'Jazz styles like New Orleans or Chicago swing _____ .', options: ['The same', 'Differently', 'Not at all', 'Fast only'], correctAnswer: 1 }
+    ]
+  },
+  'Rhythmic Counterpoint': {
+    title: 'Rhythmic Counterpoint',
+    content: `Rhythmic counterpoint layers independent rhythmic ideas simultaneously. For guitarists, this creates internal motion even in solo contexts. To practice, pick one hand for a steady rhythmic pattern (bass or strum) and the other for a contrasting motif (melody or chordal accent). Start with simple 3 vs 4, then expand to more complex combinations, gradually increasing independence between hands or strings.`,
+    quiz: [
+      { question: 'Rhythmic counterpoint layers _____ rhythmic ideas.', options: ['Identical', 'Independent', 'Simple', 'Static'], correctAnswer: 1 },
+      { question: 'It creates internal _____ in a solo context.', options: ['Noise', 'Motion', 'Boredom', 'Volume'], correctAnswer: 1 },
+      { question: 'Counterpoint requires _____ between hands or patterns.', options: ['Dependence', 'Independence', 'Speed', 'Stiffness'], correctAnswer: 1 }
+    ]
+  },
+  'Groove Composition': {
+    title: 'Groove Composition',
+    content: `Groove composition is deliberately designing rhythmic identity, balancing repetition and variation. Guitarists use it to create memorable riffs or comping patterns. To practice, start with a basic rhythm (like a funk strum or shuffle) and vary accents, syncopation, or rests over a repeating chord progression. Listen critically—does it feel “stuck in the groove”? Experiment until the pattern has both predictability and excitement.`,
+    quiz: [
+      { question: 'Groove composition balances repetition and _____ .', options: ['Mistakes', 'Variation', 'Static', 'Volume'], correctAnswer: 1 },
+      { question: 'What are you designing in groove composition?', options: ['Notes only', 'Rhythmic identity', 'Melody only', 'Speed'], correctAnswer: 1 },
+      { question: 'A successful groove should have predictability and _____ .', options: ['Boredom', 'Excitement', 'Chaos', 'Loudness'], correctAnswer: 1 }
+    ]
+  },
+
+  // ========================================
+  // ========== ADVANCED LEVEL ==============
+  // ========================================
+
+  'Functional Harmony Analysis': {
+    title: 'Functional Harmony Analysis',
+    content: `Functional harmony is about understanding why chords work together, not just what they’re called. Each chord serves a role: tonic provides rest and stability, dominant creates tension that demands resolution, and subdominant pushes toward movement. By analyzing progressions in terms of function, guitarists can confidently reharmonize and experiment. To practice, take a simple progression like C–F–G–C. Identify the function of each chord, then swap one chord for another with the same role (F → Dm or G7 → Bdim). Play it slowly, listening to how the melody interacts with the underlying tension and release. This builds intuition for creating your own progressions while preserving musical sense.`,
+    quiz: [
+      { question: 'Functional harmony is about chord _____ in a key.', options: ['Names', 'Roles', 'Weights', 'Strings'], correctAnswer: 1 },
+      { question: 'Which chord role is associated with "rest and stability"?', options: ['Dominant', 'Tonic', 'Subdominant', 'Augmented'], correctAnswer: 1 },
+      { question: 'Swapping chords with the same role is a form of:', options: ['Transposition', 'Reharmonization', 'Modulation', 'Tuning'], correctAnswer: 1 }
+    ]
+  },
+  'Advanced Time Signatures': {
+    title: 'Advanced Time Signatures (5/4, 7/8, etc.)',
+    content: `Advanced meters group beats unevenly, such as 5/4 (often 3+2 or 2+3) or 7/8 (2+2+3). Success comes from feeling the underlying pulse, not just counting. Guitarists must internalize the strong and weak beats of the grouping to perform naturally. To practice, start by clapping or tapping the main accents while keeping a metronome on a steady pulse. Then play a simple riff or chord pattern over it, accenting the strong beats. Over time, add melodic lines or chord substitutions, making sure the rhythm flows as naturally as 4/4. The goal is to think hierarchically, feeling the groupings internally rather than externally counting each beat.`,
+    quiz: [
+      { question: 'Advanced meters group beats _____ .', options: ['Symmetrically', 'Unevenly', 'Staticly', 'Equally'], correctAnswer: 1 },
+      { question: 'How is 5/4 time often subdivided?', options: ['2+2', '3+2 or 2+3', '1+1+1+1+1', '4+1 only'], correctAnswer: 1 },
+      { question: 'In advanced time, you should feel the _____ internally.', options: ['Lyrics', 'Pulse and groupings', 'Volume', 'Pitch'], correctAnswer: 1 }
+    ]
+  },
+  'Polyrhythms (Advanced)': {
+    title: 'Polyrhythms',
+    content: `Polyrhythms layer two or more independent rhythmic patterns simultaneously, such as 3 against 4 or 5 against 4. Unlike simple syncopation, polyrhythms create tension by aligning accents differently from the underlying pulse. Guitarists must maintain independence between the layers while keeping a steady internal clock. Start by playing a simple 4/4 strumming pattern, then tap a 3-beat rhythm with your other hand or foot. Once comfortable, play a melodic or chordal line over both layers. Practicing slowly and counting cycles until the rhythms align at their least common multiple trains both hand independence and internal rhythmic awareness.`,
+    quiz: [
+      { question: 'A polyrhythm layers independent patterns _____ .', options: ['One after another', 'Simultaneously', 'Randomly', 'Slowly'], correctAnswer: 1 },
+      { question: 'A polyrhythm aligns _____ differently from the underlying pulse.', options: ['Notes', 'Accents', 'Chords', 'Lyrics'], correctAnswer: 1 },
+      { question: 'Polyrhythm practice trains hand _____ and rhythmic awareness.', options: ['Size', 'Independence', 'Speed', 'Strength'], correctAnswer: 1 }
+    ]
+  },
+  'Modal Interchange (Advanced)': {
+    title: 'Modal Interchange',
+    content: `Modal interchange is borrowing chords from a parallel mode (same root, different scale) to enrich your harmonic palette. For instance, in C major, borrowing chords from C minor like Eb or Ab introduces new emotional colors without changing the tonal center. To use it on guitar, take a simple progression in C major (C–F–G) and swap F for Fm or Am for Ab. Play the progression and notice how the mood shifts while the melody remains recognizable. Start small, borrowing one chord at a time, and gradually experiment with multiple borrowed chords to add depth and surprise.`,
+    quiz: [
+      { question: 'Modal interchange borrows chords from _____ modes.', options: ['Unrelated', 'Parallel', 'Higher', 'Static'], correctAnswer: 1 },
+      { question: 'Does modal interchange change the tonal center (key)?', options: ['Yes', 'No', 'Only in major', 'Only in minor'], correctAnswer: 1 },
+      { question: 'Borrowing a bVI chord (Ab) in C major is an example of:', options: ['Inversion', 'Modal interchange', 'Secondary dominant', 'Tuning'], correctAnswer: 1 }
+    ]
+  },
+  'Chromatic Harmony (Advanced)': {
+    title: 'Chromatic Harmony',
+    content: `Chromatic harmony introduces chords that don’t belong to the home key but create smooth motion through voice leading. The focus is on moving individual notes smoothly rather than staying “in key.” On guitar, this can be practiced by connecting chords via half-step motion. For example, in C major: C–C#dim–Dm7. Each step moves logically in terms of pitch, even though the chords don’t all belong to C major. Gradually integrate chromatic chords into progressions, always paying attention to smooth note movement and voice leading. This technique allows subtle color shifts and surprising resolutions without sounding random.`,
+    quiz: [
+      { question: 'Chromatic harmony focuses on smooth _____ .', options: ['Volume', 'Voice leading', 'Tempo', 'Dynamics'], correctAnswer: 1 },
+      { question: 'Chromatic chords often belong to _____ keys.', options: ['Home', 'Other', 'No', 'Loud'], correctAnswer: 1 },
+      { question: 'Half-step motion helps chromatic chords sound _____ .', options: ['Random', 'Logical', 'Broken', 'Fast'], correctAnswer: 1 }
+    ]
+  },
+  'Upper-Structure Triads': {
+    title: 'Upper-Structure Triads',
+    content: `Upper-structure triads sit on top of a base chord to highlight tensions such as 9ths, 11ths, or 13ths, making complex chords playable and harmonically rich. For example, playing a D major triad (D–F#–A) over a C7 chord emphasizes #11 and 13 tensions. Guitarists use this approach to imply extended chords without full voicings. To practice, pick a base chord like C7 and experiment with different triads on top. Focus on hearing which notes create tension and how they resolve. Over time, you’ll develop a vocabulary of triads that can be layered over multiple chords to quickly imply sophisticated harmony.`,
+    quiz: [
+      { question: 'Upper-structure triads highlight _____ .', options: ['Roots', 'Tensions (extensions)', 'Bass notes', 'Dynamics'], correctAnswer: 1 },
+      { question: 'They allow guitarists to imply complex chords without full _____ .', options: ['Strings', 'Voicings', 'Amps', 'Picks'], correctAnswer: 1 },
+      { question: 'A D major triad over C7 chord implies which tension?', options: ['b9', '#11', 'b5', 'Natural 7'], correctAnswer: 1 }
+    ]
+  },
+  'Poly-Chords': {
+    title: 'Poly-Chords',
+    content: `Poly-chords involve stacking two independent chords at the same time, producing dense, layered textures. For instance, a G major over C major creates C in the bass and G in the higher strings, generating multiple tensions. On guitar, approach this by playing the lower chord on bass strings and the upper chord on higher strings, keeping the voices separate. Experiment with inversions and spacing so that each chord maintains clarity. Poly-chords are especially effective for creating dramatic, modern sounds and can be used to imply multiple harmonic directions simultaneously.`,
+    quiz: [
+      { question: 'Poly-chords involve stacking _____ chords.', options: ['One', 'Two independent', 'Six', 'No'], correctAnswer: 1 },
+      { question: 'They create dense, _____ textures.', options: ['Simple', 'Layered', 'Thin', 'Static'], correctAnswer: 1 },
+      { question: 'On guitar, poly-chords are often voiced across _____ .', options: ['One string', 'Different string sets (bass vs treble)', 'One fret', 'Tuning machines'], correctAnswer: 1 }
+    ]
+  },
+  'Jazz Chord Substitutions': {
+    title: 'Jazz Chord Substitutions',
+    content: `Chord substitutions replace expected chords with alternatives that preserve the harmonic function while creating surprise. A common example is the tritone substitution, where G7 in a ii–V–I in C major is replaced by Db7. To practice, play a ii–V–I (Dm7–G7–Cmaj7), then swap the V chord for its tritone substitute (Db7). Listen to how the resolution still works but the color changes dramatically. Substitutions are essential for enriching jazz standards, reharmonizing melodies, and adding unexpected tension without losing musical direction.`,
+    quiz: [
+      { question: 'Substitutions replace chords while preserving _____ .', options: ['Pitch', 'Harmonic function', 'Volume', 'Lyrics'], correctAnswer: 1 },
+      { question: 'A common substitution is a _____ substitution.', options: ['Major', 'Tritone', 'Static', 'Fast'], correctAnswer: 1 },
+      { question: 'Jazz substitutions help enrich _____ and reharmonize melodies.', options: ['Volume', 'Standards', 'String life', 'Picks'], correctAnswer: 1 }
+    ]
+  },
+  'Negative Harmony': {
+    title: 'Negative Harmony',
+    content: `Negative harmony reflects chords around a tonal axis, inverting interval relationships while maintaining a mirrored harmonic structure. For example, in C major, C–G–Am can become C–F–Ab. Guitarists use negative harmony to generate novel reharmonizations. Start by selecting a simple progression, identify the tonal axis (usually the tonic), then reflect each chord around it. Play slowly, focusing on hearing the inverted relationships. The technique encourages creativity by exploring harmonies that are connected mathematically but feel surprising to the ear.`,
+    quiz: [
+      { question: 'Negative harmony _____ chord intervals around an axis.', options: ['Deletes', 'Inverts', 'Doubles', 'Staticizes'], correctAnswer: 1 },
+      { question: 'Negative harmony uses mirrored _____ structures.', options: ['Visual', 'Harmonic', 'Rhythmic', 'Physical'], correctAnswer: 1 },
+      { question: 'Chords in negative harmony often feel _____ to the ear.', options: ['Predictable', 'Surprising', 'Static', 'Wrong'], correctAnswer: 1 }
+    ]
+  },
+  'Chord–Scale Relationships': {
+    title: 'Chord–Scale Relationships',
+    content: `Chord–scale theory matches scales to chords to ensure that melodic improvisation aligns with harmonic content. For instance, over a Cmaj7 chord, you might use C Ionian, Lydian, or major pentatonic, depending on the desired tension or color. To practice, pick a chord, identify the chord tones, then select scales that emphasize those tones. Improvise short lines focusing on highlighting chord tones on strong beats while using passing tones for color. This method provides melodic freedom while keeping improvisation harmonically sound.`,
+    quiz: [
+      { question: 'Chord-scale theory ensures improvisation aligns with _____ content.', options: ['Rhythmic', 'Harmonic', 'Volume', 'Pitch only'], correctAnswer: 1 },
+      { question: 'Chord tones should be highlighted on _____ beats.', options: ['Weak', 'Strong', 'No', 'Off'], correctAnswer: 1 },
+      { question: 'This theory provides melodic _____ .', options: ['Stiffness', 'Freedom', 'Limits', 'Silence'], correctAnswer: 1 }
+    ]
+  },
+  'Symmetrical Scales': {
+    title: 'Symmetrical Scales',
+    content: `Symmetrical scales repeat interval patterns consistently, such as the whole-tone scale (C–D–E–F#–G#–A#–C) or diminished scale (C–D–D#–F–F#–G#–A–B–C). Because of their symmetry, the same shapes and patterns can be shifted around the fretboard without losing structure. To practice, map a symmetrical scale across the neck, then create licks or motifs using the repeating shapes. Experiment by modulating quickly between chords or tonal centers—the symmetry allows effortless harmonic reinterpretation.`,
+    quiz: [
+      { question: 'Symmetrical scales repeat _____ consistently.', options: ['Notes', 'Interval patterns', 'Dynamics', 'Volume'], correctAnswer: 1 },
+      { question: 'Shapes of symmetrical scales can be _____ around the neck.', options: ['Lost', 'Shifted', 'Broken', 'Deleted'], correctAnswer: 1 },
+      { question: 'Symmetry allows for effortless harmonic _____ .', options: ['Silence', 'Reinterpretation', 'Static sound', 'Complexity'], correctAnswer: 1 }
+    ]
+  },
+  'Bebop Scales': {
+    title: 'Bebop Scales',
+    content: `Bebop scales add passing tones so chord tones always align with strong beats, which enhances swing phrasing. For example, C major bebop adds a chromatic passing tone between G and A. Guitarists use this to create lines that sound rhythmically “in the pocket” even over fast chord changes. To practice, play the scale along a progression, making sure the chord tones land on downbeats while passing tones fall on weaker beats. This approach keeps melodies melodic and harmonically clear while retaining rhythmic complexity.`,
+    quiz: [
+      { question: 'Bebop scales add _____ tones.', options: ['Root', 'Passing', 'Silent', 'Broken'], correctAnswer: 1 },
+      { question: 'Bebop scales ensure _____ tones land on strong beats.', options: ['Accidental', 'Chord', 'Random', 'Drum'], correctAnswer: 1 },
+      { question: 'This technique helps lines sound rhythmically _____ .', options: ['Out of time', 'In the pocket', 'Stiff', 'Simple'], correctAnswer: 1 }
+    ]
+  },
+  'Exotic Scales': {
+    title: 'Exotic Scales',
+    content: `Exotic scales introduce unusual interval patterns to evoke cultural or emotional colors, such as Hungarian minor, Phrygian dominant, or Japanese scales. They are meant to stand out, not overwhelm. To practice, learn the scale across the fretboard, then create small motifs emphasizing the unique intervals. Try inserting these motifs into familiar chord progressions to create tension or emotional contrast. Start sparingly, using exotic tones as “spice” rather than the foundation.`,
+    quiz: [
+      { question: 'Exotic scales introduce unusual _____ patterns.', options: ['Rhythmic', 'Interval', 'Volume', 'Pitch only'], correctAnswer: 1 },
+      { question: 'Exotic scales evoke specific _____ colors.', options: ['Visual', 'Cultural or emotional', 'Loud', 'Static'], correctAnswer: 1 },
+      { question: 'Exotic tones are often used as _____ rather than foundation.', options: ['Static', 'Spice', 'Volume', 'Roots'], correctAnswer: 1 }
+    ]
+  },
+  'Modal Interchange with Scales': {
+    title: 'Modal Interchange with Scales',
+    content: `When borrowing chords from parallel modes, the melody must reflect those borrowed harmonies. For example, if your C major progression uses an Fm chord borrowed from C minor, the melody can incorporate Eb or Ab to emphasize the borrowed mood. Guitarists practice by improvising lines that highlight borrowed tones over borrowed chords. This ensures the melody feels integrated with the new harmonic colors rather than sticking to the original mode.`,
+    quiz: [
+      { question: 'In modal interchange, the melody should reflect borrowed _____ .', options: ['Volume', 'Harmonies', 'Tempo', 'Strings'], correctAnswer: 1 },
+      { question: 'Borrowing an Fm in C major requires adding which notes to the melody?', options: ['E and A', 'Eb or Ab', 'F and G', 'C only'], correctAnswer: 1 },
+      { question: 'Interchange ensures melodies feel _____ with the new colors.', options: ['Conflicted', 'Integrated', 'Random', 'Static'], correctAnswer: 1 }
+    ]
+  },
+  'Scale Superimposition': {
+    title: 'Scale Superimposition',
+    content: `Scale superimposition involves playing a scale over a chord that doesn’t naturally belong to it, creating tension that resolves when the harmony aligns. For instance, playing an E Phrygian scale over a Cmaj7 chord introduces dissonance and exotic color. To practice, pick a chord and an unrelated scale, emphasize dissonant notes, then resolve to chord tones to hear the release. This technique allows advanced improvisers to create tension, explore outside ideas, and resolve them musically.`,
+    quiz: [
+      { question: 'Superimposition plays a scale over a(n) _____ chord.', options: ['Related', 'Unrelated', 'Identical', 'Major only'], correctAnswer: 1 },
+      { question: 'Superimposition creates _____ that must be resolved.', options: ['Silence', 'Tension', 'Boredom', 'Volume'], correctAnswer: 1 },
+      { question: 'This technique allows improvisers to explore _____ ideas.', options: ['Inside', 'Outside', 'Simple', 'Static'], correctAnswer: 1 }
+    ]
+  },
+  'Cross-Rhythms': {
+    title: 'Cross-Rhythms',
+    content: `Cross-Rhythms create tension by accenting beats against the natural pulse. Imagine playing a 3-beat pattern over a 4/4 groove—your hand or chord hits emphasize “off” beats. To practice, pick a simple 4/4 riff and accent every third note, keeping your foot tapping the steady pulse. Feel the push and pull; that friction is the magic.`,
+    quiz: [
+      { question: 'Cross-rhythms accent beats _____ the natural pulse.', options: ['With', 'Against', 'Beside', 'Inside'], correctAnswer: 1 },
+      { question: 'Cross-rhythms create rhythmic _____ .', options: ['Stiffness', 'Tension/Friction', 'Boredom', 'Silence'], correctAnswer: 1 },
+      { question: 'A common cross-rhythm pattern is _____ over a 4/4 groove.', options: ['4 beats', '3 beats', '1 beat', 'No beats'], correctAnswer: 1 }
+    ]
+  },
+  'Polymeter': {
+    title: 'Polymeter',
+    content: `Polymeter layers different meters at once, like 4/4 in your strumming hand while tapping 3/8 with your other. Unlike polyrhythms, the meters don’t reset together—they resolve at different times. Start by combining a 3-bar phrase over a 4-bar loop. Count carefully, then slowly stretch it across multiple cycles until you internalize the long-term tension.`,
+    quiz: [
+      { question: 'Polymeter layers different _____ simultaneously.', options: ['Notes', 'Meters', 'Strings', 'Picks'], correctAnswer: 1 },
+      { question: 'Do polymeters reset together every measure?', options: ['Yes', 'No', 'Only in 4/4', 'Only in 3/4'], correctAnswer: 1 },
+      { question: 'Polymeter creates _____ rhythmic tension.', options: ['Short-term', 'Long-term', 'No', 'Volume-based'], correctAnswer: 1 }
+    ]
+  },
+  'Advanced Rhythmic Improvisation': {
+    title: 'Advanced Rhythmic Improvisation',
+    content: `Advanced Rhythmic Improvisation flips melody-first thinking. Start by clapping or tapping complex rhythms, then add notes afterward. Use rests, syncopation, and unexpected accents to make the driver rhythm. On guitar, improvise riffs where the groove dictates your note choice, not the other way around. Space is as important as sound.`,
+    quiz: [
+      { question: 'This technique flips _____ thinking.', options: ['Rhythm-first', 'Melody-first', 'Volume-first', 'Physical'], correctAnswer: 1 },
+      { question: 'In advanced improvisation, the _____ dictates note choice.', options: ['Note', 'Groove', 'Scale', 'Teacher'], correctAnswer: 1 },
+      { question: 'Space is just as important as _____ .', options: ['Volume', 'Sound', 'Speed', 'Pitch'], correctAnswer: 1 }
+    ]
+  },
+  'Afro-Cuban Rhythms': {
+    title: 'Afro-Cuban Rhythms',
+    content: `Afro-Cuban Rhythms are all about clave—a repeating, guiding pattern that other rhythms dance around. Guitarists can practice by first learning the 3-2 or 2-3 clave pattern with a metronome or hand claps, then layering riffs on top, making sure the accents respect the underlying structure. It’s tension, release, and interlocking motion in real time.`,
+    quiz: [
+      { question: 'What is the guiding pattern in Afro-Cuban rhythms?', options: ['Scale', 'Clave', 'Tempo', 'Volume'], correctAnswer: 1 },
+      { question: 'Common clave patterns are 3-2 or _____ .', options: ['4-1', '2-3', '1-5', '6-2'], correctAnswer: 1 },
+      { question: 'Rhythms in this style involve _____ motion in real time.', options: ['Broken', 'Interlocking', 'Static', 'Fast'], correctAnswer: 1 }
+    ]
+  },
+  'Rhythmic Layering (Advanced)': {
+    title: 'Rhythmic Layering',
+    content: `Rhythmic layering builds depth by stacking simple patterns. Play one hand (or part of the guitar) in one rhythm, another part in a complementary rhythm. Start small: a repeating 4/4 chord pattern on low strings while fingerpicking a 3-note motif on higher strings. The key is space: don’t overcrowd, let the layers breathe.`,
+    quiz: [
+      { question: 'Rhythmic layering builds depth by stacking _____ patterns.', options: ['Complex', 'Simple', 'Loud', 'Fast'], correctAnswer: 1 },
+      { question: 'Complementary rhythms are played by different _____ of the instrument.', options: ['Colors', 'Parts/Hands', 'Weights', 'Brands'], correctAnswer: 1 },
+      { question: 'The key to rhythmic layering is to let the layers _____ .', options: ['Overlap', 'Breathe', 'Clash', 'Stop'], correctAnswer: 1 }
+    ]
+  },
+
+  // ========================================
+  // ========== EXPERT LEVEL ================
+  // ========================================
+
+  'Microtonal Concepts': {
+    title: 'Microtonal Concepts',
+    content: `Microtonal Concepts are about notes between the frets. This isn’t just novelty—it’s emotional nuance. Use bends, slides, and wide vibrato to “micro-tune” phrases. Alternate tunings, fretless guitars, or even small capo adjustments let you explore quarter tones or other unusual divisions. Play a chord, bend one note, and suddenly the same harmony feels tense, yearning, or exotic.`,
+    quiz: [
+      { question: 'Microtonal concepts involve notes _____ frets.', options: ['On', 'Between', 'Behind', 'Inside'], correctAnswer: 1 },
+      { question: 'Microtonal nuances are achieved through bends, slides, and _____ .', options: ['Strumming', 'Vibrato', 'Muting', 'Breaking strings'], correctAnswer: 1 },
+      { question: 'Microtonality adds emotional _____ to harmony.', options: ['Boredom', 'Nuance', 'Volume', 'Static feel'], correctAnswer: 1 }
+    ]
+  },
+  'Advanced Rhythmic Displacement': {
+    title: 'Advanced Rhythmic Displacement',
+    content: `Advanced Rhythmic Displacement is taking a rhythm and sliding it across phrases so the resolution happens much later than expected. It’s like stretching a rubber band of time. Start by playing a simple riff but begin it on the “wrong” beat or one bar later, then expand it over multiple bars. Focus on your internal pulse—the groove stays steady underneath while the motif floats unpredictably.`,
+    quiz: [
+      { question: 'Displacement slides a rhythm across _____ .', options: ['Strings', 'Phrases', 'Guitars', 'Fretboards'], correctAnswer: 1 },
+      { question: 'Resolution in displacement happens _____ than expected.', options: ['Earlier', 'Later', 'Simultaneously', 'Never'], correctAnswer: 1 },
+      { question: 'A displacement motif floats over a steady _____ .', options: ['Chord', 'Internal pulse/groove', 'Volume', 'Rest'], correctAnswer: 1 }
+    ]
+  },
+  'Contemporary Harmonic Theory': {
+    title: 'Contemporary Harmonic Theory',
+    content: `Contemporary Harmonic Theory throws out traditional “rules.” Harmony becomes about texture, density, and motion. Stack chords for color rather than function, explore unusual intervals, or let dissonance linger. On guitar, layer chords across strings, use open voicings, and let unresolved tensions breathe. Listen more for effect than “correctness.”`,
+    quiz: [
+      { question: 'Contemporary harmony prioritizes _____ over traditional rules.', options: ['Speed', 'Texture, density, and motion', 'Volume', 'Tuning'], correctAnswer: 1 },
+      { question: 'In this theory, you should listen for _____ .', options: ['Errors', 'Effect', 'Rules', 'Standard triads'], correctAnswer: 1 },
+      { question: 'Harmony is used for _____ rather than function.', options: ['Volume', 'Color', 'Tuning', 'Notation'], correctAnswer: 1 }
+    ]
+  },
+  'Compositional Analysis': {
+    title: 'Compositional Analysis',
+    content: `Compositional Analysis is your secret weapon: break music down like a detective. Track motifs, rhythmic patterns, harmonic pacing, and how textures evolve. Then steal, mutate, and recombine these ideas in your own playing. Play a short motif, repeat it with small twists, shift its rhythm, or drop it into a different harmonic context to see how structure creates magic.`,
+    quiz: [
+      { question: 'Compositional analysis involves breaking music down like a _____ .', options: ['Machine', 'Detective', 'Fan', 'Metronome'], correctAnswer: 1 },
+      { question: 'Analysis tracks motifs, rhythms, and harmonic _____ .', options: ['Brand', 'Pacing', 'Volume', 'Strings'], correctAnswer: 1 },
+      { question: 'Structure is used to create _____ in your playing.', options: ['Complexity', 'Magic', 'Noise', 'Speed'], correctAnswer: 1 }
+    ]
+  },
+  'Advanced Modulation Techniques': {
+    title: 'Advanced Modulation Techniques',
+    content: `Advanced modulation techniques involve complex key changes that go beyond simple pivot chord modulation. These include common-tone modulation (holding one note while changing the harmony around it), enharmonic modulation (reinterpreting a chord enharmonically to shift to a distant key), and direct modulation (abruptly changing key without preparation). Expert guitarists use these techniques to create dramatic harmonic shifts, evoke different emotions, and maintain listener interest across long compositions. To practice, take a simple progression and experiment with modulating to distantly related keys using different techniques. Listen for how each type of modulation creates different feelings—smooth, jarring, or surprising—and develop the ear to recognize when each is appropriate.`,
+    quiz: [
+      { question: 'Advanced modulation techniques involve _____ key changes.', options: ['Simple', 'Complex', 'No', 'Random'], correctAnswer: 1 },
+      { question: 'Common-tone modulation holds one _____ while changing harmony.', options: ['Chord', 'Note', 'Key', 'Scale'], correctAnswer: 1 },
+      { question: 'Direct modulation changes key _____ preparation.', options: ['With extensive', 'Without', 'Through gradual', 'During'], correctAnswer: 1 }
+    ]
+  },
+  'Advanced Reharmonization': {
+    title: 'Advanced Reharmonization',
+    content: `Advanced Reharmonization is about changing the chords under a melody while keeping the tune recognizable. To try it, take a simple song and swap a chord for another that shares some notes with it (e.g., replace C major with A minor). You can also move all chords up or down by the same interval (parallelism) or add chromatic passing chords to make it sound fresh.`,
+    quiz: [
+      { question: 'Reharmonization changes chords while keeping the melody _____ .', options: ['Silent', 'Recognizable', 'Random', 'Loud'], correctAnswer: 1 },
+      { question: 'A common technique is swapping chords that share _____ .', options: ['Strings', 'Notes', 'Weights', 'Frets'], correctAnswer: 1 },
+      { question: 'Moving chords by the same interval is called _____ .', options: ['Inversion', 'Parallelism', 'Suspension', 'Dissonance'], correctAnswer: 1 }
+    ]
+  },
+  'Atonal Chord Systems': {
+    title: 'Atonal Chord Systems',
+    content: `Atonal Chord Systems ignore a “home key.” Instead of thinking about chord functions, focus on shapes and intervals. On guitar, try stacking notes in unusual ways (like minor 2nds or augmented 4ths) and see how they sound across different strings or positions.`,
+    quiz: [
+      { question: 'Atonal systems ignore a _____ .', options: ['Chord', 'Home key', 'Scale', 'Rhythm'], correctAnswer: 1 },
+      { question: 'In atonal music, focus on shapes and _____ .', options: ['Function', 'Intervals', 'Resolution', 'Volume'], correctAnswer: 1 },
+      { question: 'Atonal chords often use _____ interval stackings.', options: ['Standard', 'Unusual', 'Triadic', 'Major'], correctAnswer: 1 }
+    ]
+  },
+  'Non-Functional Harmony': {
+    title: 'Non-Functional Harmony',
+    content: `Non-Functional Harmony uses chords for color instead of tension/resolution. Play a series of chords that don’t “lead” anywhere, just for the mood they create. Listen carefully to how the notes move and try keeping the sound interesting by spreading the notes across octaves or strings.`,
+    quiz: [
+      { question: 'Non-functional harmony uses chords for _____ .', options: ['Resolution', 'Color and mood', 'Endings only', 'Static volume'], correctAnswer: 1 },
+      { question: 'These chords don\'t _____ anywhere traditionally.', options: ['Follow', 'Lead', 'Stop', 'Wait'], correctAnswer: 1 },
+      { question: 'Interest is maintained by spreading notes across _____ .', options: ['Amps', 'Octaves or strings', 'Songs', 'Picks'], correctAnswer: 1 }
+    ]
+  },
+  'Microtonal Chords': {
+    title: 'Microtonal Chords',
+    content: `Microtonal Chords include pitches between normal frets. To explore them, bend strings slightly within a chord, slide into notes, or experiment with alternate tunings. Fretless guitars make this easier, but even bending one note in a chord creates a new texture.`,
+    quiz: [
+      { question: 'Microtonal chords use pitches _____ standard frets.', options: ['On', 'Between', 'Behind', 'Inside'], correctAnswer: 1 },
+      { question: 'Bending a single note in a chord creates a new _____ .', options: ['Volume', 'Texture', 'Note name', 'Tempo'], correctAnswer: 1 },
+      { question: 'Which instrument makes microtonal chords easiest?', options: ['Acoustic', 'Fretless guitar', 'Electric', 'Bass'], correctAnswer: 1 }
+    ]
+  },
+  'Original Harmonic Systems': {
+    title: 'Original Harmonic Systems',
+    content: `Original Harmonic Systems is creating your own chord language. Start by picking a few intervals or shapes you like, repeat them in different positions, and build a chord vocabulary. Over time, these shapes become your personal harmonic style.`,
+    quiz: [
+      { question: 'Creating an original system involves building a custom _____ .', options: ['Guitar', 'Chord vocabulary/language', 'Metronome', 'Tuner'], correctAnswer: 1 },
+      { question: 'Style is built by repeating preferred _____ in different positions.', options: ['Lyrics', 'Intervals or shapes', 'Songs', 'Volume settings'], correctAnswer: 1 },
+      { question: 'These systems define your _____ harmonic style.', options: ['Generic', 'Personal', 'Slow', 'Standard'], correctAnswer: 1 }
+    ]
+  },
+  'Microtonal Scales': {
+    title: 'Microtonal Scales',
+    content: `Microtonal Scales use notes between the usual guitar frets. To try them, bend notes slightly up or down from normal pitches, or experiment with tunings that divide the strings differently. Start by sliding between two notes to hear the “in-between” sound.`,
+    quiz: [
+      { question: 'Microtonal scales use the "_____ sound" between standard notes.', options: ['Outer', 'In-between', 'Static', 'Muted'], correctAnswer: 1 },
+      { question: 'A simple way to find microtones is to _____ notes slightly.', options: ['Delete', 'Bend', 'Palm mute', 'Record'], correctAnswer: 1 },
+      { question: 'Microtonal scales can be explored by dividing _____ differently.', options: ['Songs', 'Strings/Tunings', 'Picks', 'Amps'], correctAnswer: 1 }
+    ]
+  },
+  'Synthetic Scales': {
+    title: 'Synthetic Scales',
+    content: `Synthetic Scales are made by picking intervals you like instead of using traditional scales. To try one, pick a starting note and decide the steps (whole, half, or larger), then play up and down the scale. Use it for improvising or creating a unique melody.`,
+    quiz: [
+      { question: 'Synthetic scales use custom _____ choices.', options: ['Note name', 'Interval', 'Volume', 'Speed'], correctAnswer: 1 },
+      { question: 'Synthetic scales are used for _____ and unique melodies.', options: ['Boring practice', 'Improvising', 'Tuning only', 'Silence'], correctAnswer: 1 },
+      { question: 'A synthetic scale is defined by its custom _____ sequence.', options: ['Strumming', 'Step (Whole/Half)', 'Lyric', 'Weight'], correctAnswer: 1 }
+    ]
+  },
+  'Scale Systems Across Genres': {
+    title: 'Scale Systems Across Genres',
+    content: `Scale Systems Across Genres means different styles of music favor different scales. For example, blues often uses pentatonic scales, jazz uses modes like Dorian, and rock favors minor or major pentatonics. To practice, pick a genre, learn its common scales, and improvise using them over backing tracks.`,
+    quiz: [
+      { question: 'Different musical styles favor different _____ .', options: ['Guitars', 'Scale systems', 'Volume settings', 'Pick brands'], correctAnswer: 1 },
+      { question: 'Blues music often favors which scale?', options: ['Chromatic', 'Pentatonic', 'Whole tone', 'Augmented'], correctAnswer: 1 },
+      { question: 'Jazz frequently uses modes like _____ .', options: ['Ionian', 'Dorian', 'Pentatonic only', 'Muted'], correctAnswer: 1 }
+    ]
+  },
+  'Custom Scale Creation': {
+    title: 'Custom Scale Creation',
+    content: `Custom Scale Creation is making your own scale to match your musical idea. Start by choosing a root note, pick a series of steps that sound good to you, then play it over chords to see how it fits. Adjust until it feels natural and expressive.`,
+    quiz: [
+      { question: 'Custom scales are created to match your _____ .', options: ['Outfit', 'Musical idea', 'String gauge', 'Hand size'], correctAnswer: 1 },
+      { question: 'Creating a scale starts with choosing a _____ .', options: ['Pick', 'Root note', 'Volume', 'Tuner'], correctAnswer: 1 },
+      { question: 'A custom scale should be tested over _____ to see how it fits.', options: ['Silence', 'Chords', 'Lyrics', 'Noise'], correctAnswer: 1 }
+    ]
+  },
+  'Advanced Scalar Improvisation Theory': {
+    title: 'Advanced Scalar Improvisation Theory',
+    content: `Advanced Scalar Improvisation Theory is about creating solos that are both structured and expressive, using scales thoughtfully rather than randomly. To do it, first choose scales based on the musical context, desired mood, and register of the instrument. Plan phrasing so that note sequences form coherent melodic shapes and arcs over longer passages, not just one measure at a time. Incorporate rhythm intentionally—vary note lengths, syncopation, and rests to add tension and flow. Practice by mapping scales across the fretboard, experimenting with motifs, and shaping ideas so they develop organically, balancing technical accuracy with expressive spontaneity.`,
+    quiz: [
+      { question: 'Scalar improvisation should be both structured and _____ .', options: ['Random', 'Expressive', 'Static', 'Silent'], correctAnswer: 1 },
+      { question: 'Phrasing should form coherent melodic _____ over long passages.', options: ['Stops', 'Shapes and arcs', 'Dashes', 'Errors'], correctAnswer: 1 },
+      { question: 'Solos should balance technical accuracy with _____ .', options: ['Speed only', 'Expressive spontaneity', 'High volume', 'Wrong notes'], correctAnswer: 1 }
+    ]
+  },
+  'Advanced Polyrhythm Systems': {
+    title: 'Advanced Polyrhythm Systems',
+    content: `Advanced Polyrhythm Systems layer multiple independent rhythms with different subdivisions to create complex, interlocking patterns. To use them, pick a base rhythm (like 4/4) and a contrasting rhythm (like 5 beats in the same span), then align their cycles, which only perfectly sync at the least common multiple of their lengths. Practice each rhythm separately, then together slowly, gradually adding accents, dynamics, or instrumentation to distinguish layers. Think of it as an ensemble: stacking multiple rhythms together on one guitar.`,
+    quiz: [
+      { question: 'Advanced systems layer independent rhythms with different _____ .', options: ['Notes', 'Subdivisions', 'Pitches', 'Tunings'], correctAnswer: 1 },
+      { question: 'Polyrhythms perfectly sync at the _____ common multiple of their lengths.', options: ['Highest', 'Least', 'Middle', 'No'], correctAnswer: 1 },
+      { question: 'This approach treats the guitar like a(n) _____ .', options: ['Single note', 'Ensemble', 'Metronome', 'Tuner'], correctAnswer: 1 }
+    ]
+  },
+  'Experimental Rhythm Theory': {
+    title: 'Experimental Rhythm Theory',
+    content: `Experimental Rhythm Theory explores unconventional timing by breaking standard rhythmic patterns to create new textures and feels. It involves varying time signatures, using polyrhythms (like 3 against 4), shifting accents to emphasize unexpected beats, and manipulating tempo through sudden changes or gradual accelerando and decelerando. Silence and rests are also key, adding tension and unpredictability. Essentially, it’s about intentionally disrupting regular beats and layering contrasting rhythms to experiment with innovative grooves.`,
+    quiz: [
+      { question: 'Experimental theory explores _____ timing.', options: ['Standard', 'Unconventional', 'Simple', 'Slow'], correctAnswer: 1 },
+      { question: 'Tempo can be manipulated through sudden changes or gradual _____ .', options: ['Stops', 'Accelerando and decelerando', 'Volume drops', 'Note breaks'], correctAnswer: 1 },
+      { question: 'Rhythmic tension is added through silence and _____ .', options: ['Loud sounds', 'Rests', 'Chords', 'Bending'], correctAnswer: 1 }
+    ]
+  },
+  'Microtiming Control': {
+    title: 'Microtiming Control',
+    content: `Microtiming involves deliberate manipulation of note placement relative to the beat. This is the core of music feelings. Expert guitarists control microtiming with consistency and intent. Remember, when playing on stage, sound travels so try to keep your harmony close.`,
+    quiz: [
+      { question: 'Microtiming is the core of musical _____ .', options: ['Volume', 'Feelings/Soul', 'Pitch', 'Notation'], correctAnswer: 1 },
+      { question: 'Microtiming involves note _____ relative to the beat.', options: ['Name', 'Placement', 'Size', 'String'], correctAnswer: 1 },
+      { question: 'Experts control microtiming with consistency and _____ .', options: ['Accident', 'Intent', 'Force', 'Fear'], correctAnswer: 1 }
+    ]
+  },
+  'Genre-Fusion Rhythms': {
+    title: 'Genre-Fusion Rhythms',
+    content: `Genre fusion combines rhythmic systems from different traditions. Guitarists must respect underlying rhythmic hierarchies to avoid rhythmic incoherence. To combine genres, focus on finding rhythmic notes or chords that flow easily from one genre to the next.`,
+    quiz: [
+      { question: 'Genre fusion combines rhythmic systems from different _____ .', options: ['Guitars', 'Traditions', 'Volumes', 'Strings'], correctAnswer: 1 },
+      { question: 'To avoid incoherence, guitarists must respect rhythmic _____ .', options: ['Speeds', 'Hierarchies', 'Volume limits', 'Pick brands'], correctAnswer: 1 },
+      { question: 'Fusion requires finding patterns that _____ easily between genres.', options: ['Break', 'Flow', 'Stop', 'Clash'], correctAnswer: 1 }
+    ]
+  },
+  'Original Rhythmic Frameworks': {
+    title: 'Original Rhythmic Frameworks',
+    content: `Expert rhythm involves designing personal rhythmic systems. Create and design your own rhythms to influence songs you create.`,
+    quiz: [
+      { question: 'Expert rhythm involves designing _____ rhythmic systems.', options: ['Standard', 'Personal', 'Silent', 'Simple'], correctAnswer: 1 },
+      { question: 'Original frameworks influence the _____ you create.', options: ['Guitars', 'Songs', 'Picks', 'Strings'], correctAnswer: 1 },
+      { question: 'Creating frameworks is a(n) _____ level rhythmic skill.', options: ['Novice', 'Expert', 'Beginner', 'Elementary'], correctAnswer: 1 }
+    ]
+  }
+};
+
+// ============================================================================
+// ========================= UTILITY FUNCTION =================================
+// ============================================================================
+
+export function getLessonContent(name: string, type: 'technique' | 'theory'): LessonContent | null {
+  const contentMap = type === 'technique' ? techniqueContent : theoryContent;
+  
+  // Exact match
+  if (contentMap[name]) {
+    return contentMap[name];
+  }
+  
+  // Case-insensitive partial match
+  const lowerName = name.toLowerCase();
+  for (const [key, value] of Object.entries(contentMap)) {
+    if (key.toLowerCase().includes(lowerName) || lowerName.includes(key.toLowerCase())) {
+      return value;
+    }
+  }
+  
+  return null;
+}

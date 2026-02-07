@@ -1,0 +1,44 @@
+[
+  {
+    "id": "challenge_1",
+    "name": "Chord Master Challenge",
+    "description": "Play 100 different chord progressions this week",
+    "type": "weekly",
+    "target": 100,
+    "metric": "chord_progressions",
+    "pointReward": 500,
+    "bonusReward": "Gold Badge",
+    "startDate": "2025-12-30T11:55:30.803Z",
+    "endDate": "2026-01-04T11:55:30.803Z",
+    "participants": {},
+    "isActive": true
+  },
+  {
+    "id": "challenge_2",
+    "name": "Practice Streak",
+    "description": "Practice for 7 days in a row",
+    "type": "weekly",
+    "target": 7,
+    "metric": "streak_days",
+    "pointReward": 300,
+    "bonusReward": "Streak Badge",
+    "startDate": "2025-12-30T11:55:30.803Z",
+    "endDate": "2026-01-04T11:55:30.803Z",
+    "participants": {},
+    "isActive": true
+  },
+  {
+    "id": "challenge_3",
+    "name": "Song Learner",
+    "description": "Learn 3 new songs this week",
+    "type": "weekly",
+    "target": 3,
+    "metric": "songs_learned",
+    "pointReward": 400,
+    "bonusReward": "Song Master Badge",
+    "startDate": "2025-12-30T11:55:30.803Z",
+    "endDate": "2026-01-04T11:55:30.803Z",
+    "participants": {},
+    "isActive": true
+  }
+]

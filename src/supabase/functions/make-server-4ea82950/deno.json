@@ -1,0 +1,13 @@
+{
+  "imports": {
+    "jsr:@supabase/supabase-js@2": "https://esm.sh/jsr/@supabase/supabase-js@2",
+    "npm:hono": "https://esm.sh/hono@4.0.10",
+    "npm:hono/cors": "https://esm.sh/hono@4.0.10/cors",
+    "npm:hono/logger": "https://esm.sh/hono@4.0.10/logger"
+  },
+  "compilerOptions": {
+    "allowJs": true,
+    "lib": ["deno.window", "dom"],
+    "strict": true
+  }
+}
