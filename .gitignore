@@ -2,7 +2,6 @@
 node_modules/
 
 # Build outputs
-build/
 dist/
 
 # Environment
@@ -16,7 +15,6 @@ __pycache__/
 *.pyc
 
 # iOS
-ios/App/App/public/
 ios/App/Pods/
 *.xcworkspace/xcuserdata/
 *.xcodeproj/xcuserdata/
