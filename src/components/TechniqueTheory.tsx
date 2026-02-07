@@ -250,7 +250,7 @@ export function TechniqueTheory({ onSectionChange, initialTab = 'technique' }: T
           <div className="flex gap-2">
             <button
               onClick={() => setMainTab('technique')}
-              className={`flex-1 py-3 px-4 rounded-lg font-medium transition-all duration-200 ${mainTab === 'technique' ? 'shadow-md' : ''}`}
+              className={`flex-1 min-w-0 py-2.5 px-2 sm:py-3 sm:px-4 rounded-lg text-sm sm:text-base font-medium transition-all duration-200 ${mainTab === 'technique' ? 'shadow-md' : ''}`}
               style={{
                 backgroundColor: mainTab === 'technique' ? 'rgb(239, 68, 68)' : 'transparent',
                 color: mainTab === 'technique' ? 'white' : 'rgb(107, 114, 128)'
@@ -260,7 +260,7 @@ export function TechniqueTheory({ onSectionChange, initialTab = 'technique' }: T
             </button>
             <button
               onClick={() => setMainTab('theory')}
-              className={`flex-1 py-3 px-4 rounded-lg font-medium transition-all duration-200 ${mainTab === 'theory' ? 'shadow-md' : ''}`}
+              className={`flex-1 min-w-0 py-2.5 px-2 sm:py-3 sm:px-4 rounded-lg text-sm sm:text-base font-medium transition-all duration-200 ${mainTab === 'theory' ? 'shadow-md' : ''}`}
               style={{
                 backgroundColor: mainTab === 'theory' ? 'rgb(59, 130, 246)' : 'transparent',
                 color: mainTab === 'theory' ? 'white' : 'rgb(107, 114, 128)'
@@ -286,11 +286,11 @@ export function TechniqueTheory({ onSectionChange, initialTab = 'technique' }: T
 
           <div className="max-w-6xl mx-auto">
             {/* Technique Navigation Tabs */}
-            <div className="mb-8 bg-white/70 backdrop-blur-sm rounded-xl shadow-sm p-2 relative" style={{ border: '2.5px solid rgb(237, 237, 237)', zIndex: 30 }}>
-              <div className="flex gap-2">
+            <div className="mb-8 bg-white/70 backdrop-blur-sm rounded-xl shadow-sm p-1.5 sm:p-2 relative overflow-hidden" style={{ border: '2.5px solid rgb(237, 237, 237)', zIndex: 30 }}>
+              <div className="flex gap-1 sm:gap-2">
                 <button
                   onClick={() => setTechniqueTab('chords')}
-                  className={`flex-1 py-3 px-4 rounded-lg font-medium transition-all duration-200 ${techniqueTab === 'chords' ? 'shadow-md' : ''}`}
+                  className={`flex-1 min-w-0 py-2.5 px-1.5 sm:py-3 sm:px-4 rounded-lg text-xs sm:text-sm font-medium transition-all duration-200 ${techniqueTab === 'chords' ? 'shadow-md' : ''}`}
                   style={{
                     backgroundColor: techniqueTab === 'chords' ? 'rgb(239, 68, 68)' : 'transparent',
                     color: techniqueTab === 'chords' ? 'white' : 'rgb(107, 114, 128)'
@@ -300,7 +300,7 @@ export function TechniqueTheory({ onSectionChange, initialTab = 'technique' }: T
                 </button>
                 <button
                   onClick={() => setTechniqueTab('strums')}
-                  className={`flex-1 py-3 px-4 rounded-lg font-medium transition-all duration-200 ${techniqueTab === 'strums' ? 'shadow-md' : ''}`}
+                  className={`flex-1 min-w-0 py-2.5 px-1.5 sm:py-3 sm:px-4 rounded-lg text-xs sm:text-sm font-medium transition-all duration-200 ${techniqueTab === 'strums' ? 'shadow-md' : ''}`}
                   style={{
                     backgroundColor: techniqueTab === 'strums' ? 'rgb(249, 115, 22)' : 'transparent',
                     color: techniqueTab === 'strums' ? 'white' : 'rgb(107, 114, 128)'
@@ -310,7 +310,7 @@ export function TechniqueTheory({ onSectionChange, initialTab = 'technique' }: T
                 </button>
                 <button
                   onClick={() => setTechniqueTab('plucks')}
-                  className={`flex-1 py-3 px-4 rounded-lg font-medium transition-all duration-200 ${techniqueTab === 'plucks' ? 'shadow-md' : ''}`}
+                  className={`flex-1 min-w-0 py-2.5 px-1.5 sm:py-3 sm:px-4 rounded-lg text-xs sm:text-sm font-medium transition-all duration-200 ${techniqueTab === 'plucks' ? 'shadow-md' : ''}`}
                   style={{
                     backgroundColor: techniqueTab === 'plucks' ? 'rgb(234, 179, 8)' : 'transparent',
                     color: techniqueTab === 'plucks' ? 'white' : 'rgb(107, 114, 128)'
@@ -320,7 +320,7 @@ export function TechniqueTheory({ onSectionChange, initialTab = 'technique' }: T
                 </button>
                 <button
                   onClick={() => setTechniqueTab('scales')}
-                  className={`flex-1 py-3 px-4 rounded-lg font-medium transition-all duration-200 ${techniqueTab === 'scales' ? 'shadow-md' : ''}`}
+                  className={`flex-1 min-w-0 py-2.5 px-1.5 sm:py-3 sm:px-4 rounded-lg text-xs sm:text-sm font-medium transition-all duration-200 ${techniqueTab === 'scales' ? 'shadow-md' : ''}`}
                   style={{
                     backgroundColor: techniqueTab === 'scales' ? 'rgb(255, 209, 71)' : 'transparent',
                     color: techniqueTab === 'scales' ? 'white' : 'rgb(107, 114, 128)'
@@ -332,7 +332,7 @@ export function TechniqueTheory({ onSectionChange, initialTab = 'technique' }: T
             </div>
 
             {/* Techniques Grid */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 pr-2">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
               {filteredTechniques.map((technique, index) => {
                 const IconComponent = getTechniqueCategoryIcon(technique.category);
                 return (
@@ -420,11 +420,11 @@ export function TechniqueTheory({ onSectionChange, initialTab = 'technique' }: T
           </div>
 
           {/* Theory Navigation Tabs */}
-          <div className="mb-8 bg-white/70 backdrop-blur-sm rounded-xl shadow-sm p-2 relative" style={{ border: '2.5px solid rgb(237, 237, 237)', zIndex: 30 }}>
-            <div className="flex gap-2">
+          <div className="mb-8 bg-white/70 backdrop-blur-sm rounded-xl shadow-sm p-1.5 sm:p-2 relative overflow-hidden" style={{ border: '2.5px solid rgb(237, 237, 237)', zIndex: 30 }}>
+            <div className="flex gap-1 sm:gap-2">
               <button
                 onClick={() => setTheoryTab('basics')}
-                className={`flex-1 py-3 px-4 rounded-lg font-medium transition-all duration-200 ${theoryTab === 'basics' ? 'shadow-md' : ''}`}
+                className={`flex-1 min-w-0 py-2.5 px-1.5 sm:py-3 sm:px-4 rounded-lg text-xs sm:text-sm font-medium transition-all duration-200 ${theoryTab === 'basics' ? 'shadow-md' : ''}`}
                 style={{
                   backgroundColor: theoryTab === 'basics' ? 'rgb(59, 130, 246)' : 'transparent',
                   color: theoryTab === 'basics' ? 'white' : 'rgb(107, 114, 128)'
@@ -434,7 +434,7 @@ export function TechniqueTheory({ onSectionChange, initialTab = 'technique' }: T
               </button>
               <button
                 onClick={() => setTheoryTab('chords')}
-                className={`flex-1 py-3 px-4 rounded-lg font-medium transition-all duration-200 ${theoryTab === 'chords' ? 'shadow-md' : ''}`}
+                className={`flex-1 min-w-0 py-2.5 px-1.5 sm:py-3 sm:px-4 rounded-lg text-xs sm:text-sm font-medium transition-all duration-200 ${theoryTab === 'chords' ? 'shadow-md' : ''}`}
                 style={{
                   backgroundColor: theoryTab === 'chords' ? 'rgb(16, 185, 129)' : 'transparent',
                   color: theoryTab === 'chords' ? 'white' : 'rgb(107, 114, 128)'
@@ -444,7 +444,7 @@ export function TechniqueTheory({ onSectionChange, initialTab = 'technique' }: T
               </button>
               <button
                 onClick={() => setTheoryTab('scales')}
-                className={`flex-1 py-3 px-4 rounded-lg font-medium transition-all duration-200 ${theoryTab === 'scales' ? 'shadow-md' : ''}`}
+                className={`flex-1 min-w-0 py-2.5 px-1.5 sm:py-3 sm:px-4 rounded-lg text-xs sm:text-sm font-medium transition-all duration-200 ${theoryTab === 'scales' ? 'shadow-md' : ''}`}
                 style={{
                   backgroundColor: theoryTab === 'scales' ? 'rgb(168, 85, 247)' : 'transparent',
                   color: theoryTab === 'scales' ? 'white' : 'rgb(107, 114, 128)'
@@ -454,7 +454,7 @@ export function TechniqueTheory({ onSectionChange, initialTab = 'technique' }: T
               </button>
               <button
                 onClick={() => setTheoryTab('rhythm')}
-                className={`flex-1 py-3 px-4 rounded-lg font-medium transition-all duration-200 ${theoryTab === 'rhythm' ? 'shadow-md' : ''}`}
+                className={`flex-1 min-w-0 py-2.5 px-1.5 sm:py-3 sm:px-4 rounded-lg text-xs sm:text-sm font-medium transition-all duration-200 ${theoryTab === 'rhythm' ? 'shadow-md' : ''}`}
                 style={{
                   backgroundColor: theoryTab === 'rhythm' ? 'rgb(99, 102, 241)' : 'transparent',
                   color: theoryTab === 'rhythm' ? 'white' : 'rgb(107, 114, 128)'
@@ -466,7 +466,7 @@ export function TechniqueTheory({ onSectionChange, initialTab = 'technique' }: T
           </div>
 
           {/* Theory Topics Grid */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 pr-2">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
             {filteredTheory.map((topic, index) => {
               const IconComponent = getTheoryCategoryIcon(topic.category);
               return (
