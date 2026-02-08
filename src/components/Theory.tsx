@@ -368,11 +368,11 @@ export function Theory({ onSectionChange }: TheoryProps) {
         </Card>
 
         {/* Navigation Tabs */}
-        <div className="mb-8 bg-white/70 backdrop-blur-sm rounded-xl shadow-sm p-2 relative" style={{ border: '2.5px solid rgb(237, 237, 237)', zIndex: 30 }}>
-          <div className="flex gap-2">
+        <div className="mb-8 bg-white/70 backdrop-blur-sm rounded-xl shadow-sm p-1.5 sm:p-2 relative overflow-hidden" style={{ border: '2.5px solid rgb(237, 237, 237)', zIndex: 30 }}>
+          <div className="flex gap-1 sm:gap-2">
             <button
               onClick={() => setActiveTab('basics')}
-              className={`flex-1 py-3 px-4 rounded-lg font-medium transition-all duration-200 ${activeTab === 'basics' ? 'shadow-md' : ''}`}
+              className={`flex-1 min-w-0 py-2.5 sm:py-3 px-1.5 sm:px-4 rounded-lg text-xs sm:text-sm font-medium transition-all duration-200 truncate ${activeTab === 'basics' ? 'shadow-md' : ''}`}
               style={{
                 backgroundColor: activeTab === 'basics' ? 'rgb(59, 130, 246)' : 'transparent',
                 color: activeTab === 'basics' ? 'white' : 'rgb(107, 114, 128)'
@@ -382,7 +382,7 @@ export function Theory({ onSectionChange }: TheoryProps) {
             </button>
             <button
               onClick={() => setActiveTab('chords')}
-              className={`flex-1 py-3 px-4 rounded-lg font-medium transition-all duration-200 ${activeTab === 'chords' ? 'shadow-md' : ''}`}
+              className={`flex-1 min-w-0 py-2.5 sm:py-3 px-1.5 sm:px-4 rounded-lg text-xs sm:text-sm font-medium transition-all duration-200 truncate ${activeTab === 'chords' ? 'shadow-md' : ''}`}
               style={{
                 backgroundColor: activeTab === 'chords' ? 'rgb(16, 185, 129)' : 'transparent',
                 color: activeTab === 'chords' ? 'white' : 'rgb(107, 114, 128)'
@@ -392,7 +392,7 @@ export function Theory({ onSectionChange }: TheoryProps) {
             </button>
             <button
               onClick={() => setActiveTab('scales')}
-              className={`flex-1 py-3 px-4 rounded-lg font-medium transition-all duration-200 ${activeTab === 'scales' ? 'shadow-md' : ''}`}
+              className={`flex-1 min-w-0 py-2.5 sm:py-3 px-1.5 sm:px-4 rounded-lg text-xs sm:text-sm font-medium transition-all duration-200 truncate ${activeTab === 'scales' ? 'shadow-md' : ''}`}
               style={{
                 backgroundColor: activeTab === 'scales' ? 'rgb(168, 85, 247)' : 'transparent',
                 color: activeTab === 'scales' ? 'white' : 'rgb(107, 114, 128)'
@@ -402,7 +402,7 @@ export function Theory({ onSectionChange }: TheoryProps) {
             </button>
             <button
               onClick={() => setActiveTab('rhythm')}
-              className={`flex-1 py-3 px-4 rounded-lg font-medium transition-all duration-200 ${activeTab === 'rhythm' ? 'shadow-md' : ''}`}
+              className={`flex-1 min-w-0 py-2.5 sm:py-3 px-1.5 sm:px-4 rounded-lg text-xs sm:text-sm font-medium transition-all duration-200 truncate ${activeTab === 'rhythm' ? 'shadow-md' : ''}`}
               style={{
                 backgroundColor: activeTab === 'rhythm' ? 'rgb(99, 102, 241)' : 'transparent',
                 color: activeTab === 'rhythm' ? 'white' : 'rgb(107, 114, 128)'

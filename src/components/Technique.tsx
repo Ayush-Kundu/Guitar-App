@@ -279,11 +279,11 @@ export function Technique({ onSectionChange }: TechniqueProps) {
 
       <div className="max-w-6xl mx-auto">
         {/* Navigation Tabs */}
-        <div className="mb-8 bg-white/70 backdrop-blur-sm rounded-xl shadow-sm p-2 relative" style={{ border: '2.5px solid rgb(237, 237, 237)', zIndex: 30 }}>
-          <div className="flex gap-2">
+        <div className="mb-8 bg-white/70 backdrop-blur-sm rounded-xl shadow-sm p-1.5 sm:p-2 relative overflow-hidden" style={{ border: '2.5px solid rgb(237, 237, 237)', zIndex: 30 }}>
+          <div className="flex gap-1 sm:gap-2">
             <button
               onClick={() => setActiveTab('chords')}
-              className={`flex-1 py-3 px-4 rounded-lg font-medium transition-all duration-200 ${activeTab === 'chords' ? 'shadow-md' : ''}`}
+              className={`flex-1 min-w-0 py-2.5 sm:py-3 px-1.5 sm:px-4 rounded-lg text-xs sm:text-sm font-medium transition-all duration-200 truncate ${activeTab === 'chords' ? 'shadow-md' : ''}`}
               style={{
                 backgroundColor: activeTab === 'chords' ? 'rgb(239, 68, 68)' : 'transparent',
                 color: activeTab === 'chords' ? 'white' : 'rgb(107, 114, 128)'
@@ -293,7 +293,7 @@ export function Technique({ onSectionChange }: TechniqueProps) {
             </button>
             <button
               onClick={() => setActiveTab('strums')}
-              className={`flex-1 py-3 px-4 rounded-lg font-medium transition-all duration-200 ${activeTab === 'strums' ? 'shadow-md' : ''}`}
+              className={`flex-1 min-w-0 py-2.5 sm:py-3 px-1.5 sm:px-4 rounded-lg text-xs sm:text-sm font-medium transition-all duration-200 truncate ${activeTab === 'strums' ? 'shadow-md' : ''}`}
               style={{
                 backgroundColor: activeTab === 'strums' ? 'rgb(249, 115, 22)' : 'transparent',
                 color: activeTab === 'strums' ? 'white' : 'rgb(107, 114, 128)'
@@ -303,7 +303,7 @@ export function Technique({ onSectionChange }: TechniqueProps) {
             </button>
             <button
               onClick={() => setActiveTab('plucks')}
-              className={`flex-1 py-3 px-4 rounded-lg font-medium transition-all duration-200 ${activeTab === 'plucks' ? 'shadow-md' : ''}`}
+              className={`flex-1 min-w-0 py-2.5 sm:py-3 px-1.5 sm:px-4 rounded-lg text-xs sm:text-sm font-medium transition-all duration-200 truncate ${activeTab === 'plucks' ? 'shadow-md' : ''}`}
               style={{
                 backgroundColor: activeTab === 'plucks' ? 'rgb(234, 179, 8)' : 'transparent',
                 color: activeTab === 'plucks' ? 'white' : 'rgb(107, 114, 128)'
@@ -313,7 +313,7 @@ export function Technique({ onSectionChange }: TechniqueProps) {
             </button>
             <button
               onClick={() => setActiveTab('scales')}
-              className={`flex-1 py-3 px-4 rounded-lg font-medium transition-all duration-200 ${activeTab === 'scales' ? 'shadow-md' : ''}`}
+              className={`flex-1 min-w-0 py-2.5 sm:py-3 px-1.5 sm:px-4 rounded-lg text-xs sm:text-sm font-medium transition-all duration-200 truncate ${activeTab === 'scales' ? 'shadow-md' : ''}`}
               style={{
                 backgroundColor: activeTab === 'scales' ? 'rgb(255, 209, 71)' : 'transparent',
                 color: activeTab === 'scales' ? 'white' : 'rgb(107, 114, 128)'
