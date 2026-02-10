@@ -20,11 +20,11 @@ import {
   calculatePointsBreakdown,
   PointsBreakdown
 } from '../utils/progressStorage';
-import { 
-  Music, 
-  Plus, 
-  Play, 
-  Settings, 
+import {
+  Music,
+  Plus,
+  Play,
+  Settings,
   CheckCircle2,
   Target,
   BookOpen,
@@ -42,7 +42,7 @@ interface DashboardProps {
 }
 
 export function Dashboard({ onSectionChange }: DashboardProps) {
-  const { user, awardPoints, calculatePointsForActivity } = useUser();
+  const { user, awardPoints, calculatePointsForActivity, updateUser, getLevelProgressPercentage } = useUser();
   const [progressData, setProgressData] = useState<any>(null);
   const [streak, setStreak] = useState(0);
   const [weeklyMinutes, setWeeklyMinutes] = useState(0);
@@ -52,6 +52,7 @@ export function Dashboard({ onSectionChange }: DashboardProps) {
   const [dailyRoutine, setDailyRoutine] = useState<any>(null);
   const [theoryRoutine, setTheoryRoutine] = useState<any>(null);
   const [pointsBreakdown, setPointsBreakdown] = useState<PointsBreakdown | null>(null);
+  const LEVEL_ORDER = ['novice', 'beginner', 'elementary', 'intermediate', 'proficient', 'advanced', 'expert'];
 
   // Function to refresh all data
   const refreshDashboardData = () => {
@@ -100,6 +101,18 @@ export function Dashboard({ onSectionChange }: DashboardProps) {
       window.removeEventListener('focus', handleFocus);
     };
   }, [user]);
+
+  // Auto level-up when progress reaches 100%
+  useEffect(() => {
+    if (user) {
+      const levelProgress = getLevelProgressPercentage();
+      const currentIndex = LEVEL_ORDER.indexOf(user.level);
+      if (levelProgress >= 100 && currentIndex < LEVEL_ORDER.length - 1) {
+        const newLevel = LEVEL_ORDER[currentIndex + 1] as typeof user.level;
+        updateUser({ level: newLevel });
+      }
+    }
+  }, [progressData, user]);
 
   // Combine selected songs with their progress data
   const songsWithProgress = selectedSongs.map(song => {
@@ -528,6 +541,7 @@ export function Dashboard({ onSectionChange }: DashboardProps) {
             />
           </div>
         </div>
+
       </div>
     </div>
   );

@@ -275,55 +275,59 @@ export function TechniqueTheory({ onSectionChange, initialTab = 'technique' }: T
       {/* TECHNIQUE CONTENT */}
       {mainTab === 'technique' && (
         <>
-          {/* Pianist Character Image */}
-          <div className="max-w-6xl mx-auto flex justify-center relative" style={{ zIndex: 20, marginBottom: '-70px' }}>
-            <img
-              src={pianistCharacter}
-              alt="Pianist character"
-              className="w-64 h-auto object-contain drop-shadow-lg"
-            />
-          </div>
-
           <div className="max-w-6xl mx-auto">
+            {/* Pianist Character Image - Above slider */}
+            <div className="flex justify-center relative" style={{ zIndex: 40, marginBottom: '-60px' }}>
+              <img
+                src={pianistCharacter}
+                alt="Pianist character"
+                className="w-64 h-auto object-contain drop-shadow-lg"
+              />
+            </div>
+
             {/* Technique Navigation Tabs */}
-            <div className="mb-8 bg-white/70 backdrop-blur-sm rounded-xl shadow-sm p-1.5 sm:p-2 relative overflow-hidden" style={{ border: '2.5px solid rgb(237, 237, 237)', zIndex: 30 }}>
-              <div className="flex gap-1 sm:gap-2">
+            <div className="mb-4 bg-white/70 backdrop-blur-sm rounded-xl shadow-sm relative" style={{ border: '2.5px solid rgb(237, 237, 237)', zIndex: 20, padding: '6px' }}>
+              <div className="flex" style={{ gap: '6px' }}>
                 <button
                   onClick={() => setTechniqueTab('chords')}
-                  className={`flex-1 min-w-0 py-2.5 sm:py-3 px-1.5 sm:px-4 rounded-lg text-xs sm:text-sm font-medium transition-all duration-200 truncate ${techniqueTab === 'chords' ? 'shadow-md' : ''}`}
+                  className={`flex-1 rounded-lg font-semibold text-sm transition-all duration-200 ${techniqueTab === 'chords' ? 'shadow-md' : ''}`}
                   style={{
                     backgroundColor: techniqueTab === 'chords' ? 'rgb(239, 68, 68)' : 'transparent',
-                    color: techniqueTab === 'chords' ? 'white' : 'rgb(107, 114, 128)'
+                    color: techniqueTab === 'chords' ? 'white' : 'rgb(107, 114, 128)',
+                    height: '52px'
                   }}
                 >
                   Chords
                 </button>
                 <button
                   onClick={() => setTechniqueTab('strums')}
-                  className={`flex-1 min-w-0 py-2.5 sm:py-3 px-1.5 sm:px-4 rounded-lg text-xs sm:text-sm font-medium transition-all duration-200 truncate ${techniqueTab === 'strums' ? 'shadow-md' : ''}`}
+                  className={`flex-1 rounded-lg font-semibold text-sm transition-all duration-200 ${techniqueTab === 'strums' ? 'shadow-md' : ''}`}
                   style={{
                     backgroundColor: techniqueTab === 'strums' ? 'rgb(249, 115, 22)' : 'transparent',
-                    color: techniqueTab === 'strums' ? 'white' : 'rgb(107, 114, 128)'
+                    color: techniqueTab === 'strums' ? 'white' : 'rgb(107, 114, 128)',
+                    height: '52px'
                   }}
                 >
                   Strums
                 </button>
                 <button
                   onClick={() => setTechniqueTab('plucks')}
-                  className={`flex-1 min-w-0 py-2.5 sm:py-3 px-1.5 sm:px-4 rounded-lg text-xs sm:text-sm font-medium transition-all duration-200 truncate ${techniqueTab === 'plucks' ? 'shadow-md' : ''}`}
+                  className={`flex-1 rounded-lg font-semibold text-sm transition-all duration-200 ${techniqueTab === 'plucks' ? 'shadow-md' : ''}`}
                   style={{
                     backgroundColor: techniqueTab === 'plucks' ? 'rgb(234, 179, 8)' : 'transparent',
-                    color: techniqueTab === 'plucks' ? 'white' : 'rgb(107, 114, 128)'
+                    color: techniqueTab === 'plucks' ? 'white' : 'rgb(107, 114, 128)',
+                    height: '52px'
                   }}
                 >
                   Plucks
                 </button>
                 <button
                   onClick={() => setTechniqueTab('scales')}
-                  className={`flex-1 min-w-0 py-2.5 sm:py-3 px-1.5 sm:px-4 rounded-lg text-xs sm:text-sm font-medium transition-all duration-200 truncate ${techniqueTab === 'scales' ? 'shadow-md' : ''}`}
+                  className={`flex-1 rounded-lg font-semibold text-sm transition-all duration-200 ${techniqueTab === 'scales' ? 'shadow-md' : ''}`}
                   style={{
                     backgroundColor: techniqueTab === 'scales' ? 'rgb(255, 209, 71)' : 'transparent',
-                    color: techniqueTab === 'scales' ? 'white' : 'rgb(107, 114, 128)'
+                    color: techniqueTab === 'scales' ? 'white' : 'rgb(107, 114, 128)',
+                    height: '52px'
                   }}
                 >
                   Scales
@@ -410,8 +414,8 @@ export function TechniqueTheory({ onSectionChange, initialTab = 'technique' }: T
             </CardContent>
           </Card>
 
-          {/* Pensive Guitar Character Image */}
-          <div className="max-w-6xl mx-auto flex justify-center relative mb-8" style={{ zIndex: 20, marginBottom: '-20px' }}>
+          {/* Pensive Guitar Character Image - Above slider */}
+          <div className="flex justify-center relative" style={{ zIndex: 40, marginBottom: '-60px' }}>
             <img
               src={pensiveGuitarCharacter}
               alt="Pensive guitar character"
@@ -420,44 +424,48 @@ export function TechniqueTheory({ onSectionChange, initialTab = 'technique' }: T
           </div>
 
           {/* Theory Navigation Tabs */}
-          <div className="mb-8 bg-white/70 backdrop-blur-sm rounded-xl shadow-sm p-1.5 sm:p-2 relative overflow-hidden" style={{ border: '2.5px solid rgb(237, 237, 237)', zIndex: 30 }}>
-            <div className="flex gap-1 sm:gap-2">
+          <div className="mb-4 bg-white/70 backdrop-blur-sm rounded-xl shadow-sm relative" style={{ border: '2.5px solid rgb(237, 237, 237)', zIndex: 20, padding: '6px' }}>
+            <div className="flex" style={{ gap: '6px' }}>
               <button
                 onClick={() => setTheoryTab('basics')}
-                className={`flex-1 min-w-0 py-2.5 sm:py-3 px-1.5 sm:px-4 rounded-lg text-xs sm:text-sm font-medium transition-all duration-200 truncate ${theoryTab === 'basics' ? 'shadow-md' : ''}`}
+                className={`flex-1 rounded-lg font-semibold text-sm transition-all duration-200 ${theoryTab === 'basics' ? 'shadow-md' : ''}`}
                 style={{
                   backgroundColor: theoryTab === 'basics' ? 'rgb(59, 130, 246)' : 'transparent',
-                  color: theoryTab === 'basics' ? 'white' : 'rgb(107, 114, 128)'
+                  color: theoryTab === 'basics' ? 'white' : 'rgb(107, 114, 128)',
+                  height: '52px'
                 }}
               >
                 Basics
               </button>
               <button
                 onClick={() => setTheoryTab('chords')}
-                className={`flex-1 min-w-0 py-2.5 sm:py-3 px-1.5 sm:px-4 rounded-lg text-xs sm:text-sm font-medium transition-all duration-200 truncate ${theoryTab === 'chords' ? 'shadow-md' : ''}`}
+                className={`flex-1 rounded-lg font-semibold text-sm transition-all duration-200 ${theoryTab === 'chords' ? 'shadow-md' : ''}`}
                 style={{
                   backgroundColor: theoryTab === 'chords' ? 'rgb(16, 185, 129)' : 'transparent',
-                  color: theoryTab === 'chords' ? 'white' : 'rgb(107, 114, 128)'
+                  color: theoryTab === 'chords' ? 'white' : 'rgb(107, 114, 128)',
+                  height: '52px'
                 }}
               >
                 Chords
               </button>
               <button
                 onClick={() => setTheoryTab('scales')}
-                className={`flex-1 min-w-0 py-2.5 sm:py-3 px-1.5 sm:px-4 rounded-lg text-xs sm:text-sm font-medium transition-all duration-200 truncate ${theoryTab === 'scales' ? 'shadow-md' : ''}`}
+                className={`flex-1 rounded-lg font-semibold text-sm transition-all duration-200 ${theoryTab === 'scales' ? 'shadow-md' : ''}`}
                 style={{
                   backgroundColor: theoryTab === 'scales' ? 'rgb(168, 85, 247)' : 'transparent',
-                  color: theoryTab === 'scales' ? 'white' : 'rgb(107, 114, 128)'
+                  color: theoryTab === 'scales' ? 'white' : 'rgb(107, 114, 128)',
+                  height: '52px'
                 }}
               >
                 Scales
               </button>
               <button
                 onClick={() => setTheoryTab('rhythm')}
-                className={`flex-1 min-w-0 py-2.5 sm:py-3 px-1.5 sm:px-4 rounded-lg text-xs sm:text-sm font-medium transition-all duration-200 truncate ${theoryTab === 'rhythm' ? 'shadow-md' : ''}`}
+                className={`flex-1 rounded-lg font-semibold text-sm transition-all duration-200 ${theoryTab === 'rhythm' ? 'shadow-md' : ''}`}
                 style={{
                   backgroundColor: theoryTab === 'rhythm' ? 'rgb(99, 102, 241)' : 'transparent',
-                  color: theoryTab === 'rhythm' ? 'white' : 'rgb(107, 114, 128)'
+                  color: theoryTab === 'rhythm' ? 'white' : 'rgb(107, 114, 128)',
+                  height: '52px'
                 }}
               >
                 Rhythm

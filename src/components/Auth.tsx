@@ -10,7 +10,7 @@ import { Guitar, Music, Star, CheckCircle2 } from 'lucide-react';
 
 export function Auth() {
   const { signUp, signIn } = useUser();
-  const [isSignUp, setIsSignUp] = useState(true);
+  const [isSignUp, setIsSignUp] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [showSignInOption, setShowSignInOption] = useState(false);

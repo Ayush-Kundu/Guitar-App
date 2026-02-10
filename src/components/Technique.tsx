@@ -268,55 +268,59 @@ export function Technique({ onSectionChange }: TechniqueProps) {
         </div>
       </div>
 
-      {/* Pianist Character Image - Overlaying */}
-      <div className="max-w-6xl mx-auto flex justify-center relative" style={{ zIndex: 20, marginTop: '-120px', marginBottom: '-70px' }}>
-        <img 
-          src={pianistCharacter} 
-          alt="Pianist character" 
-          className="w-64 h-auto object-contain drop-shadow-lg"
-        />
-      </div>
-
       <div className="max-w-6xl mx-auto">
+        {/* Pianist Character Image - Above slider */}
+        <div className="flex justify-center relative" style={{ zIndex: 20, marginBottom: '-40px' }}>
+          <img
+            src={pianistCharacter}
+            alt="Pianist character"
+            className="w-64 h-auto object-contain drop-shadow-lg"
+          />
+        </div>
+
         {/* Navigation Tabs */}
-        <div className="mb-8 bg-white/70 backdrop-blur-sm rounded-xl shadow-sm p-1.5 sm:p-2 relative overflow-hidden" style={{ border: '2.5px solid rgb(237, 237, 237)', zIndex: 30 }}>
-          <div className="flex gap-1 sm:gap-2">
+        <div className="mb-4 bg-white/70 backdrop-blur-sm rounded-xl shadow-sm relative" style={{ border: '2.5px solid rgb(237, 237, 237)', zIndex: 30, padding: '6px' }}>
+          <div className="flex" style={{ gap: '6px' }}>
             <button
               onClick={() => setActiveTab('chords')}
-              className={`flex-1 min-w-0 py-2.5 sm:py-3 px-1.5 sm:px-4 rounded-lg text-xs sm:text-sm font-medium transition-all duration-200 truncate ${activeTab === 'chords' ? 'shadow-md' : ''}`}
+              className={`flex-1 rounded-lg font-semibold text-sm transition-all duration-200 ${activeTab === 'chords' ? 'shadow-md' : ''}`}
               style={{
                 backgroundColor: activeTab === 'chords' ? 'rgb(239, 68, 68)' : 'transparent',
-                color: activeTab === 'chords' ? 'white' : 'rgb(107, 114, 128)'
+                color: activeTab === 'chords' ? 'white' : 'rgb(107, 114, 128)',
+                height: '52px'
               }}
             >
               Chords
             </button>
             <button
               onClick={() => setActiveTab('strums')}
-              className={`flex-1 min-w-0 py-2.5 sm:py-3 px-1.5 sm:px-4 rounded-lg text-xs sm:text-sm font-medium transition-all duration-200 truncate ${activeTab === 'strums' ? 'shadow-md' : ''}`}
+              className={`flex-1 rounded-lg font-semibold text-sm transition-all duration-200 ${activeTab === 'strums' ? 'shadow-md' : ''}`}
               style={{
                 backgroundColor: activeTab === 'strums' ? 'rgb(249, 115, 22)' : 'transparent',
-                color: activeTab === 'strums' ? 'white' : 'rgb(107, 114, 128)'
+                color: activeTab === 'strums' ? 'white' : 'rgb(107, 114, 128)',
+                height: '52px'
               }}
             >
               Strums
             </button>
             <button
               onClick={() => setActiveTab('plucks')}
-              className={`flex-1 min-w-0 py-2.5 sm:py-3 px-1.5 sm:px-4 rounded-lg text-xs sm:text-sm font-medium transition-all duration-200 truncate ${activeTab === 'plucks' ? 'shadow-md' : ''}`}
+              className={`flex-1 rounded-lg font-semibold text-sm transition-all duration-200 ${activeTab === 'plucks' ? 'shadow-md' : ''}`}
               style={{
                 backgroundColor: activeTab === 'plucks' ? 'rgb(234, 179, 8)' : 'transparent',
-                color: activeTab === 'plucks' ? 'white' : 'rgb(107, 114, 128)'
+                color: activeTab === 'plucks' ? 'white' : 'rgb(107, 114, 128)',
+                height: '52px'
               }}
             >
               Plucks
             </button>
             <button
               onClick={() => setActiveTab('scales')}
-              className={`flex-1 min-w-0 py-2.5 sm:py-3 px-1.5 sm:px-4 rounded-lg text-xs sm:text-sm font-medium transition-all duration-200 truncate ${activeTab === 'scales' ? 'shadow-md' : ''}`}
+              className={`flex-1 rounded-lg font-semibold text-sm transition-all duration-200 ${activeTab === 'scales' ? 'shadow-md' : ''}`}
               style={{
                 backgroundColor: activeTab === 'scales' ? 'rgb(255, 209, 71)' : 'transparent',
-                color: activeTab === 'scales' ? 'white' : 'rgb(107, 114, 128)'
+                color: activeTab === 'scales' ? 'white' : 'rgb(107, 114, 128)',
+                height: '52px'
               }}
             >
               Scales

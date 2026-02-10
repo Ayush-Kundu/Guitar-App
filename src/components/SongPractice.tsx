@@ -102,9 +102,11 @@ export function SongPractice({ isOpen, onClose, song, userId, onComplete }: Song
   const timelineRef = useRef<HTMLDivElement>(null);
   const practiceAreaRef = useRef<HTMLDivElement>(null);
   const hitZoneRef = useRef<HTMLDivElement>(null);
+  const stringLabelsRef = useRef<HTMLDivElement>(null);
 
-  // Hit zone offset - calculated from actual element positions
-  const [hitZoneOffset, setHitZoneOffset] = useState(0);
+  // barOffset: actual visual distance from timeline left edge to bar center (px)
+  // Measured via getBoundingClientRect after dialog opens, using rAF loop until stable
+  const [barOffset, setBarOffset] = useState(0);
 
   // Song data with note events
   const [songData, setSongData] = useState<SongData | null>(null);
@@ -267,41 +269,62 @@ export function SongPractice({ isOpen, onClose, song, userId, onComplete }: Song
     };
   }, [isOpen, song]);
 
-  // Calculate hit zone offset when practice area is rendered
+  // Measure actual bar visual position using getBoundingClientRect.
+  // Uses a rAF loop that keeps measuring until the value stabilizes (dialog animation done).
+  // This is the single source of truth — notes use this same value for positioning.
   useEffect(() => {
-    if (isOpen && practiceAreaRef.current && hitZoneRef.current && timelineRef.current) {
-      const updateHitZoneOffset = () => {
-        if (!practiceAreaRef.current || !hitZoneRef.current || !timelineRef.current) return;
+    if (!isOpen) return;
 
-        // Get the actual pixel positions of the hit zone and timeline
-        const containerRect = practiceAreaRef.current.getBoundingClientRect();
-        const hitZoneRect = hitZoneRef.current.getBoundingClientRect();
-        const timelineRect = timelineRef.current.getBoundingClientRect();
+    let lastOffset = -1;
+    let stableFrames = 0;
+    let rafId: number;
+    let stopped = false;
 
-        // Hit zone center position relative to timeline's left edge
-        const hitZoneCenter = hitZoneRect.left + hitZoneRect.width / 2;
-        const timelineLeft = timelineRect.left;
+    const measure = () => {
+      if (stopped) return;
+      if (!hitZoneRef.current || !timelineRef.current) {
+        rafId = requestAnimationFrame(measure);
+        return;
+      }
 
-        // The offset needed so note center lands at hit zone center when currentTime = note.time
-        const offset = hitZoneCenter - timelineLeft;
-        setHitZoneOffset(offset);
+      const barRect = hitZoneRef.current.getBoundingClientRect();
+      const timelineRect = timelineRef.current.getBoundingClientRect();
+      const barCenter = barRect.left + barRect.width / 2;
+      const offset = barCenter - timelineRect.left;
 
-        console.log('Hit zone calibration:', {
-          hitZoneCenter,
-          timelineLeft,
-          offset,
-          containerWidth: containerRect.width
-        });
-      };
+      if (offset > 5) {
+        setBarOffset(offset);
 
-      // Calculate after a short delay to ensure DOM is ready
-      const timer = setTimeout(updateHitZoneOffset, 100);
-      window.addEventListener('resize', updateHitZoneOffset);
-      return () => {
-        clearTimeout(timer);
-        window.removeEventListener('resize', updateHitZoneOffset);
-      };
-    }
+        if (Math.abs(offset - lastOffset) < 0.5) {
+          stableFrames++;
+        } else {
+          stableFrames = 0;
+        }
+        lastOffset = offset;
+
+        // Stop after 30 stable frames (~0.5s of stability)
+        if (stableFrames < 30) {
+          rafId = requestAnimationFrame(measure);
+        }
+      } else {
+        rafId = requestAnimationFrame(measure);
+      }
+    };
+
+    rafId = requestAnimationFrame(measure);
+
+    // Re-measure on resize
+    const onResize = () => {
+      stableFrames = 0;
+      if (!stopped) rafId = requestAnimationFrame(measure);
+    };
+    window.addEventListener('resize', onResize);
+
+    return () => {
+      stopped = true;
+      cancelAnimationFrame(rafId);
+      window.removeEventListener('resize', onResize);
+    };
   }, [isOpen]);
 
   // Track last log time for throttling
@@ -311,10 +334,8 @@ export function SongPractice({ isOpen, onClose, song, userId, onComplete }: Song
   useEffect(() => {
     if (!isPlaying || !noteEvents.length) return;
 
-    // IMPORTANT: Match visual note activation timing
-    // Positive delay = notes activate LATER (after bar touches)
-    // Adjust this value to match visual timing
-    const VISUAL_ACTIVATION_DELAY = 2.5;
+    // No delay — barOffset is measured from the actual bar visual position
+    const VISUAL_ACTIVATION_DELAY = 0;
 
     // Timing windows:
     // - EARLY_ACCEPT: Accept correct plays slightly early (but don't mark wrong yet)
@@ -766,6 +787,7 @@ export function SongPractice({ isOpen, onClose, song, userId, onComplete }: Song
         >
           {/* String labels on the left */}
           <div
+            ref={stringLabelsRef}
             className="absolute left-0 top-0 bottom-0 w-10 z-40 flex flex-col justify-center bg-white/95 dark:bg-slate-800 border-r-2 border-gray-200 dark:border-slate-600"
           >
             {['E', 'A', 'D', 'G', 'B', 'e'].map((name, i) => (
@@ -782,18 +804,13 @@ export function SongPractice({ isOpen, onClose, song, userId, onComplete }: Song
           {/* Hit zone indicator - vertical blue line (matching Songs page blue) */}
           {(() => {
             // Check if any note is currently being hit (for bar animation)
-            const VISUAL_DELAY = 2.5;
             const anyNoteActive = noteEvents.some(note => {
-              const hitTime = note.time + VISUAL_DELAY;
-              const endTime = note.time + (note.duration || 0.5) + VISUAL_DELAY;
-              return currentTime >= hitTime && currentTime < endTime;
+              return currentTime >= note.time && currentTime < note.time + (note.duration || 0.5);
             });
 
             // Check feedback state for color
             const activeNoteIndex = noteEvents.findIndex(note => {
-              const hitTime = note.time + VISUAL_DELAY;
-              const endTime = note.time + (note.duration || 0.5) + VISUAL_DELAY;
-              return currentTime >= hitTime && currentTime < endTime;
+              return currentTime >= note.time && currentTime < note.time + (note.duration || 0.5);
             });
             const activeFeedback = activeNoteIndex >= 0 ? noteFeedback[activeNoteIndex] : null;
 
@@ -825,7 +842,7 @@ export function SongPractice({ isOpen, onClose, song, userId, onComplete }: Song
                   boxShadow: anyNoteActive
                     ? `0 0 25px ${glowColor}, 0 0 50px ${glowColor}`
                     : `0 0 15px ${glowColor}`,
-                  transform: anyNoteActive ? 'scaleX(1.5)' : 'scaleX(1)',
+                  transform: `translateX(-50%) ${anyNoteActive ? 'scaleX(1.5)' : 'scaleX(1)'}`,
                   transition: 'width 0.1s ease-out, box-shadow 0.1s ease-out, transform 0.1s ease-out, background 0.15s ease-out'
                 }}
               />
@@ -878,11 +895,10 @@ export function SongPractice({ isOpen, onClose, song, userId, onComplete }: Song
                 if (notes.length < 2) return null;
 
                 const noteWidth = Math.max(30, notes[0].duration * pixelsPerSecond * 0.8);
-                // Position note so it reaches bar when currentTime = time
-                const noteStartX = time * pixelsPerSecond + hitZoneOffset;
-                const activationDelay = 2.5;
-                const isActive = currentTime >= (time + activationDelay) && currentTime < (time + notes[0].duration + activationDelay);
-                const isPast = currentTime >= (time + notes[0].duration + activationDelay);
+                // Position note so its CENTER reaches bar when currentTime = time
+                const noteStartX = time * pixelsPerSecond + barOffset - noteWidth / 2;
+                const isActive = currentTime >= time && currentTime < (time + notes[0].duration);
+                const isPast = currentTime >= (time + notes[0].duration);
 
                 // Find the top and bottom strings
                 const strings = notes.map(n => n.string).sort((a, b) => a - b);
@@ -900,7 +916,7 @@ export function SongPractice({ isOpen, onClose, song, userId, onComplete }: Song
                     key={`chord-connector-${time}`}
                     className="absolute"
                     style={{
-                      left: `${noteStartX + noteWidth / 2 - 2}px`,
+                      left: `${noteStartX + noteWidth / 2}px`,
                       top: `${topPercent}%`,
                       width: '4px',
                       height: `${bottomPercent - topPercent}%`,
@@ -924,13 +940,12 @@ export function SongPractice({ isOpen, onClose, song, userId, onComplete }: Song
               // Calculate note width
               const noteWidth = Math.max(30, note.duration * pixelsPerSecond * 0.8);
 
-              // Position note so it reaches bar exactly when currentTime = note.time
-              const noteStartX = note.time * pixelsPerSecond + hitZoneOffset;
+              // Position note so its CENTER reaches bar exactly when currentTime = note.time
+              const noteStartX = note.time * pixelsPerSecond + barOffset - noteWidth / 2;
 
-              // Activation delay to match visual timing
-              const activationDelay = 2.5;
-              const isActive = currentTime >= (note.time + activationDelay) && currentTime < (note.time + note.duration + activationDelay);
-              const isPast = currentTime >= (note.time + note.duration + activationDelay);
+              // Notes activate when the bar reaches them
+              const isActive = currentTime >= note.time && currentTime < (note.time + note.duration);
+              const isPast = currentTime >= (note.time + note.duration);
 
               // String position (string 1 = high e at top, string 6 = low E at bottom)
               // So we need to map: string 6 -> index 0 (top), string 1 -> index 5 (bottom)
