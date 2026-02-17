@@ -13,7 +13,7 @@ import {
   Target,
   Guitar
 } from 'lucide-react';
-import { getActivities, getSessionStats } from '../utils/api';
+import { getActivities, getSessionStats, getAchievements } from '../utils/api';
 
 export function Timeline() {
   const { user } = useUser();
@@ -89,10 +89,17 @@ export function Timeline() {
 
         // Load stats
         const sessionStats = await getSessionStats(user.id, 'week');
+        let achievementCount = 0;
+        try {
+          const achievementData = await getAchievements(user.id);
+          achievementCount = Array.isArray(achievementData) ? achievementData.length : 0;
+        } catch {
+          achievementCount = 0;
+        }
         setStats({
           weeklySessions: sessionStats.totalSessions,
-          totalMinutes: Math.round(sessionStats.totalMinutes),
-          achievements: 0 // Would need to fetch from achievements endpoint
+          totalMinutes: Math.round(sessionStats.totalMinutes || 0),
+          achievements: achievementCount
         });
       } catch (error) {
         console.error('Error loading timeline:', error);

@@ -197,7 +197,7 @@ export function Technique({ onSectionChange }: TechniqueProps) {
     const routines = {
       novice: {
         warmup: { title: 'Finger Stretches (3 min)', description: 'Gentle finger and wrist exercises' },
-        focus: { title: 'Basic Chord Practice (10 min)', description: 'Practice holding and switc/hing between basic chords' },
+        focus: { title: 'Basic Chord Practice (10 min)', description: 'Practice holding and switching between basic chords' },
         application: { title: 'Simple Songs (5 min)', description: 'Apply chords in easy songs' }
       },
       beginner: {

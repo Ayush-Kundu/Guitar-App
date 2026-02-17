@@ -1,11 +1,11 @@
-import { 
-  Home, 
-  Music, 
-  Hand, 
-  Brain, 
-  BarChart3, 
-  Trophy, 
-  Users, 
+import {
+  Home,
+  Music,
+  Hand,
+  Brain,
+  BarChart3,
+  Trophy,
+  Users,
   Settings,
   LucideIcon
 } from 'lucide-react';

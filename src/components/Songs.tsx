@@ -51,14 +51,10 @@ export function Songs() {
 
   const refreshData = () => {
     if (user) {
-      console.log('🔄 refreshData called for user:', user.id);
       const progress = getAllSongProgress(user.id);
-      console.log('🔄 refreshData - getAllSongProgress returned:', progress);
       setSongProgress(progress);
       setWeeklyGoals(getWeeklyGoals(user.id));
       setUserSelectedSongs(getSelectedSongs(user.id));
-    } else {
-      console.warn('⚠️ refreshData called but no user!');
     }
   };
 
@@ -70,20 +66,10 @@ export function Songs() {
   // Refresh when practice modal closes
   useEffect(() => {
     if (!practiceOpen) {
-      console.log('🔄 Practice modal closed, refreshing data...');
       refreshData();
     }
   }, [practiceOpen]);
 
-  // Debug: Log when songProgress state changes
-  useEffect(() => {
-    console.log('📊 songProgress state updated:', songProgress);
-    // Also log what's directly in localStorage for comparison
-    if (user) {
-      const directCheck = getAllSongProgress(user.id);
-      console.log('📊 Direct localStorage check:', directCheck);
-    }
-  }, [songProgress, user]);
 
   if (!user) return null;
 
@@ -118,7 +104,6 @@ export function Songs() {
   // Only show songs the user has selected to learn (with progress data)
   const songs = userSelectedSongs.map(selected => {
     const progress = songProgress[selected.songId];
-    console.log(`📀 Song "${selected.title}" (${selected.songId}): stored progress =`, progress);
     return {
       ...selected,
       progress: progress?.progress || 0, // Always starts at 0, only updated through practice
@@ -209,38 +194,22 @@ export function Songs() {
   };
 
   const handlePractice = (song: any) => {
-    console.log('🎯 handlePractice called with song:', song);
-    console.log('🎯 song.songId:', song.songId);
     // Ensure songId is set - should come from userSelectedSongs
     const songWithId = {
       ...song,
       songId: song.songId || `${song.title.toLowerCase().replace(/\s+/g, '_')}_${song.artist.toLowerCase().replace(/\s+/g, '_')}`
     };
-    console.log('🎯 songWithId:', songWithId);
     setSelectedSong(songWithId);
     setPracticeOpen(true);
   };
 
   const handlePracticeComplete = (
-    minutesPracticed: number, 
+    minutesPracticed: number,
     progressPercent: number,
     songInfo: { songId: string; title: string; artist: string; genre: string }
   ) => {
-    console.log('🎸 Practice complete callback received:', { minutesPracticed, progressPercent, songInfo });
-    
-    if (!user) {
-      console.error('❌ No user found!');
-      return;
-    }
-    
-    console.log('📝 Calling updateSongProgress with:', {
-      userId: user.id,
-      songId: songInfo.songId,
-      title: songInfo.title,
-      progressPercent,
-      minutesPracticed
-    });
-    
+    if (!user) return;
+
     // Update the song progress in storage
     const updatedProgress = updateSongProgress(
       user.id,
@@ -251,34 +220,21 @@ export function Songs() {
       progressPercent,
       minutesPracticed
     );
-    
-    console.log('✅ Updated song progress returned:', updatedProgress);
-    console.log('✅ updatedProgress.progress =', updatedProgress.progress);
-    
+
     // Update local state immediately with the new progress
-    setSongProgress(prev => {
-      const newState = {
-        ...prev,
-        [songInfo.songId]: updatedProgress
-      };
-      console.log('📊 New songProgress state:', newState);
-      console.log('📊 Song progress for this songId:', newState[songInfo.songId]);
-      return newState;
-    });
-    
+    setSongProgress(prev => ({
+      ...prev,
+      [songInfo.songId]: updatedProgress
+    }));
+
     // Also update userSelectedSongs to force a re-render of the songs list
     setUserSelectedSongs(prev => [...prev]);
-    
-    // Force refresh immediately AND after a delay to ensure UI updates
-    refreshData();
+
+    // Refresh after a short delay to ensure storage is settled
     setTimeout(() => {
       refreshData();
-      console.log('🔄 Data refreshed (delayed)');
-      // Log the current state of songProgress after refresh
-      const currentProgress = getAllSongProgress(user.id);
-      console.log('🔄 Current songProgress from storage:', currentProgress);
     }, 300);
-    
+
     // Sync updated points, compete level, and streak to Supabase
     syncProfileToSupabase();
   };
@@ -648,12 +604,12 @@ export function Songs() {
                   <p className="text-sm font-medium text-gray-500 dark:text-gray-400">No songs found</p>
                 </div>
               ) : (
-                filteredCatalogSongs.map((song, index) => {
+                filteredCatalogSongs.map((song) => {
                   const selected = isSongSelected(song);
-                  
+                  const songKey = `${song.title}_${song.artist}`;
                   return (
-                    <div 
-                      key={index}
+                    <div
+                      key={songKey}
                       className={`rounded-xl p-3 transition-all hover:scale-[1.01] border-2 ${
                         selected 
                           ? 'border-green-300 bg-green-50/80 dark:bg-green-900/30 dark:border-green-600' 

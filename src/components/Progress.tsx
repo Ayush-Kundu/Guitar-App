@@ -192,13 +192,21 @@ export function Progress() {
   const skillAreas = getSkillAreasForDisplay();
 
   // Use streak from storage, fallback to user context
-  const displayStreak = streak || user.practiceStreak;
+  const displayStreak = streak !== 0 ? streak : user.practiceStreak;
   const displayMasteredSongs = masteredSongs || user.songsMastered;
   const displayTotalHours = Math.round((totalWeeklyMinutes / 60) * 10) / 10;
 
   // Map icon string to actual icon component
   const getIconComponent = (iconName: string, color: string) => {
-    const colorClass = `text-${color}-500`;
+    const colorMap: Record<string, string> = {
+      'red': 'text-red-500', 'orange': 'text-orange-500', 'amber': 'text-amber-500',
+      'yellow': 'text-yellow-500', 'lime': 'text-lime-500', 'green': 'text-green-500',
+      'emerald': 'text-emerald-500', 'teal': 'text-teal-500', 'cyan': 'text-cyan-500',
+      'sky': 'text-sky-500', 'blue': 'text-blue-500', 'indigo': 'text-indigo-500',
+      'violet': 'text-violet-500', 'purple': 'text-purple-500', 'fuchsia': 'text-fuchsia-500',
+      'pink': 'text-pink-500', 'rose': 'text-rose-500', 'gray': 'text-gray-500',
+    };
+    const colorClass = colorMap[color] || 'text-gray-500';
     const iconProps = { className: `w-6 h-6 ${colorClass}` };
     
     switch (iconName) {
@@ -251,7 +259,9 @@ export function Progress() {
   };
 
   // Calculate circular progress values
-  const overallProgress = Math.round(skillAreas.reduce((acc, skill) => acc + (skill.current / skill.total), 0) / skillAreas.length * 100);
+  const overallProgress = skillAreas.length > 0
+    ? Math.round(skillAreas.reduce((acc, skill) => acc + (skill.total > 0 ? skill.current / skill.total : 0), 0) / skillAreas.length * 100)
+    : 0;
   const weeklyGoalProgress = Math.round((user.hoursThisWeek / 10) * 100); // Assuming 10 hours is the weekly goal
   const streakProgress = Math.round(Math.min((user.practiceStreak / 30) * 100, 100)); // 30 days = 100%
 

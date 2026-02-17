@@ -1,12 +1,12 @@
 # Audio stream settings
-CHUNK = 1024  # Number of audio samples per frame (reduced for lower latency)
+CHUNK = 2048 * 2  # Number of audio samples per frame
 CHANNELS = 1  # Mono audio
 RATE = 44100  # Sample rate in Hz
 
 # Overlapping window settings
-OVERLAP_RATIO = 0.5  # 50% overlap (reduced for faster response)
-HOP_SIZE = int(CHUNK * (1 - OVERLAP_RATIO))  # 512 samples
-BUFFER_SIZE = CHUNK * 2  # 2048 samples for buffer (reduced for lower latency)
+OVERLAP_RATIO = 0.75  # 75% overlap
+HOP_SIZE = int(CHUNK * (1 - OVERLAP_RATIO))
+BUFFER_SIZE = CHUNK * 2  # Double chunk for circular buffer
 
 def set_overlap_ratio(overlap_ratio):
     global OVERLAP_RATIO

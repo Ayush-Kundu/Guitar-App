@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useUser } from '../contexts/UserContext';
 import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
 import { Button } from './ui/button';
@@ -426,6 +426,7 @@ export function Compete() {
   const [currentDuel, setCurrentDuel] = useState<Duel | null>(null);
   const [duelResult, setDuelResult] = useState<{ won: boolean; score: number; opponentScore: number } | null>(null);
   const [allSongs] = useState(getAllSongs());
+  const duelTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   
   // Challenge state
   const [challengeOpen, setChallengeOpen] = useState(false);
@@ -587,8 +588,19 @@ export function Compete() {
   useEffect(() => {
     if (activeDuels.length > 0) {
       localStorage.setItem(`guitarApp_duels_${user.id}`, JSON.stringify(activeDuels));
+    } else {
+      localStorage.removeItem(`guitarApp_duels_${user.id}`);
     }
   }, [activeDuels, user.id]);
+
+  // Cleanup duel timer on unmount
+  useEffect(() => {
+    return () => {
+      if (duelTimerRef.current) {
+        clearTimeout(duelTimerRef.current);
+      }
+    };
+  }, []);
 
   // Filter users for arena search
   const filteredArenaUsers = leaderboard.filter(player => {
@@ -652,19 +664,22 @@ export function Compete() {
     setArenaStep('waiting');
 
     // Simulate opponent response (for demo - in real app this would be via Supabase)
-    setTimeout(() => {
+    const duelTimerId = setTimeout(() => {
       // Simulate the opponent accepting and completing their attempt
       const opponentScore = Math.floor(Math.random() * 100); // Random score 0-100
-      
-      setActiveDuels(prev => prev.map(d => 
-        d.id === newDuel.id 
+
+      setActiveDuels(prev => prev.map(d =>
+        d.id === newDuel.id
           ? { ...d, status: 'accepted', opponentScore }
           : d
       ));
-      
+
       setCurrentDuel(prev => prev ? { ...prev, status: 'accepted', opponentScore } : null);
       setArenaStep('duel');
     }, 2000);
+
+    // Store timer ID for cleanup
+    duelTimerRef.current = duelTimerId;
   };
 
   // Handle completing your duel attempt

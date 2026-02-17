@@ -1,21 +1,24 @@
 /**
  * Chord Detection Service
- * Connects to the music_test WebSocket server for real-time chord/note detection
+ * Connects to kundu.dev/c_d WebSocket API for real-time chord/note detection
  */
 
+import React from 'react';
 import { getChordDetectionWsUrl } from './serverConfig';
 
 export interface ChordDetectionResult {
   type: string;
   chord?: string;
   chord_candidate?: string;
-  notes?: string[];
+  notes?: string[] | [string, number][];
   frequencies?: number[];
   confidence?: number;
   chroma?: number[];
-  progression?: string[];
   stability?: number;
   timestamp?: number;
+  raw_chord?: string;
+  song_matched?: boolean;
+  dominant_notes?: string[];
 }
 
 export interface ChordDetectionConfig {
@@ -24,19 +27,27 @@ export interface ChordDetectionConfig {
   confidence_threshold?: number;
   silence_threshold?: number;
   overlap?: number;
-  progression?: boolean;
+  chord_window?: number;
+  chord_window_confidence?: number;
   multi_pitch?: boolean;
+  song_chords?: string[];
+  song_influence?: number;
+  map_similar_variants?: boolean;
   debug?: boolean;
 }
 
+// Default config matching kundu.dev/c_d defaults
 const DEFAULT_CONFIG: ChordDetectionConfig = {
   instrument: 'guitar',
-  sensitivity: 1.2,            // Slightly higher sensitivity for faster response
-  confidence_threshold: 0.35,  // Lower threshold to detect faster
-  silence_threshold: 0.003,    // Lower threshold for quicker detection
-  overlap: 0.5,                // 50% overlap for lower latency
-  progression: false,          // Disable progression for faster response
-  multi_pitch: true,           // Keep multi-pitch
+  sensitivity: 0.8,
+  confidence_threshold: 0.2,
+  silence_threshold: 0.005,
+  overlap: 0.75,
+  chord_window: 0.3,
+  chord_window_confidence: 0.45,
+  multi_pitch: true,
+  song_influence: 0.7,
+  map_similar_variants: true,
   debug: false
 };
 
@@ -49,15 +60,45 @@ export class ChordDetectionService {
   private isRecording: boolean = false;
   private onResult: ((result: ChordDetectionResult) => void) | null = null;
   private onStatusChange: ((connected: boolean, status: string) => void) | null = null;
-  private serverUrl: string;
 
-  constructor(serverUrl?: string) {
-    this.serverUrl = serverUrl || getChordDetectionWsUrl();
+  constructor() {
     this.config = { ...DEFAULT_CONFIG };
   }
 
   setConfig(config: Partial<ChordDetectionConfig>) {
     this.config = { ...this.config, ...config };
+    
+    if (this.ws && this.ws.readyState === WebSocket.OPEN) {
+      this.ws.send(JSON.stringify({
+        type: 'config_update',
+        ...this.config
+      }));
+    }
+  }
+
+  setSongContext(chords: string[], songTitle?: string) {
+    this.config.song_chords = chords;
+    
+    if (this.ws && this.ws.readyState === WebSocket.OPEN) {
+      this.ws.send(JSON.stringify({
+        type: 'config_update',
+        song_chords: chords,
+        song_info: songTitle ? { title: songTitle } : undefined
+      }));
+      console.log(`[ChordDetection] Set song context: ${chords.join(', ')}`);
+    }
+  }
+
+  clearSongContext() {
+    this.config.song_chords = undefined;
+    
+    if (this.ws && this.ws.readyState === WebSocket.OPEN) {
+      this.ws.send(JSON.stringify({
+        type: 'config_update',
+        song_chords: [],
+        song_info: null
+      }));
+    }
   }
 
   setOnResult(callback: (result: ChordDetectionResult) => void) {
@@ -69,29 +110,37 @@ export class ChordDetectionService {
   }
 
   async connect(): Promise<boolean> {
+    const wsUrl = getChordDetectionWsUrl();
+    
     return new Promise((resolve) => {
       try {
-        this.ws = new WebSocket(this.serverUrl);
+        console.log('[ChordDetection] Connecting to:', wsUrl);
+        this.onStatusChange?.(false, 'Connecting...');
+        
+        this.ws = new WebSocket(wsUrl);
 
         this.ws.onopen = () => {
-          console.log('[ChordDetection] WebSocket connected');
-          this.onStatusChange?.(true, 'Connecting...');
+          console.log('[ChordDetection] Connected to', wsUrl);
+          this.onStatusChange?.(true, 'Connected');
           
           // Send configuration
+          console.log('[ChordDetection] Sending config:', this.config);
           this.ws?.send(JSON.stringify(this.config));
+          
+          resolve(true);
         };
 
         this.ws.onmessage = (event) => {
           try {
             const data = JSON.parse(event.data);
-            this.handleMessage(data);
             
             if (data.type === 'connected') {
-              this.onStatusChange?.(true, 'Connected');
-              resolve(true);
+              console.log('[ChordDetection] Server confirmed:', data.message || 'OK');
             }
+            
+            this.handleMessage(data);
           } catch (error) {
-            console.error('[ChordDetection] Error parsing message:', error);
+            console.error('[ChordDetection] Parse error:', error);
           }
         };
 
@@ -101,63 +150,54 @@ export class ChordDetectionService {
           resolve(false);
         };
 
-        this.ws.onclose = () => {
-          console.log('[ChordDetection] WebSocket closed');
+        this.ws.onclose = (event) => {
+          console.log('[ChordDetection] Closed:', event.code, event.reason);
           this.onStatusChange?.(false, 'Disconnected');
           this.stopRecording();
         };
 
-        // Timeout after 5 seconds
+        // Timeout after 10 seconds
         setTimeout(() => {
           if (this.ws?.readyState !== WebSocket.OPEN) {
+            console.error('[ChordDetection] Connection timeout');
+            this.onStatusChange?.(false, 'Timeout');
             resolve(false);
           }
-        }, 5000);
+        }, 10000);
 
       } catch (error) {
-        console.error('[ChordDetection] Connection error:', error);
-        this.onStatusChange?.(false, 'Connection Failed');
+        console.error('[ChordDetection] Error:', error);
+        this.onStatusChange?.(false, 'Failed');
         resolve(false);
       }
     });
   }
 
   private handleMessage(data: ChordDetectionResult) {
-    if (data.type === 'connected') {
-      console.log('[ChordDetection] Server confirmed connection');
-      return;
-    }
-
+    if (data.type === 'connected') return;
     if (data.type === 'error') {
       console.error('[ChordDetection] Server error:', data);
       return;
     }
 
-    // Handle chord detection (same as main.js handleWebSocketMessage)
-    if (data.type === 'chord') {
-      this.onResult?.(data);
-    } else if (data.type === 'notes') {
-      // If there's a chord candidate with low confidence, include it
-      if (data.chord_candidate) {
-        this.onResult?.({
-          ...data,
-          chord: data.chord_candidate,
-          stability: 0
-        });
-      } else {
-        this.onResult?.(data);
+    if (data.type === 'chord' || data.type === 'notes' || data.type === 'frequencies') {
+      if (data.type === 'notes' && data.chord_candidate && !data.chord) {
+        data.chord = data.chord_candidate;
+        data.stability = 0;
       }
-    } else if (data.type === 'frequencies') {
       this.onResult?.(data);
     }
-    // Ignore 'listening' type - keep last state
   }
 
   async startRecording(): Promise<boolean> {
     if (this.isRecording) return true;
+    if (!this.ws || this.ws.readyState !== WebSocket.OPEN) {
+      console.error('[ChordDetection] Not connected');
+      return false;
+    }
 
     try {
-      // Get microphone access
+      // Get microphone
       this.mediaStream = await navigator.mediaDevices.getUserMedia({
         audio: {
           echoCancellation: false,
@@ -171,22 +211,19 @@ export class ChordDetectionService {
       this.audioContext = new AudioContext({ sampleRate: 44100 });
       const source = this.audioContext.createMediaStreamSource(this.mediaStream);
       
-      // Create script processor for audio data
-      // Smaller buffer = lower latency (1024 samples = ~23ms at 44100Hz)
-      const bufferSize = 1024;
-      this.scriptProcessor = this.audioContext.createScriptProcessor(bufferSize, 1, 1);
+      // Create processor (512 samples = ~12ms latency for faster response)
+      this.scriptProcessor = this.audioContext.createScriptProcessor(512, 1, 1);
 
       this.scriptProcessor.onaudioprocess = (event) => {
         if (!this.isRecording || !this.ws || this.ws.readyState !== WebSocket.OPEN) return;
 
         const inputData = event.inputBuffer.getChannelData(0);
         
-        // Send raw binary audio data (same as main.js does)
-        // Server expects: np.frombuffer(data, dtype=np.float32)
         try {
+          // Send Float32 audio data
           this.ws.send(inputData.buffer);
         } catch (error) {
-          console.error('[ChordDetection] Error sending audio:', error);
+          console.error('[ChordDetection] Send error:', error);
         }
       };
 
@@ -199,8 +236,8 @@ export class ChordDetectionService {
       return true;
 
     } catch (error) {
-      console.error('[ChordDetection] Failed to start recording:', error);
-      this.onStatusChange?.(false, 'Microphone Error');
+      console.error('[ChordDetection] Microphone error:', error);
+      this.onStatusChange?.(true, 'Mic Error');
       return false;
     }
   }
@@ -222,7 +259,9 @@ export class ChordDetectionService {
     }
 
     this.isRecording = false;
-    console.log('[ChordDetection] Recording stopped');
+    if (this.ws?.readyState === WebSocket.OPEN) {
+      this.onStatusChange?.(true, 'Connected');
+    }
   }
 
   disconnect() {
@@ -243,35 +282,23 @@ export class ChordDetectionService {
   }
 }
 
-// Singleton instance
-let chordDetectionInstance: ChordDetectionService | null = null;
-
-export function getChordDetectionService(serverUrl?: string): ChordDetectionService {
-  if (!chordDetectionInstance) {
-    chordDetectionInstance = new ChordDetectionService(serverUrl);
-  }
-  return chordDetectionInstance;
-}
-
 // React hook for chord detection
-export function useChordDetection(serverUrl?: string) {
-  const wsUrl = serverUrl || getChordDetectionWsUrl();
+export function useChordDetection() {
   const [isConnected, setIsConnected] = React.useState(false);
   const [isRecording, setIsRecording] = React.useState(false);
   const [status, setStatus] = React.useState('Disconnected');
   const [detectedChord, setDetectedChord] = React.useState<string | null>(null);
   const [detectedNotes, setDetectedNotes] = React.useState<string[]>([]);
   const [confidence, setConfidence] = React.useState(0);
-  
+
   const serviceRef = React.useRef<ChordDetectionService | null>(null);
 
   React.useEffect(() => {
-    serviceRef.current = new ChordDetectionService(wsUrl);
+    serviceRef.current = new ChordDetectionService();
 
-    serviceRef.current.setOnStatusChange((connected, statusText) => {
+    serviceRef.current.setOnStatusChange((connected, newStatus) => {
       setIsConnected(connected);
-      setStatus(statusText);
-      setIsRecording(serviceRef.current?.getIsRecording() || false);
+      setStatus(newStatus);
     });
 
     serviceRef.current.setOnResult((result) => {
@@ -279,7 +306,8 @@ export function useChordDetection(serverUrl?: string) {
         setDetectedChord(result.chord);
       }
       if (result.notes) {
-        setDetectedNotes(result.notes);
+        const notes = result.notes.map(n => Array.isArray(n) ? String(n[0]) : String(n));
+        setDetectedNotes(notes);
       }
       if (result.confidence !== undefined) {
         setConfidence(result.confidence);
@@ -289,7 +317,7 @@ export function useChordDetection(serverUrl?: string) {
     return () => {
       serviceRef.current?.disconnect();
     };
-  }, [wsUrl]);
+  }, []);
 
   const connect = React.useCallback(async () => {
     return serviceRef.current?.connect() || false;
@@ -297,9 +325,7 @@ export function useChordDetection(serverUrl?: string) {
 
   const startRecording = React.useCallback(async () => {
     const success = await serviceRef.current?.startRecording();
-    if (success) {
-      setIsRecording(true);
-    }
+    if (success) setIsRecording(true);
     return success || false;
   }, []);
 
@@ -327,7 +353,3 @@ export function useChordDetection(serverUrl?: string) {
     disconnect
   };
 }
-
-// Need to import React for the hook
-import React from 'react';
-

@@ -179,34 +179,24 @@ export function Community() {
     );
   }
 
-  // Log when chats/messages are received from UserContext
   useEffect(() => {
-    console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
-    console.log('📬 COMMUNITY: RECEIVED DATA FROM USER CONTEXT');
-    console.log('   Chats count:', chats.length);
-    console.log('   Chats:', chats.map(c => ({ id: c.id, participants: c.participants })));
-    console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+    // chats updated from UserContext
   }, [chats]);
 
   // Helper function to fetch messages for a specific chat
   const fetchMessagesForChat = async (chatId: string, otherUserId: string) => {
-    console.log('📥 Fetching messages for chat:', chatId);
-    
     const { data, error } = await supabase
       .from('friend_messages')
       .select('*')
+      .or(`and(send_user.eq.${user.id},receive_user.eq.${otherUserId}),and(send_user.eq.${otherUserId},receive_user.eq.${user.id})`)
       .order('created_at', { ascending: true });
 
     if (error) {
-      console.error('❌ Error fetching friend_messages:', error);
+      console.error('Error fetching friend_messages:', error);
       return [];
     }
 
-    // Filter to messages between current user and the other user
-    const relevantMessages = (data || []).filter(msg => 
-      (msg.send_user === user.id && msg.receive_user === otherUserId) ||
-      (msg.send_user === otherUserId && msg.receive_user === user.id)
-    );
+    const relevantMessages = data || [];
 
     // Format messages for display
     return relevantMessages.map(msg => ({
@@ -240,26 +230,17 @@ export function Community() {
     const currentChats = chatsRef.current;
     const currentChat = currentChats.find(c => c.id === selectedChat);
     if (!currentChat) {
-      console.log('❌ COMMUNITY: Selected chat not found');
       return;
     }
 
     const otherUserId = currentChat.participants.find(p => p !== user.id);
     if (!otherUserId) {
-      console.log('❌ COMMUNITY: Other user not found in chat participants');
       return;
     }
-
-    console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
-    console.log('📥 COMMUNITY: FETCHING MESSAGES FROM SUPABASE');
-    console.log('   Current user:', user.id);
-    console.log('   Other user:', otherUserId);
-    console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
 
     // Initial fetch
     const loadMessages = async () => {
       const messages = await fetchMessagesForChat(selectedChat, otherUserId);
-      console.log('✅ COMMUNITY: Found', messages.length, 'messages between users');
       setDirectChatMessages(messages);
     };
 
@@ -271,7 +252,6 @@ export function Community() {
       setDirectChatMessages(prev => {
         // Only update if there are new messages
         if (messages.length !== prev.length) {
-          console.log('🔄 POLLING: New messages detected, updating...');
           return messages;
         }
         return prev;
@@ -315,23 +295,12 @@ export function Community() {
         const userId = user.id;
         const userName = user.name;
         setIsLoadingRequests(true);
-        console.log('🔍 COMMUNITY PAGE: Fetching friend requests directly from Supabase');
-        console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
-        console.log('🔑 Current user ID:', userId);
-        console.log('🔑 Current user name:', userName);
-        
         try {
-          // DEBUG: First fetch ALL friend_requests to see what exists
+          // Fetch ALL friend_requests to check for mismatched user IDs
           const { data: allRequests, error: allError } = await supabase
             .from('friend_requests')
             .select('*');
-          
-          console.log('📋 ALL friend_requests in database:', {
-            count: allRequests?.length || 0,
-            error: allError?.message || null,
-            data: allRequests
-          });
-          
+
           // FIX MISMATCHED USER IDs: Check if any requests have the user's NAME but a DIFFERENT user_id
           if (allRequests && allRequests.length > 0 && userName) {
             const mismatchedAsRecipient = allRequests.filter(
@@ -346,74 +315,41 @@ export function Community() {
                      req.status === 'pending'
             );
             
-            console.log('🔧 Checking for mismatched user IDs...');
-            console.log('   Mismatched as recipient:', mismatchedAsRecipient.length);
-            console.log('   Mismatched as sender:', mismatchedAsSender.length);
-            
             // Fix mismatched recipient IDs
             if (mismatchedAsRecipient.length > 0) {
-              console.log('🔄 FIXING mismatched recipient user_ids...');
               for (const req of mismatchedAsRecipient) {
-                console.log(`   Updating request ${req.id}: ${req.to_user_id} -> ${userId}`);
                 const { error: updateError } = await supabase
                   .from('friend_requests')
                   .update({ to_user_id: userId })
                   .eq('id', req.id);
                 
                 if (updateError) {
-                  console.error('   ❌ Failed:', updateError.message);
-                } else {
-                  console.log('   ✅ Updated successfully!');
+                  console.error('Failed to fix recipient user_id:', updateError.message);
                 }
               }
             }
-            
+
             // Fix mismatched sender IDs
             if (mismatchedAsSender.length > 0) {
-              console.log('🔄 FIXING mismatched sender user_ids...');
               for (const req of mismatchedAsSender) {
-                console.log(`   Updating request ${req.id}: ${req.from_user_id} -> ${userId}`);
                 const { error: updateError } = await supabase
                   .from('friend_requests')
                   .update({ from_user_id: userId })
                   .eq('id', req.id);
                 
                 if (updateError) {
-                  console.error('   ❌ Failed:', updateError.message);
-                } else {
-                  console.log('   ✅ Updated successfully!');
+                  console.error('Failed to fix sender user_id:', updateError.message);
                 }
               }
             }
           }
-          
-          // Show requests where this user is involved
-          if (allRequests && allRequests.length > 0) {
-            const involvedRequests = allRequests.filter(
-              req => req.to_user_id === userId || req.from_user_id === userId
-            );
-            console.log('👤 Requests involving this user:', {
-              count: involvedRequests.length,
-              asRecipient: allRequests.filter(req => req.to_user_id === userId).length,
-              asSender: allRequests.filter(req => req.from_user_id === userId).length,
-              data: involvedRequests
-            });
-          }
-          
+
           // Re-fetch after potential fixes - Fetch received requests (where user is the recipient)
           const { data: receivedData, error: receivedError } = await supabase
             .from('friend_requests')
             .select('*')
             .eq('to_user_id', userId)
             .eq('status', 'pending');
-
-          console.log('📨 Received requests query result:', {
-            success: !receivedError,
-            count: receivedData?.length || 0,
-            error: receivedError?.message || null,
-            queryUserId: userId,
-            data: receivedData
-          });
 
           // Fetch sent requests (where user is the sender) - PENDING
           const { data: sentData, error: sentError } = await supabase
@@ -422,13 +358,6 @@ export function Community() {
             .eq('from_user_id', userId)
             .eq('status', 'pending');
 
-          console.log('📤 Sent requests (pending) query result:', {
-            success: !sentError,
-            count: sentData?.length || 0,
-            error: sentError?.message || null,
-            data: sentData
-          });
-
           // Fetch DECLINED requests (where user sent a request that was denied)
           const { data: deniedData, error: deniedError } = await supabase
             .from('friend_requests')
@@ -436,26 +365,12 @@ export function Community() {
             .eq('from_user_id', userId)
             .eq('status', 'declined');
 
-          console.log('🚫 Denied requests query result:', {
-            success: !deniedError,
-            count: deniedData?.length || 0,
-            error: deniedError?.message || null,
-            data: deniedData
-          });
-
           // Fetch ACCEPTED requests (where user sent a request that was accepted)
           const { data: acceptedData, error: acceptedError } = await supabase
             .from('friend_requests')
             .select('*')
             .eq('from_user_id', userId)
             .eq('status', 'accepted');
-
-          console.log('✅ Accepted requests query result:', {
-            success: !acceptedError,
-            count: acceptedData?.length || 0,
-            error: acceptedError?.message || null,
-            data: acceptedData
-          });
 
           // Transform and store received requests (use String(id) to match context format)
           if (receivedData && !receivedError) {
@@ -471,7 +386,6 @@ export function Community() {
               timestamp: req.created_at || new Date().toISOString()
             }));
             setDirectReceivedRequests(transformedReceived);
-            console.log('✅ Stored received requests:', transformedReceived.length);
           } else {
             setDirectReceivedRequests([]);
           }
@@ -490,7 +404,6 @@ export function Community() {
               timestamp: req.created_at || new Date().toISOString()
             }));
             setDirectSentRequests(transformedSent);
-            console.log('✅ Stored sent requests:', transformedSent.length);
           } else {
             setDirectSentRequests([]);
           }
@@ -510,7 +423,6 @@ export function Community() {
             }));
             setDeniedRequests(transformedDenied);
             setShowDeniedAlert(true); // Show the notification
-            console.log('🚫 Stored denied requests:', transformedDenied.length);
           } else {
             setDeniedRequests([]);
           }
@@ -530,17 +442,12 @@ export function Community() {
             }));
             setAcceptedRequests(transformedAccepted);
             setShowAcceptedAlert(true); // Show the success notification
-            console.log('✅ Stored accepted requests:', transformedAccepted.length);
           } else {
             setAcceptedRequests([]);
           }
 
-          console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
-          
           // SYNC: Also update the context's friendRequests so accept/decline functions work
-          console.log('🔄 Syncing context friendRequests with direct Supabase data...');
           await fetchFriendRequests();
-          console.log('✅ Context friendRequests synced!');
         } catch (error) {
           console.error('❌ Error fetching friend requests:', error);
           setDirectReceivedRequests([]);
@@ -683,21 +590,11 @@ export function Community() {
       const currentChat = chats.find(c => c.id === selectedChat);
       const receiverId = currentChat?.participants.find(p => p !== user.id);
       
-      console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
-      console.log('📤 COMMUNITY: SENDING MESSAGE TO USER CONTEXT');
-      console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
-      console.log('   chat_id:', selectedChat);
-      console.log('   sender_id (user_1):', user.id, '→', user.name);
-      console.log('   receiver_id (user_2):', receiverId);
-      console.log('   message:', messageInput.trim());
-      console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
-      
       // sendMessage params: chatId, content, receiverId
       // sender_id (user_1) is automatically set from logged-in user
       // receiver_id (user_2) is the other participant in the chat
       await sendMessage(selectedChat, messageInput, receiverId);
       
-      console.log('✅ COMMUNITY: Message sent successfully to UserContext');
       setMessageInput("");
     } catch (error) {
       console.error("❌ COMMUNITY: Error sending message:", error);
@@ -821,7 +718,7 @@ export function Community() {
           await fetchCommunityPosts();
         }
       } catch (error) {
-        console.debug('Error loading community posts, continuing anyway:', error);
+        // Error loading community posts, continuing anyway
       }
     };
     loadPosts();
@@ -1150,7 +1047,7 @@ export function Community() {
               </div>
             </div>
             <button 
-              onClick={() => setShowAcceptedAlert(false)}
+              onClick={() => { setShowAcceptedAlert(false); setAcceptedRequests([]); }}
               className="p-2 hover:bg-green-100 dark:hover:bg-green-800 rounded-lg transition-colors"
             >
               <X className="w-4 h-4 text-green-600 dark:text-green-400" />
@@ -1177,7 +1074,7 @@ export function Community() {
               </div>
             </div>
             <button 
-              onClick={() => setShowDeniedAlert(false)}
+              onClick={() => { setShowDeniedAlert(false); setDeniedRequests([]); }}
               className="p-2 hover:bg-red-100 dark:hover:bg-red-800 rounded-lg transition-colors"
             >
               <X className="w-4 h-4 text-red-600 dark:text-red-400" />
@@ -1245,7 +1142,7 @@ export function Community() {
                         await declineFriendRequest(request.id);
                         alert(`Friend request from ${request.fromUserName} declined.`);
                       // Refresh the direct requests to update the UI
-                      refreshDirectRequests();
+                      await refreshDirectRequests();
                       } catch (error: any) {
                         console.error("Error declining friend request:", error);
                         alert(error.message || "Failed to decline friend request. Please try again.");
@@ -1786,18 +1683,6 @@ export function Community() {
                       {/* Messages Area - Takes remaining space */}
                       <ScrollArea className="flex-1 p-4 bg-white dark:bg-gray-800">
               <div className="space-y-3">
-                          {/* Log messages for debugging */}
-                          {(() => {
-                            console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
-                            console.log('📬 COMMUNITY: RENDERING DIRECT MESSAGES');
-                            console.log('   Selected chat ID:', selectedChat);
-                            console.log('   Direct messages count:', directChatMessages.length);
-                            directChatMessages.forEach((m, i) => {
-                              console.log(`   [${i}] from: ${m.senderName}, content: ${m.content?.substring(0, 30)}`);
-                            });
-                            console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
-                            return null;
-                          })()}
                           {directChatMessages.map((message) => (
                             <div
                               key={message.id}

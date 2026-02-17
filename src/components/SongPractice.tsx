@@ -65,6 +65,25 @@ const chordDiagrams: Record<string, { frets: number[]; fingers: number[]; barFre
   'D7': { frets: [-1, -1, 0, 2, 1, 2], fingers: [0, 0, 0, 2, 1, 3] },
   'Bb': { frets: [1, 1, 3, 3, 3, 1], fingers: [1, 1, 2, 3, 4, 1], barFret: 1 },
   'Bm': { frets: [2, 2, 4, 4, 3, 2], fingers: [1, 1, 3, 4, 2, 1], barFret: 2 },
+  'F#': { frets: [2, 4, 4, 3, 2, 2], fingers: [1, 3, 4, 2, 1, 1], barFret: 2 },
+  'F#m': { frets: [2, 4, 4, 2, 2, 2], fingers: [1, 3, 4, 1, 1, 1], barFret: 2 },
+  'E7': { frets: [0, 2, 0, 1, 0, 0], fingers: [0, 2, 0, 1, 0, 0] },
+  'A7': { frets: [-1, 0, 2, 0, 2, 0], fingers: [0, 0, 2, 0, 3, 0] },
+  'Cmaj7': { frets: [-1, 3, 2, 0, 0, 0], fingers: [0, 3, 2, 0, 0, 0] },
+  'Dm7': { frets: [-1, -1, 0, 2, 1, 1], fingers: [0, 0, 0, 2, 1, 1] },
+  'Em7': { frets: [0, 2, 0, 0, 0, 0], fingers: [0, 2, 0, 0, 0, 0] },
+  'Am7': { frets: [-1, 0, 2, 0, 1, 0], fingers: [0, 0, 2, 0, 1, 0] },
+  'Fmaj7': { frets: [-1, -1, 3, 2, 1, 0], fingers: [0, 0, 3, 2, 1, 0] },
+  'Gmaj7': { frets: [3, 2, 0, 0, 0, 2], fingers: [3, 2, 0, 0, 0, 1] },
+  'Cadd9': { frets: [-1, 3, 2, 0, 3, 0], fingers: [0, 2, 1, 0, 3, 0] },
+  'Dsus2': { frets: [-1, -1, 0, 2, 3, 0], fingers: [0, 0, 0, 1, 3, 0] },
+  'Dsus4': { frets: [-1, -1, 0, 2, 3, 3], fingers: [0, 0, 0, 1, 2, 3] },
+  'Asus2': { frets: [-1, 0, 2, 2, 0, 0], fingers: [0, 0, 1, 2, 0, 0] },
+  'Asus4': { frets: [-1, 0, 2, 2, 3, 0], fingers: [0, 0, 1, 2, 3, 0] },
+  'B': { frets: [2, 2, 4, 4, 4, 2], fingers: [1, 1, 2, 3, 4, 1], barFret: 2 },
+  'C#m': { frets: [4, 4, 6, 6, 5, 4], fingers: [1, 1, 3, 4, 2, 1], barFret: 4 },
+  'Eb': { frets: [-1, -1, 1, 3, 4, 3], fingers: [0, 0, 1, 2, 4, 3] },
+  'Ab': { frets: [4, 6, 6, 5, 4, 4], fingers: [1, 3, 4, 2, 1, 1], barFret: 4 },
 };
 
 // Generate chord blocks for timeline
@@ -104,9 +123,13 @@ export function SongPractice({ isOpen, onClose, song, userId, onComplete }: Song
   const hitZoneRef = useRef<HTMLDivElement>(null);
   const stringLabelsRef = useRef<HTMLDivElement>(null);
 
-  // barOffset: actual visual distance from timeline left edge to bar center (px)
-  // Measured via getBoundingClientRect after dialog opens, using rAF loop until stable
-  const [barOffset, setBarOffset] = useState(0);
+  // barOffset: distance from timeline left edge to bar center (px)
+  // This is calculated from the practice area width for responsive behavior
+  const [barOffset, setBarOffset] = useState(80); // Default initial value
+  
+  // Bar position as percentage of PRACTICE AREA width (after string labels)
+  // This ensures consistent positioning across all screen sizes
+  const BAR_POSITION_PERCENT = 0.12; // 12% from left edge of timeline area
 
   // Song data with note events
   const [songData, setSongData] = useState<SongData | null>(null);
@@ -143,8 +166,13 @@ export function SongPractice({ isOpen, onClose, song, userId, onComplete }: Song
   // Includes 4 second buffer for breathing room at the end
   const [totalDuration, setTotalDuration] = useState<number>(() => {
     // Initial fallback from song.duration prop + 4 second buffer
-    const [mins, secs] = song.duration.split(':').map(Number);
-    return mins * 60 + secs + 4;
+    try {
+      const duration = song?.duration || '3:00';
+      const [mins, secs] = duration.split(':').map(Number);
+      return (mins || 0) * 60 + (secs || 0) + 4;
+    } catch {
+      return 184; // Default 3:00 + 4 second buffer
+    }
   });
 
   // Formatted duration for display
@@ -153,88 +181,107 @@ export function SongPractice({ isOpen, onClose, song, userId, onComplete }: Song
   // Get current chord based on time
   const getCurrentChord = useCallback(() => {
     const block = chordBlocks.find(b => currentTime >= b.time && currentTime < b.time + b.duration);
-    return block?.chord || song.chords[0];
-  }, [chordBlocks, currentTime, song.chords]);
+    return block?.chord || song?.chords?.[0] || 'C';
+  }, [chordBlocks, currentTime, song?.chords]);
 
   const currentChord = getCurrentChord();
 
   useEffect(() => {
     if (isOpen && song) {
-      const blocks = generateChordBlocks(song.chords, song.bpm, song.duration);
-      setChordBlocks(blocks);
-      setCurrentTime(0);
-      setProgress(0);
-      setPracticeStartTime(Date.now());
+      try {
+        const chords = song.chords || ['C', 'G', 'Am', 'F'];
+        const bpm = song.bpm || 120;
+        const duration = song.duration || '3:00';
+        
+        const blocks = generateChordBlocks(chords, bpm, duration);
+        setChordBlocks(blocks);
+        setCurrentTime(0);
+        setProgress(0);
+        setPracticeStartTime(Date.now());
 
-      // Load song data with note events
-      const data = getSongData(song.title, song.chords, song.bpm, song.duration);
-      setSongData(data);
-      setNoteEvents(data.events || []);
+        // Load song data with note events
+        const data = getSongData(song.title || 'Unknown Song', chords, bpm, duration);
+        setSongData(data);
+        setNoteEvents(data?.events || []);
 
-      // Calculate actual duration from note events + 4 second buffer for breathing room
-      const DURATION_BUFFER = 4; // Extra seconds at the end
-      if (data.events && data.events.length > 0) {
-        const calculatedDuration = calculateDurationFromEvents(data.events) + DURATION_BUFFER;
-        setTotalDuration(calculatedDuration);
-        console.log(`🎵 Loaded song data for "${song.title}":`, data.events.length, 'notes, duration:', formatDuration(calculatedDuration), '(includes 4s buffer)');
-      } else {
-        // Fallback to song.duration prop + buffer
-        const [mins, secs] = song.duration.split(':').map(Number);
-        setTotalDuration(mins * 60 + secs + DURATION_BUFFER);
-        console.log(`🎵 Loaded song "${song.title}" with default duration:`, song.duration, '(+ 4s buffer)');
+        // Calculate actual duration from note events + 4 second buffer for breathing room
+        const DURATION_BUFFER = 4; // Extra seconds at the end
+        if (data?.events && data.events.length > 0) {
+          const calculatedDuration = calculateDurationFromEvents(data.events) + DURATION_BUFFER;
+          setTotalDuration(calculatedDuration);
+          console.log(`🎵 Loaded song data for "${song.title}":`, data.events.length, 'notes, duration:', formatDuration(calculatedDuration), '(includes 4s buffer)');
+        } else {
+          // Fallback to song.duration prop + buffer
+          const [mins, secs] = duration.split(':').map(Number);
+          setTotalDuration((mins || 0) * 60 + (secs || 0) + DURATION_BUFFER);
+          console.log(`🎵 Loaded song "${song.title}" with default duration:`, duration, '(+ 4s buffer)');
+        }
+      } catch (error) {
+        console.error('Error loading song data:', error);
+        setTotalDuration(184); // Default fallback
       }
 
       // Initialize chord detection service
       if (!chordDetectionRef.current) {
-        chordDetectionRef.current = new ChordDetectionService('ws://localhost:9103/ws');
+        chordDetectionRef.current = new ChordDetectionService();  // Uses serverConfig URL
 
         chordDetectionRef.current.setOnStatusChange((connected, status) => {
           setChordDetectionConnected(connected);
           console.log(`🎸 Chord Detection: ${status}`);
+          
+          // Set song context when connected for better chord detection
+          // Use song.chords directly to ensure we always have current song data
+          if (connected && song?.chords && song.chords.length > 0) {
+            chordDetectionRef.current?.setSongContext(song.chords, song.title);
+          }
         });
 
         chordDetectionRef.current.setOnResult((result: ChordDetectionResult) => {
-          // Minimum confidence threshold - ignore very low-confidence detections
-          const MIN_CONFIDENCE = 0.3;
+          // Very low threshold - let API do the filtering, just ignore actual silence
+          const MIN_CONFIDENCE = 0.05;
 
-          // Check if this is a "listening" or silence message (no actual detection)
+          // Only filter out actual silence (no data at all)
           const isSilence = result.type === 'listening' ||
                            (!result.chord && (!result.notes || result.notes.length === 0));
 
-          // Also treat low-confidence results as silence
-          const isLowConfidence = result.confidence !== undefined && result.confidence < MIN_CONFIDENCE;
-
-          if (isSilence || isLowConfidence) {
-            // Clear everything when no sound or low confidence
-            setDetectedChord(null);
-            setDetectedNotes([]);
-            setChordConfidence(0);
+          if (isSilence) {
+            // Don't clear immediately - let the display persist briefly
             return;
           }
 
-          // Same logic as main.js updateChordDisplay
+          // Low confidence - still show but don't update chord (keeps display stable)
+          const isLowConfidence = result.confidence !== undefined && result.confidence < MIN_CONFIDENCE;
+          
+          if (isLowConfidence) {
+            // Just update confidence without clearing - smoother display
+            if (result.confidence !== undefined) {
+              setChordConfidence(result.confidence);
+            }
+            return;
+          }
+
+          // Update chord if present
           if (result.chord) {
             setDetectedChord(result.chord);
-          } else {
-            setDetectedChord(null);
           }
 
+          // Process notes
           if (result.notes && result.notes.length > 0) {
-            // Handle notes format - can be string[] or [note, freq][]
-            // Notes are ordered by confidence, so first note is most confident
-            const allNotes = result.notes.map(n =>
-              Array.isArray(n) ? n[0] : n
-            );
+            const allNotes: string[] = result.notes.map(n => {
+              if (Array.isArray(n)) {
+                return String(n[0]);
+              }
+              return String(n);
+            });
 
-            // Only use the MOST CONFIDENT note (first one in the list)
+            // Use most confident note
             const mostConfidentNote = allNotes[0];
-            console.log('🎵 Most confident note:', mostConfidentNote,
-              `(confidence: ${((result.confidence || 0) * 100).toFixed(0)}%)`);
-            setDetectedNotes([mostConfidentNote]); // Only store the most confident
-          } else {
-            setDetectedNotes([]);
+            if (mostConfidentNote) {
+              setDetectedNotes([mostConfidentNote]);
+            }
           }
 
+          // Update confidence/stability
           if (result.confidence !== undefined) {
             setChordConfidence(result.confidence);
           }
@@ -243,12 +290,16 @@ export function SongPractice({ isOpen, onClose, song, userId, onComplete }: Song
           }
         });
 
-        // Try to connect to the chord detection server
+        // Try to connect to the chord detection server (kundu.dev/c_d)
         chordDetectionRef.current.connect().then((connected) => {
           if (connected) {
-            console.log('🎸 Connected to chord detection server');
+            console.log('🎸 Connected to chord detection server at kundu.dev/c_d');
+            // Set song context for better detection
+            if (song?.chords && song.chords.length > 0) {
+              chordDetectionRef.current?.setSongContext(song.chords, song.title);
+            }
           } else {
-            console.log('🎸 Chord detection server not available (run: cd audio/music_test && python web_server.py)');
+            console.log('🎸 Could not connect to chord detection server');
           }
         });
       }
@@ -269,54 +320,45 @@ export function SongPractice({ isOpen, onClose, song, userId, onComplete }: Song
     };
   }, [isOpen, song]);
 
-  // Measure actual bar visual position using getBoundingClientRect.
-  // Uses a rAF loop that keeps measuring until the value stabilizes (dialog animation done).
-  // This is the single source of truth — notes use this same value for positioning.
+  // Calculate barOffset based on timeline width for responsive positioning.
+  // This ensures notes align with the bar consistently across all screen sizes.
+  // Runs continuously to handle resize and ensure accurate positioning.
   useEffect(() => {
     if (!isOpen) return;
 
-    let lastOffset = -1;
-    let stableFrames = 0;
     let rafId: number;
     let stopped = false;
 
     const measure = () => {
       if (stopped) return;
-      if (!hitZoneRef.current || !timelineRef.current) {
-        rafId = requestAnimationFrame(measure);
-        return;
-      }
-
-      const barRect = hitZoneRef.current.getBoundingClientRect();
-      const timelineRect = timelineRef.current.getBoundingClientRect();
-      const barCenter = barRect.left + barRect.width / 2;
-      const offset = barCenter - timelineRect.left;
-
-      if (offset > 5) {
-        setBarOffset(offset);
-
-        if (Math.abs(offset - lastOffset) < 0.5) {
-          stableFrames++;
-        } else {
-          stableFrames = 0;
+      
+      if (timelineRef.current) {
+        const timelineRect = timelineRef.current.getBoundingClientRect();
+        const width = timelineRect.width;
+        
+        if (width > 0) {
+          // Calculate bar offset as percentage of timeline width
+          const offset = width * BAR_POSITION_PERCENT;
+          setBarOffset(offset);
         }
-        lastOffset = offset;
-
-        // Stop after 30 stable frames (~0.5s of stability)
-        if (stableFrames < 30) {
-          rafId = requestAnimationFrame(measure);
-        }
-      } else {
-        rafId = requestAnimationFrame(measure);
       }
+      
+      // Keep measuring to handle any resize or layout changes
+      rafId = requestAnimationFrame(measure);
     };
 
+    // Start measuring
     rafId = requestAnimationFrame(measure);
 
-    // Re-measure on resize
+    // Also handle resize events explicitly for immediate response
     const onResize = () => {
-      stableFrames = 0;
-      if (!stopped) rafId = requestAnimationFrame(measure);
+      if (!stopped && timelineRef.current) {
+        const timelineRect = timelineRef.current.getBoundingClientRect();
+        const width = timelineRect.width;
+        if (width > 0) {
+          setBarOffset(width * BAR_POSITION_PERCENT);
+        }
+      }
     };
     window.addEventListener('resize', onResize);
 
@@ -334,14 +376,12 @@ export function SongPractice({ isOpen, onClose, song, userId, onComplete }: Song
   useEffect(() => {
     if (!isPlaying || !noteEvents.length) return;
 
-    // No delay — barOffset is measured from the actual bar visual position
-    const VISUAL_ACTIVATION_DELAY = 0;
-
-    // Timing windows:
+    // Timing windows for evaluation:
+    // Notes visually reach the bar at note.time (currentTime = note.time)
     // - EARLY_ACCEPT: Accept correct plays slightly early (but don't mark wrong yet)
     // - LATE_LEEWAY: Continue accepting correct plays after note ends
-    const EARLY_ACCEPT = 0.15;  // Accept correct notes 0.15s before bar touches
-    const LATE_LEEWAY = 0.4;    // Accept late plays up to 0.4s after note ends
+    const EARLY_ACCEPT = 0.3;   // Accept correct notes 0.3s before bar touches
+    const LATE_LEEWAY = 0.5;    // Accept late plays up to 0.5s after note ends
 
     // Convert detected notes to comparable format (just note names like "A", "C", "E")
     const detectedNoteNames = detectedNotes.map(n => {
@@ -356,23 +396,23 @@ export function SongPractice({ isOpen, onClose, song, userId, onComplete }: Song
     const shouldLog = now - lastLogTimeRef.current >= 1000; // Log once per second
 
     noteEvents.forEach((note, noteIndex) => {
-      // Exact visual timing (when bar touches note)
-      const visualHitTime = note.time + VISUAL_ACTIVATION_DELAY;
-      const visualEndTime = note.time + (note.duration || 0.5) + VISUAL_ACTIVATION_DELAY;
+      // Exact timing when bar touches note (note reaches bar at note.time)
+      const hitTime = note.time;
+      const endTime = note.time + (note.duration || 0.5);
 
       // Early acceptance window (can mark correct early, but NOT wrong)
-      const earlyAcceptStart = visualHitTime - EARLY_ACCEPT;
-      // Late acceptance window (continue accepting after visual end)
-      const lateAcceptEnd = visualEndTime + LATE_LEEWAY;
+      const earlyAcceptStart = hitTime - EARLY_ACCEPT;
+      // Late acceptance window (continue accepting after note ends)
+      const lateAcceptEnd = endTime + LATE_LEEWAY;
 
       // Is the bar currently at or past this note?
-      const barHasTouched = currentTime >= visualHitTime;
-      const barHasPassed = currentTime >= visualEndTime;
+      const barHasTouched = currentTime >= hitTime;
+      const barHasPassed = currentTime >= endTime;
 
       // Is this note in any active window?
-      const isInEarlyWindow = currentTime >= earlyAcceptStart && currentTime < visualHitTime;
-      const isInActiveWindow = currentTime >= visualHitTime && currentTime < visualEndTime;
-      const isInLateWindow = currentTime >= visualEndTime && currentTime <= lateAcceptEnd;
+      const isInEarlyWindow = currentTime >= earlyAcceptStart && currentTime < hitTime;
+      const isInActiveWindow = currentTime >= hitTime && currentTime < endTime;
+      const isInLateWindow = currentTime >= endTime && currentTime <= lateAcceptEnd;
 
       const isNoteActive = isInEarlyWindow || isInActiveWindow || isInLateWindow;
 
@@ -583,7 +623,7 @@ export function SongPractice({ isOpen, onClose, song, userId, onComplete }: Song
   };
 
   // Restart from beginning
-  const handleRestartFromStart = () => {
+  const handleRestartFromStart = async () => {
     setShowMistakeOptions(false);
     setHasMadeMistake(false);
     setFirstMistakeTime(null);
@@ -596,12 +636,12 @@ export function SongPractice({ isOpen, onClose, song, userId, onComplete }: Song
 
     // Restart chord detection
     if (chordDetectionRef.current) {
-      chordDetectionRef.current.startRecording();
+      await chordDetectionRef.current.startRecording();
     }
   };
 
   // Restart from 3 seconds before first mistake
-  const handleRestartFromMistake = () => {
+  const handleRestartFromMistake = async () => {
     if (firstMistakeTime === null) return;
 
     const restartTime = Math.max(0, firstMistakeTime - 3);
@@ -613,12 +653,12 @@ export function SongPractice({ isOpen, onClose, song, userId, onComplete }: Song
     setCurrentTime(restartTime);
     setProgress((restartTime / totalDuration) * 100);
     // Adjust start time to account for the offset
-    setStartTime(Date.now() - (restartTime * 1000 / playbackSpeed));
+    setStartTime(Date.now() - (restartTime * 1000) / playbackSpeed);
     setIsPlaying(true);
 
     // Restart chord detection
     if (chordDetectionRef.current) {
-      chordDetectionRef.current.startRecording();
+      await chordDetectionRef.current.startRecording();
     }
   };
 
@@ -712,6 +752,10 @@ export function SongPractice({ isOpen, onClose, song, userId, onComplete }: Song
   // Pixels per second for the scrolling timeline
   const pixelsPerSecond = 150;
 
+  // Lead-in time: how long notes are visible approaching the bar before they reach it
+  // This gives users time to see upcoming notes and prepare
+  const VISUAL_LEAD_TIME = 2.0; // seconds - notes appear 2s before reaching the bar
+
   // String colors (darker for light theme)
   const stringColors = [
     'rgb(139, 90, 43)',   // E (low) - thickest
@@ -801,9 +845,30 @@ export function SongPractice({ isOpen, onClose, song, userId, onComplete }: Song
               ))}
             </div>
 
-          {/* Hit zone indicator - vertical blue line (matching Songs page blue) */}
+          {/* Hit zone indicator - vertical blue line positioned within timeline area */}
           {(() => {
+            // Find the first note time to determine lead-in period
+            const firstNoteTime = noteEvents.length > 0 
+              ? Math.min(...noteEvents.map(n => n.time)) 
+              : 0;
+            
+            // Are we in the lead-in period (before first note)?
+            const isLeadIn = currentTime < firstNoteTime - 0.5; // 0.5s before first note
+            
+            // Is a note imminent? (within 0.3s of hitting a note - about to collide)
+            const isImminent = noteEvents.some(note => {
+              const timeUntilNote = note.time - currentTime;
+              return timeUntilNote > 0 && timeUntilNote <= 0.3;
+            });
+            
+            // Is a note approaching? (within 1s of hitting a note - visible approach)
+            const isApproaching = noteEvents.some(note => {
+              const timeUntilNote = note.time - currentTime;
+              return timeUntilNote > 0 && timeUntilNote <= 1.0;
+            });
+
             // Check if any note is currently being hit (for bar animation)
+            // Notes reach bar at note.time (when currentTime = note.time)
             const anyNoteActive = noteEvents.some(note => {
               return currentTime >= note.time && currentTime < note.time + (note.duration || 0.5);
             });
@@ -814,36 +879,77 @@ export function SongPractice({ isOpen, onClose, song, userId, onComplete }: Song
             });
             const activeFeedback = activeNoteIndex >= 0 ? noteFeedback[activeNoteIndex] : null;
 
-            // Bar color based on feedback
-            const barColor = activeFeedback === 'correct'
-              ? 'rgb(34, 197, 94)'
-              : activeFeedback === 'wrong'
-                ? 'rgb(239, 68, 68)'
-                : 'rgb(59, 130, 246)';
-            const barColorDark = activeFeedback === 'correct'
-              ? 'rgb(22, 163, 74)'
-              : activeFeedback === 'wrong'
-                ? 'rgb(220, 38, 38)'
-                : 'rgb(37, 99, 235)';
-            const glowColor = activeFeedback === 'correct'
-              ? 'rgba(34, 197, 94, 0.6)'
-              : activeFeedback === 'wrong'
-                ? 'rgba(239, 68, 68, 0.6)'
-                : 'rgba(59, 130, 246, 0.4)';
+            // Bar color based on state - priority: feedback > active > imminent > approaching > lead-in > default
+            let barColor, barColorDark, glowColor, barWidth;
+            
+            if (isLeadIn) {
+              // Lead-in: subtle gray-blue, no glow - waiting state
+              barColor = 'rgb(148, 163, 184)';
+              barColorDark = 'rgb(100, 116, 139)';
+              glowColor = 'transparent';
+              barWidth = 4;
+            } else if (activeFeedback === 'correct') {
+              barColor = 'rgb(34, 197, 94)';
+              barColorDark = 'rgb(22, 163, 74)';
+              glowColor = 'rgba(34, 197, 94, 0.6)';
+              barWidth = 6;
+            } else if (activeFeedback === 'wrong') {
+              barColor = 'rgb(239, 68, 68)';
+              barColorDark = 'rgb(220, 38, 38)';
+              glowColor = 'rgba(239, 68, 68, 0.6)';
+              barWidth = 6;
+            } else if (anyNoteActive) {
+              // Note is being hit RIGHT NOW - brightest state
+              barColor = 'rgb(59, 130, 246)';
+              barColorDark = 'rgb(37, 99, 235)';
+              glowColor = 'rgba(59, 130, 246, 0.6)';
+              barWidth = 6;
+            } else if (isImminent) {
+              // About to hit a note - build anticipation
+              barColor = 'rgb(96, 165, 250)';
+              barColorDark = 'rgb(59, 130, 246)';
+              glowColor = 'rgba(59, 130, 246, 0.4)';
+              barWidth = 5;
+            } else if (isApproaching) {
+              // Note approaching - subtle glow
+              barColor = 'rgb(147, 197, 253)';
+              barColorDark = 'rgb(96, 165, 250)';
+              glowColor = 'rgba(59, 130, 246, 0.3)';
+              barWidth = 4;
+            } else {
+              // Default: calm blue, minimal glow
+              barColor = 'rgb(147, 197, 253)';
+              barColorDark = 'rgb(96, 165, 250)';
+              glowColor = 'rgba(59, 130, 246, 0.15)';
+              barWidth = 4;
+            }
 
+            // Position bar using barOffset directly for pixel-perfect alignment with notes
+            // barOffset = timeline width * BAR_POSITION_PERCENT
+            // Bar is positioned at 40px (string labels) + barOffset from practice area left
             return (
               <div
                 ref={hitZoneRef}
                 className="absolute top-0 bottom-0 z-30"
                 style={{
-                  left: '15%',
-                  width: anyNoteActive ? '6px' : '4px',
+                  // Use exact pixel position: 40px (string labels) + barOffset
+                  // This ensures the bar is EXACTLY where notes expect it to be
+                  // The bar stays FIXED - notes stream TOWARD it from the right
+                  left: `${40 + barOffset}px`,
+                  width: `${barWidth}px`,
                   background: `linear-gradient(to bottom, ${barColor}, ${barColorDark})`,
                   boxShadow: anyNoteActive
-                    ? `0 0 25px ${glowColor}, 0 0 50px ${glowColor}`
-                    : `0 0 15px ${glowColor}`,
-                  transform: `translateX(-50%) ${anyNoteActive ? 'scaleX(1.5)' : 'scaleX(1)'}`,
-                  transition: 'width 0.1s ease-out, box-shadow 0.1s ease-out, transform 0.1s ease-out, background 0.15s ease-out'
+                    ? `0 0 25px ${glowColor}, 0 0 50px ${glowColor}` // Strong glow when hitting
+                    : isImminent
+                      ? `0 0 18px ${glowColor}, 0 0 35px ${glowColor}` // Building glow
+                      : isApproaching
+                        ? `0 0 12px ${glowColor}` // Subtle glow
+                        : glowColor !== 'transparent' ? `0 0 6px ${glowColor}` : 'none',
+                  transform: `translateX(-50%) ${anyNoteActive ? 'scaleX(1.3)' : isImminent ? 'scaleX(1.15)' : 'scaleX(1)'}`,
+                  transition: anyNoteActive 
+                    ? 'none' // Instant when note hits
+                    : 'width 0.1s ease-out, box-shadow 0.15s ease-out, transform 0.1s ease-out, background 0.15s ease-out',
+                  opacity: isLeadIn ? 0.6 : 1
                 }}
               />
             );
@@ -895,8 +1001,10 @@ export function SongPractice({ isOpen, onClose, song, userId, onComplete }: Song
                 if (notes.length < 2) return null;
 
                 const noteWidth = Math.max(30, notes[0].duration * pixelsPerSecond * 0.8);
-                // Position note so its CENTER reaches bar when currentTime = time
+                // Position note so its CENTER reaches bar exactly at note.time
+                // Notes stream from right to left, bar is fixed - activation happens when bar hits the note
                 const noteStartX = time * pixelsPerSecond + barOffset - noteWidth / 2;
+                // Note is active only when bar actually reaches it (currentTime = note.time)
                 const isActive = currentTime >= time && currentTime < (time + notes[0].duration);
                 const isPast = currentTime >= (time + notes[0].duration);
 
@@ -940,10 +1048,20 @@ export function SongPractice({ isOpen, onClose, song, userId, onComplete }: Song
               // Calculate note width
               const noteWidth = Math.max(30, note.duration * pixelsPerSecond * 0.8);
 
-              // Position note so its CENTER reaches bar exactly when currentTime = note.time
+              // Position note so its CENTER is at barOffset when currentTime = note.time
+              // Formula: at currentTime=note.time, visual X = note.time*pps + barOffset - currentTime*pps = barOffset
+              // Notes stream from RIGHT to LEFT - they appear on the right and move toward the bar
               const noteStartX = note.time * pixelsPerSecond + barOffset - noteWidth / 2;
 
-              // Notes activate when the bar reaches them
+              // Calculate time until bar hits this note
+              const timeUntilHit = note.time - currentTime;
+              
+              // Note states based on bar position:
+              // 1. APPROACHING: Bar is moving toward note (note visible, streaming left)
+              // 2. ACTIVE: Bar has reached the note (currentTime >= note.time)
+              // 3. PAST: Bar has passed the note (currentTime >= note.time + duration)
+              const isApproaching = timeUntilHit > 0 && timeUntilHit <= VISUAL_LEAD_TIME;
+              const isImminent = timeUntilHit > 0 && timeUntilHit <= 0.5; // About to hit
               const isActive = currentTime >= note.time && currentTime < (note.time + note.duration);
               const isPast = currentTime >= (note.time + note.duration);
 
@@ -1002,15 +1120,18 @@ export function SongPractice({ isOpen, onClose, song, userId, onComplete }: Song
               const feedbackColors = getFeedbackColors();
 
               // Button-like styling matching the control buttons
+              // Priority: past > feedback > active > imminent > approaching > default
               const buttonBg = isPast
                 ? 'rgb(229, 231, 235)'
                 : feedbackColors
                   ? feedbackColors.bg
                   : isActive
                     ? 'rgb(59, 130, 246)'
-                    : isOpenString
-                      ? 'rgba(255, 255, 255, 0.95)'
-                      : colors.bg;
+                    : isImminent
+                      ? 'rgb(147, 197, 253)' // Brighter blue when imminent
+                      : isOpenString
+                        ? 'rgba(255, 255, 255, 0.95)'
+                        : colors.bg;
 
               const buttonBorder = isPast
                 ? 'rgb(209, 213, 219)'
@@ -1018,9 +1139,11 @@ export function SongPractice({ isOpen, onClose, song, userId, onComplete }: Song
                   ? feedbackColors.border
                   : isActive
                     ? 'rgb(37, 99, 235)'
-                    : isOpenString
-                      ? 'rgb(156, 163, 175)'
-                      : colors.border;
+                    : isImminent
+                      ? 'rgb(96, 165, 250)'
+                      : isOpenString
+                        ? 'rgb(156, 163, 175)'
+                        : colors.border;
 
               const buttonBottomBorder = isPast
                 ? 'rgb(209, 213, 219)'
@@ -1028,9 +1151,11 @@ export function SongPractice({ isOpen, onClose, song, userId, onComplete }: Song
                   ? feedbackColors.bottom
                   : isActive
                     ? 'rgb(29, 78, 216)'
-                    : isOpenString
-                      ? 'rgb(107, 114, 128)'
-                      : colors.border;
+                    : isImminent
+                      ? 'rgb(59, 130, 246)'
+                      : isOpenString
+                        ? 'rgb(107, 114, 128)'
+                        : colors.border;
 
               return (
                 <div
@@ -1048,21 +1173,25 @@ export function SongPractice({ isOpen, onClose, song, userId, onComplete }: Song
                     borderBottom: `3px solid ${buttonBottomBorder}`,
                     boxShadow: isActive
                       ? '0 4px 12px rgba(59, 130, 246, 0.5), 0 0 20px rgba(59, 130, 246, 0.3)'
-                      : isPast
-                        ? 'none'
-                        : '0 2px 4px rgba(0, 0, 0, 0.1)',
+                      : isImminent
+                        ? '0 3px 10px rgba(59, 130, 246, 0.4), 0 0 15px rgba(59, 130, 246, 0.2)'
+                        : isPast
+                          ? 'none'
+                          : '0 2px 4px rgba(0, 0, 0, 0.1)',
                     opacity: isPast ? 0.4 : 1,
-                    // INSTANT transform change - no transition delay
+                    // Transform: scale up when active, pulse slightly when imminent
                     transform: isActive
                       ? 'scale(1.15)'
-                      : isPast
-                        ? 'scale(0.9)'
-                        : 'scale(1)',
-                    // Only animate scale DOWN (when leaving active), not UP (when becoming active)
-                    transition: isPast || !isActive
-                      ? 'transform 0.2s ease-out, opacity 0.2s ease-out'
-                      : 'none',
-                    zIndex: isActive ? 20 : 10
+                      : isImminent
+                        ? 'scale(1.08)' // Slightly larger when about to hit
+                        : isPast
+                          ? 'scale(0.9)'
+                          : 'scale(1)',
+                    // Smooth transition for approaching notes, instant for active
+                    transition: isActive
+                      ? 'none' // Instant activation when bar hits
+                      : 'transform 0.15s ease-out, opacity 0.2s ease-out, box-shadow 0.15s ease-out',
+                    zIndex: isActive ? 20 : isImminent ? 15 : 10
                   }}
                 >
                   {/* Fret number display */}

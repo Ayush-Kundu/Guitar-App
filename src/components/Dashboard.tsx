@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useMemo } from 'react';
 import { DashboardCard } from "./DashboardCard";
 import { QuickActionButton } from "./QuickActionButton";
 import { StatsCard } from "./StatsCard";
@@ -115,13 +115,13 @@ export function Dashboard({ onSectionChange }: DashboardProps) {
   }, [progressData, user]);
 
   // Combine selected songs with their progress data
-  const songsWithProgress = selectedSongs.map(song => {
+  const songsWithProgress = useMemo(() => selectedSongs.map(song => {
     const progress = songProgress[song.songId];
     return {
       ...song,
       progress: progress?.progress || 0,
     };
-  }).slice(0, 3); // Show top 3
+  }).slice(0, 3), [selectedSongs, songProgress]); // Show top 3
 
   // Use stored values with fallback to user context
   const displayStreak = streak || user?.practiceStreak || 0;

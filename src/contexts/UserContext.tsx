@@ -1642,13 +1642,31 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
     return `${currentTier.rank} ${currentTier.tier}`;
   };
 
-  // Hash password using Web Crypto API
+  // Hash password using Web Crypto API with fallback
   const hashPassword = async (password: string): Promise<string> => {
-    const encoder = new TextEncoder();
-    const data = encoder.encode(password + 'strummy_salt_2024');
-    const hashBuffer = await crypto.subtle.digest('SHA-256', data);
-    const hashArray = Array.from(new Uint8Array(hashBuffer));
-    return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+    try {
+      // Check if crypto.subtle is available (requires secure context)
+      if (typeof crypto !== 'undefined' && crypto.subtle) {
+        const encoder = new TextEncoder();
+        const data = encoder.encode(password + 'strummy_salt_2024');
+        const hashBuffer = await crypto.subtle.digest('SHA-256', data);
+        const hashArray = Array.from(new Uint8Array(hashBuffer));
+        return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+      }
+    } catch (e) {
+      console.warn('crypto.subtle not available, using fallback hash');
+    }
+    
+    // Fallback: simple hash function for non-secure contexts
+    // This is less secure but allows the app to function
+    let hash = 0;
+    const str = password + 'strummy_salt_2024';
+    for (let i = 0; i < str.length; i++) {
+      const char = str.charCodeAt(i);
+      hash = ((hash << 5) - hash) + char;
+      hash = hash & hash; // Convert to 32bit integer
+    }
+    return Math.abs(hash).toString(16).padStart(32, '0');
   };
 
   // Generate a UUID for new users

@@ -121,12 +121,20 @@ export function Settings({ isDarkMode, setIsDarkMode }: SettingsProps) {
   const currentAvatar = avatarOptions.find(a => a.id === selectedAvatarId)?.src || avatar6;
 
   // Handle avatar selection
-  const handleSelectAvatar = (avatarId: number) => {
+  const handleSelectAvatar = async (avatarId: number) => {
     setSelectedAvatarId(avatarId);
     localStorage.setItem('guitarApp_selectedAvatar', avatarId.toString());
     setShowAvatarPicker(false);
     setShowSuccess(true);
     setTimeout(() => setShowSuccess(false), 2000);
+    // Sync avatar selection to Supabase profile
+    if (user) {
+      try {
+        await updateProfile({ avatar: avatarId.toString() });
+      } catch (error) {
+        console.error('Error syncing avatar to Supabase:', error);
+      }
+    }
   };
   
   // Notification settings from hook
@@ -146,7 +154,7 @@ export function Settings({ isDarkMode, setIsDarkMode }: SettingsProps) {
     try {
       await updateProfile({
         name: editData.name,
-        level: editData.level as any
+        level: editData.level as 'novice' | 'beginner' | 'elementary' | 'intermediate' | 'proficient' | 'advanced' | 'expert'
       });
       setIsEditing(false);
       setShowSuccess(true);

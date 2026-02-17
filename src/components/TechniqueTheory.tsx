@@ -245,7 +245,7 @@ export function TechniqueTheory({ onSectionChange, initialTab = 'technique' }: T
   return (
     <div className="page-content min-h-screen bg-gradient-to-br from-amber-50 to-orange-50 dark:from-gray-900 dark:to-gray-800 p-4 pb-20">
       {/* Top-Level Navigation: Technique | Theory */}
-      <div className="max-w-6xl mx-auto mb-8">
+      <div className="max-w-6xl mx-auto mb-2">
         <div className="bg-white/70 dark:bg-slate-800/80 backdrop-blur-sm rounded-xl shadow-sm p-2 border-2 border-gray-200 dark:border-slate-600">
           <div className="flex gap-2">
             <button
@@ -277,7 +277,7 @@ export function TechniqueTheory({ onSectionChange, initialTab = 'technique' }: T
         <>
           <div className="max-w-6xl mx-auto">
             {/* Pianist Character Image - Above slider */}
-            <div className="flex justify-center relative" style={{ zIndex: 40, marginBottom: '-60px' }}>
+            <div className="flex justify-center relative" style={{ zIndex: 40, marginTop: '-90px', marginBottom: '-80px' }}>
               <img
                 src={pianistCharacter}
                 alt="Pianist character"
@@ -390,7 +390,7 @@ export function TechniqueTheory({ onSectionChange, initialTab = 'technique' }: T
         <div className="max-w-6xl mx-auto">
           {/* Weekly Theory Goal */}
           <Card
-            className="mb-8 rounded-2xl transition-all duration-500 hover:scale-[1.01] overflow-hidden backdrop-blur-sm bg-gradient-to-r from-white to-blue-50/30 dark:from-gray-800 dark:to-blue-900/20 border-0"
+            className="mb-2 rounded-2xl transition-all duration-500 hover:scale-[1.01] overflow-hidden backdrop-blur-sm bg-gradient-to-r from-white to-blue-50/30 dark:from-gray-800 dark:to-blue-900/20 border-0"
             style={{ border: '2px solid rgb(237, 237, 237)', borderLeft: '3.5px solid rgb(237, 237, 237)', borderBottom: '3.5px solid rgb(237, 237, 237)', borderRight: '3.5px solid rgb(237, 237, 237)', backgroundColor: 'rgba(255, 255, 255, 0.4)' }}
           >
             <CardContent className="p-6 bg-transparent">
@@ -415,7 +415,7 @@ export function TechniqueTheory({ onSectionChange, initialTab = 'technique' }: T
           </Card>
 
           {/* Pensive Guitar Character Image - Above slider */}
-          <div className="flex justify-center relative" style={{ zIndex: 40, marginBottom: '-60px' }}>
+          <div className="flex justify-center relative" style={{ zIndex: 40, marginTop: '-80px', marginBottom: '-30px' }}>
             <img
               src={pensiveGuitarCharacter}
               alt="Pensive guitar character"
@@ -424,7 +424,7 @@ export function TechniqueTheory({ onSectionChange, initialTab = 'technique' }: T
           </div>
 
           {/* Theory Navigation Tabs */}
-          <div className="mb-4 bg-white/70 backdrop-blur-sm rounded-xl shadow-sm relative" style={{ border: '2.5px solid rgb(237, 237, 237)', zIndex: 20, padding: '6px' }}>
+          <div className="mb-4 bg-white/70 backdrop-blur-sm rounded-xl shadow-sm relative" style={{ border: '2.5px solid rgb(237, 237, 237)', zIndex: 20, padding: '6px', marginTop: '20px' }}>
             <div className="flex" style={{ gap: '6px' }}>
               <button
                 onClick={() => setTheoryTab('basics')}

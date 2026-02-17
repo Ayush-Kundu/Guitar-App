@@ -26,13 +26,20 @@ export function Auth() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
-    
+
+    // Validate email format
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(formData.email)) {
+      setError('Please enter a valid email address.');
+      return;
+    }
+
     if (isSignUp && step === 1) {
       // Move to music preferences step
       setStep(2);
       return;
     }
-      
+
     setIsLoading(true);
     
     try {

@@ -845,31 +845,6 @@ app.post('/api/competitions', (req, res) => {
   }
 });
 
-// GET endpoint to get leaderboard
-app.get('/api/leaderboard', (req, res) => {
-  try {
-    const { type = 'total', limit = 100 } = req.query; // 'total', 'weekly', 'monthly'
-    
-    // This would typically query a database
-    // For now, we'll return a mock structure
-    // In production, you'd aggregate points from all users
-    
-    res.json({
-      success: true,
-      leaderboard: [],
-      type: type,
-      message: 'Leaderboard data would be aggregated from user points'
-    });
-
-  } catch (error) {
-    console.error('Error retrieving leaderboard:', error);
-    res.status(500).json({ 
-      error: 'Internal server error',
-      message: error.message 
-    });
-  }
-});
-
 // ========== USER STATISTICS API ==========
 
 // GET endpoint to get comprehensive user statistics
@@ -1845,10 +1820,10 @@ app.get('/api/challenges/:challengeId/leaderboard', (req, res) => {
     }
 
     const leaderboard = Object.entries(challenge.participants)
-      .map(([odUserId, progress]) => {
-        const user = usersDb.find(u => u.id === odUserId);
+      .map(([participantId, progress]) => {
+        const user = usersDb.find(u => u.id === String(participantId));
         return {
-          userId: odUserId,
+          userId: String(participantId),
           progress,
           progressPercent: Math.min(100, (progress / challenge.target) * 100),
           isCompleted: progress >= challenge.target,

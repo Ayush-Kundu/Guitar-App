@@ -101,10 +101,10 @@ function updateChromaVisualization(chromaVector) {
 
 // Waveform visualization
 const waveformCanvas = document.getElementById('waveformCanvas');
-const waveformCtx = waveformCanvas.getContext('2d');
+const waveformCtx = waveformCanvas ? waveformCanvas.getContext('2d') : null;
 
-// This would be updated with actual audio data if we capture it
 function updateWaveformVisualization(audioData) {
+    if (!waveformCtx || !waveformCanvas) return;
     if (!audioData || audioData.length === 0) {
         clearCanvas(waveformCtx, waveformCanvas);
         return;
@@ -112,33 +112,48 @@ function updateWaveformVisualization(audioData) {
     
     const width = waveformCanvas.width;
     const height = waveformCanvas.height;
+    const centerY = height / 2;
+    // Amplify so quiet audio is visible (raw mic is often -0.01 to 0.01)
+    const gain = 3;
+    const maxAmplitude = height / 2 - 4;
     
     // Clear canvas
     waveformCtx.fillStyle = '#1a1a1a';
     waveformCtx.fillRect(0, 0, width, height);
     
-    // Draw waveform
+    // Draw center line (optional, helps see silence)
+    waveformCtx.strokeStyle = '#333';
+    waveformCtx.lineWidth = 1;
+    waveformCtx.beginPath();
+    waveformCtx.moveTo(0, centerY);
+    waveformCtx.lineTo(width, centerY);
+    waveformCtx.stroke();
+    
+    // Draw waveform centered: y = centerY + sample * gain * maxAmplitude, clamped
     waveformCtx.strokeStyle = '#4CAF50';
     waveformCtx.lineWidth = 2;
     waveformCtx.beginPath();
     
-    const sliceWidth = width / audioData.length;
-    let x = 0;
+    const sliceWidth = width / Math.max(1, audioData.length - 1);
     
     for (let i = 0; i < audioData.length; i++) {
-        const v = audioData[i] * 0.5 + 0.5;
-        const y = v * height;
+        const sample = Math.max(-1, Math.min(1, audioData[i] * gain));
+        const y = centerY + sample * maxAmplitude;
+        const x = i * sliceWidth;
         
         if (i === 0) {
             waveformCtx.moveTo(x, y);
         } else {
             waveformCtx.lineTo(x, y);
         }
-        
-        x += sliceWidth;
     }
     
     waveformCtx.stroke();
+}
+
+// Expose for main.js (in case of script load order / scope)
+if (typeof window !== 'undefined') {
+    window.updateWaveformVisualization = updateWaveformVisualization;
 }
 
 function clearCanvas(ctx, canvas) {
@@ -152,9 +167,9 @@ function clearCanvas(ctx, canvas) {
     ctx.fillText('No data', canvas.width / 2, canvas.height / 2);
 }
 
-// Initialize canvases
-[frequencyCanvas, chromaCanvas, waveformCanvas].forEach(canvas => {
+// Initialize canvases (guard against missing elements)
+[frequencyCanvas, chromaCanvas, waveformCanvas].filter(Boolean).forEach(canvas => {
     const ctx = canvas.getContext('2d');
-    clearCanvas(ctx, canvas);
+    if (ctx) clearCanvas(ctx, canvas);
 });
 
