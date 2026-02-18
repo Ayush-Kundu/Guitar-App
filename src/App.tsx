@@ -9,6 +9,7 @@ import { Progress } from "./components/Progress";
 import { Compete } from "./components/Compete";
 import { Community } from "./components/Community";
 import { Settings } from "./components/Settings";
+import { AiChat } from "./components/AiChat";
 import { FooterNavigation } from "./components/FooterNavigation";
 import { Onboarding } from "./components/Onboarding";
 
@@ -103,6 +104,8 @@ function AppContent() {
         return <Compete />;
       case "community":
         return <Community />;
+      case "aichat":
+        return <AiChat />;
       case "settings":
         return (
           <Settings

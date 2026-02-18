@@ -410,7 +410,7 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
             console.log('✅ Session verified, profile found');
             
             // Create user object from profile
-            const userData: User = {
+          const userData: User = {
               id: profile.user_id,
               name: profile.username || 'User',
               email: profile.email || session.email || '',
@@ -431,11 +431,11 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
               joinDate: new Date().toISOString(),
               createdAt: new Date().toISOString(),
               avatar: '🎸',
-              isOnline: true
-            };
-            
-            setUser(userData);
-            localStorage.setItem('guitarAppUser', JSON.stringify(userData));
+            isOnline: true
+          };
+          
+          setUser(userData);
+          localStorage.setItem('guitarAppUser', JSON.stringify(userData));
             console.log('User authenticated, ID:', userData.id);
             
             // Load progress from Supabase
@@ -447,12 +447,12 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
             } catch (err) {
               console.error('Error loading progress from Supabase:', err);
             }
-            
-            // Connect to WebSocket
-            websocketService.connect(userData.id).then(connected => {
-              setIsConnected(connected);
-            });
-            
+          
+          // Connect to WebSocket
+          websocketService.connect(userData.id).then(connected => {
+            setIsConnected(connected);
+          });
+          
             setIsLoading(false);
             return; // Exit early, we have a valid session
           } else {
@@ -1877,34 +1877,34 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
       }
 
       console.log('✅ Profile created successfully:', data);
-
-      // Set user in context
+        
+        // Set user in context
       const newUser: User = {
         id: userId,
         name: userData.name || userData.email!.split('@')[0],
-        email: userData.email!,
-        level: userData.level || 'beginner',
-        musicPreferences: userData.musicPreferences || ['rock', 'pop', 'blues'],
-        practiceStreak: 0,
-        songsMastered: 0,
-        chordsLearned: 0,
-        hoursThisWeek: 0,
-        totalPoints: 0,
-        weeklyPoints: 0,
-        levelProgress: 0,
-        joinDate: new Date().toISOString(),
-        createdAt: new Date().toISOString(),
+          email: userData.email!,
+          level: userData.level || 'beginner',
+          musicPreferences: userData.musicPreferences || ['rock', 'pop', 'blues'],
+          practiceStreak: 0,
+          songsMastered: 0,
+          chordsLearned: 0,
+          hoursThisWeek: 0,
+          totalPoints: 0,
+          weeklyPoints: 0,
+          levelProgress: 0,
+          joinDate: new Date().toISOString(),
+          createdAt: new Date().toISOString(),
         username: userData.name || userData.email!.split('@')[0],
         avatar: '🎸',
-        isOnline: true
-      };
+          isOnline: true
+        };
       
       console.log('👤 Setting user:', newUser);
-      setUser(newUser);
-      
-      // Save to localStorage for session persistence
-      if (typeof window !== 'undefined') {
-        localStorage.setItem('guitarAppUser', JSON.stringify(newUser));
+        setUser(newUser);
+        
+        // Save to localStorage for session persistence
+        if (typeof window !== 'undefined') {
+          localStorage.setItem('guitarAppUser', JSON.stringify(newUser));
         localStorage.setItem('guitarAppSession', JSON.stringify({ userId, email: userData.email!.toLowerCase() }));
         console.log('💾 Saved to localStorage');
       }
@@ -1928,12 +1928,12 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
       
       // Query profiles table by email
       const { data: profile, error: profileError } = await supabase
-        .from('profiles')
-        .select('*')
+          .from('profiles')
+          .select('*')
         .eq('email', email.toLowerCase())
-        .single();
+          .single();
 
-      if (profileError || !profile) {
+        if (profileError || !profile) {
         console.error('No profile found for email:', email);
         throw new Error('Incorrect email or password.');
       }
@@ -1950,35 +1950,35 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
 
       console.log('✅ Password verified successfully');
 
-      // Set user in local state
+        // Set user in local state
       const userData: User = {
         id: profile.user_id,
         name: profile.username || email.split('@')[0],
         email: profile.email || email,
         level: profile.guitar_level || 'beginner',
-        musicPreferences: [
+          musicPreferences: [
           profile.style_1 || 'rock',
           profile.style_2 || 'pop', 
           profile.style_3 || 'blues'
         ],
         practiceStreak: profile.streak || 0,
-        songsMastered: 0,
-        chordsLearned: 0,
-        hoursThisWeek: 0,
+          songsMastered: 0,
+          chordsLearned: 0,
+          hoursThisWeek: 0,
         totalPoints: profile.points || 0,
-        weeklyPoints: 0,
-        levelProgress: 0,
-        joinDate: new Date().toISOString(),
-        createdAt: new Date().toISOString(),
-        avatar: '🎸',
+          weeklyPoints: 0,
+          levelProgress: 0,
+          joinDate: new Date().toISOString(),
+          createdAt: new Date().toISOString(),
+          avatar: '🎸',
         username: profile.username || email.split('@')[0],
-        isOnline: true
-      };
+          isOnline: true
+        };
 
       setUser(userData);
-      
-      // Save to localStorage for session persistence
-      if (typeof window !== 'undefined') {
+        
+        // Save to localStorage for session persistence
+        if (typeof window !== 'undefined') {
         localStorage.setItem('guitarAppUser', JSON.stringify(userData));
         localStorage.setItem('guitarAppSession', JSON.stringify({ userId: profile.user_id, email: email.toLowerCase() }));
       }
@@ -1994,12 +1994,12 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
         });
       } else {
         console.log('ℹ️ No cloud progress found, starting fresh');
-      }
-      
-      // WebSocket is disabled for stability
-      setIsConnected(false);
-      
-      console.log('User signed in successfully');
+        }
+        
+        // WebSocket is disabled for stability
+        setIsConnected(false);
+        
+        console.log('User signed in successfully');
       
     } catch (error: any) {
       console.error('Signin error:', error);

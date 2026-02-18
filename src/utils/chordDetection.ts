@@ -36,17 +36,17 @@ export interface ChordDetectionConfig {
   debug?: boolean;
 }
 
-// Default config matching kundu.dev/c_d defaults
+// Config tuned for stable chord detection (less finnicky)
 const DEFAULT_CONFIG: ChordDetectionConfig = {
   instrument: 'guitar',
-  sensitivity: 0.8,
-  confidence_threshold: 0.2,
-  silence_threshold: 0.005,
+  sensitivity: 0.6,              // Lower sensitivity - less reactive to small changes
+  confidence_threshold: 0.35,    // Higher threshold - only accept confident detections
+  silence_threshold: 0.01,       // Higher silence threshold - ignore quiet noise
   overlap: 0.75,
-  chord_window: 0.3,
-  chord_window_confidence: 0.45,
+  chord_window: 0.5,             // Longer window - more stable chord detection
+  chord_window_confidence: 0.55, // Higher confidence needed to confirm chord
   multi_pitch: true,
-  song_influence: 0.7,
+  song_influence: 0.95,          // Very strong bias toward song chords
   map_similar_variants: true,
   debug: false
 };
@@ -78,14 +78,20 @@ export class ChordDetectionService {
 
   setSongContext(chords: string[], songTitle?: string) {
     this.config.song_chords = chords;
+    this.config.song_influence = 0.9; // Very strong preference for song chords
     
     if (this.ws && this.ws.readyState === WebSocket.OPEN) {
-      this.ws.send(JSON.stringify({
+      const configUpdate = {
         type: 'config_update',
         song_chords: chords,
+        song_influence: 0.9,
+        map_similar_variants: true,
         song_info: songTitle ? { title: songTitle } : undefined
-      }));
-      console.log(`[ChordDetection] Set song context: ${chords.join(', ')}`);
+      };
+      console.log('[ChordDetection] Sending song context:', JSON.stringify(configUpdate, null, 2));
+      this.ws.send(JSON.stringify(configUpdate));
+    } else {
+      console.log('[ChordDetection] Song context saved for next connection:', chords);
     }
   }
 
@@ -180,12 +186,27 @@ export class ChordDetectionService {
       return;
     }
 
-    if (data.type === 'chord' || data.type === 'notes' || data.type === 'frequencies') {
-      if (data.type === 'notes' && data.chord_candidate && !data.chord) {
-        data.chord = data.chord_candidate;
-        data.stability = 0;
-      }
+    // Log raw API response for debugging
+    if (data.type === 'chord' || data.type === 'notes') {
+      console.log('[ChordDetection] Raw API data:', JSON.stringify(data, null, 2));
+    }
+
+    // Only use 'chord' type for chord detection (song-constrained)
+    // 'notes' type contains raw detection which we don't want to display as the main chord
+    if (data.type === 'chord') {
+      // This is the song-constrained chord - use it directly
       this.onResult?.(data);
+    } else if (data.type === 'notes') {
+      // For notes type, only pass through the notes data, not the chord
+      // This prevents raw detection from overwriting song-constrained chord
+      const notesOnlyData: ChordDetectionResult = {
+        type: 'notes',
+        notes: data.notes,
+        dominant_notes: data.dominant_notes,
+        frequencies: data.frequencies,
+        // Don't pass chord or chord_candidate from notes type
+      };
+      this.onResult?.(notesOnlyData);
     }
   }
 
