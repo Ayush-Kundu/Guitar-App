@@ -57,7 +57,7 @@ const STRING_NAMES = ['E', 'A', 'D', 'G', 'B', 'e'];
 const STRING_COLORS = [
   '#8B5A2B', // E (low) - brown
   '#A06E3C', // A
-  '#B4824F', // D  
+  '#B4824F', // D
   '#BE9160', // G
   '#C8A070', // B
   '#D2AF80', // e (high)
@@ -91,26 +91,26 @@ export function SongPractice({ isOpen, onClose, song, userId, onComplete }: Song
   // -------------------------------------------------------------------------
   // STATE
   // -------------------------------------------------------------------------
-  
+
   // Playback state
   const [isPlaying, setIsPlaying] = useState(false);
   const [currentTime, setCurrentTime] = useState(0);
   const [playbackSpeed, setPlaybackSpeed] = useState(1.0);
-  
+
   // Song data
   const [noteEvents, setNoteEvents] = useState<NoteEvent[]>([]);
   const [totalDuration, setTotalDuration] = useState(180);
-  
+
   // UI state
   const [showCompletion, setShowCompletion] = useState(false);
   const [completionOpacity, setCompletionOpacity] = useState(0);
   const [slideOut, setSlideOut] = useState(false);
   const [showMistakeOptions, setShowMistakeOptions] = useState(false);
-  
+
   // Mistake tracking
   const [hasMadeMistake, setHasMadeMistake] = useState(false);
   const [firstMistakeTime, setFirstMistakeTime] = useState<number | null>(null);
-  
+
   // Chord detection
   const [chordDetectionConnected, setChordDetectionConnected] = useState(false);
   const [detectedChord, setDetectedChord] = useState<string | null>(null);
@@ -119,24 +119,24 @@ export function SongPractice({ isOpen, onClose, song, userId, onComplete }: Song
   const [chordStability, setChordStability] = useState(0);
   const [currentExpectedNotes, setCurrentExpectedNotes] = useState<string[]>([]);
   const [isChordMatching, setIsChordMatching] = useState<boolean | null>(null); // null = no active note, true = match, false = no match
-  
+
   // Note feedback: 'correct' | 'wrong' | 'too-long' | null
   const [noteFeedback, setNoteFeedback] = useState<Record<number, string | null>>({});
 
   // -------------------------------------------------------------------------
   // REFS
   // -------------------------------------------------------------------------
-  
+
   const animationRef = useRef<number>();
   const startTimeRef = useRef<number | null>(null);
   const practiceStartTimeRef = useRef<number | null>(null);
   const timelineRef = useRef<HTMLDivElement>(null);
   const chordDetectionRef = useRef<ChordDetectionService | null>(null);
   const activeNoteStartTimeRef = useRef<Record<number, number>>({});
-  
+
   // Timeline dimensions (measured from DOM)
   const [timelineWidth, setTimelineWidth] = useState(600);
-  
+
   // Computed: bar X position in pixels from timeline left edge
   const barX = timelineWidth * BAR_POSITION_RATIO;
 
@@ -147,7 +147,7 @@ export function SongPractice({ isOpen, onClose, song, userId, onComplete }: Song
   // Measure timeline width on mount and resize
   useEffect(() => {
     if (!isOpen) return;
-    
+
     const measureTimeline = () => {
       if (timelineRef.current) {
         const rect = timelineRef.current.getBoundingClientRect();
@@ -156,10 +156,10 @@ export function SongPractice({ isOpen, onClose, song, userId, onComplete }: Song
         }
       }
     };
-    
+
     // Initial measurement after a frame
     requestAnimationFrame(measureTimeline);
-    
+
     // Re-measure on resize
     window.addEventListener('resize', measureTimeline);
     return () => window.removeEventListener('resize', measureTimeline);
@@ -168,7 +168,7 @@ export function SongPractice({ isOpen, onClose, song, userId, onComplete }: Song
   // Load song data when opened
   useEffect(() => {
     if (!isOpen || !song) return;
-    
+
     // Reset state
     setCurrentTime(0);
     setIsPlaying(false);
@@ -181,21 +181,21 @@ export function SongPractice({ isOpen, onClose, song, userId, onComplete }: Song
     setNoteFeedback({});
     activeNoteStartTimeRef.current = {};
     practiceStartTimeRef.current = Date.now();
-    
+
     // Load song data
     const chords = song.chords || ['C', 'G', 'Am', 'F'];
     const bpm = song.bpm || 120;
     const duration = song.duration || '3:00';
-    
+
     const data = getSongData(song.title || 'Unknown', chords, bpm, duration);
-    
+
     // Add lead-in time to all note events so user has time to prepare
     const eventsWithLeadIn = (data?.events || []).map(event => ({
       ...event,
       time: event.time + LEAD_IN_TIME
     }));
     setNoteEvents(eventsWithLeadIn);
-    
+
     // Calculate duration (include lead-in time)
     const BUFFER = 4;
     if (data?.events?.length > 0) {
@@ -204,17 +204,17 @@ export function SongPractice({ isOpen, onClose, song, userId, onComplete }: Song
       const [mins, secs] = duration.split(':').map(Number);
       setTotalDuration((mins || 0) * 60 + (secs || 0) + LEAD_IN_TIME + BUFFER);
     }
-    
+
     // Initialize chord detection
     if (!chordDetectionRef.current) {
       chordDetectionRef.current = new ChordDetectionService();
-      
+
       // Set song context BEFORE connecting so it's included in initial config
       if (song?.chords?.length > 0) {
         console.log('[SongPractice] Pre-setting song context with chords:', song.chords);
         chordDetectionRef.current.setSongContext(song.chords, song.title);
       }
-      
+
       chordDetectionRef.current.setOnStatusChange((connected) => {
         console.log('[SongPractice] Chord detection status:', connected);
         setChordDetectionConnected(connected);
@@ -226,10 +226,10 @@ export function SongPractice({ isOpen, onClose, song, userId, onComplete }: Song
           console.warn('[SongPractice] No chords available for song context!', song);
         }
       });
-      
+
       chordDetectionRef.current.setOnResult((result: ChordDetectionResult) => {
         if (result.type === 'listening') return;
-        
+
         // Only update chord from 'chord' type messages (song-constrained)
         // This ensures we display the same chord as the API's "Song-Constrained" box
         if (result.type === 'chord' && result.chord) {
@@ -238,10 +238,10 @@ export function SongPractice({ isOpen, onClose, song, userId, onComplete }: Song
           if (result.confidence !== undefined) setChordConfidence(result.confidence);
           if (result.stability !== undefined) setChordStability(result.stability);
         }
-        
+
         // Capture notes from any message type
         if (result.notes?.length) {
-          const notes = result.notes.map(n => 
+          const notes = result.notes.map(n =>
             Array.isArray(n) ? String(n[0]) : String(n)
           );
           setDetectedNotes(notes);
@@ -249,10 +249,10 @@ export function SongPractice({ isOpen, onClose, song, userId, onComplete }: Song
           setDetectedNotes(result.dominant_notes);
         }
       });
-      
+
       chordDetectionRef.current.connect();
     }
-    
+
     return () => {
       if (chordDetectionRef.current) {
         chordDetectionRef.current.stopRecording();
@@ -268,11 +268,11 @@ export function SongPractice({ isOpen, onClose, song, userId, onComplete }: Song
   // Animation loop
   useEffect(() => {
     if (!isPlaying || startTimeRef.current === null) return;
-    
+
     const animate = () => {
       const elapsed = ((Date.now() - startTimeRef.current!) / 1000) * playbackSpeed;
       setCurrentTime(elapsed);
-      
+
       // Check for completion
       const timeRemaining = totalDuration - elapsed;
       if (timeRemaining <= 3 && timeRemaining > 0 && !showCompletion && !hasMadeMistake) {
@@ -281,7 +281,7 @@ export function SongPractice({ isOpen, onClose, song, userId, onComplete }: Song
       if (showCompletion && timeRemaining > 0) {
         setCompletionOpacity(Math.min(1, 1 - timeRemaining / 3));
       }
-      
+
       if (elapsed < totalDuration) {
         animationRef.current = requestAnimationFrame(animate);
       } else {
@@ -297,7 +297,7 @@ export function SongPractice({ isOpen, onClose, song, userId, onComplete }: Song
         }
       }
     };
-    
+
     animationRef.current = requestAnimationFrame(animate);
     return () => {
       if (animationRef.current) cancelAnimationFrame(animationRef.current);
@@ -307,39 +307,39 @@ export function SongPractice({ isOpen, onClose, song, userId, onComplete }: Song
   // Note feedback evaluation
   useEffect(() => {
     if (!isPlaying || !noteEvents.length) return;
-    
+
     const EARLY_ACCEPT = 0.3;
     const LATE_LEEWAY = 0.5;
-    
+
     const detectedNoteNames = detectedNotes.map(n => {
       const match = n.match(/^([A-G][#b]?)/i);
       return match ? match[1].toUpperCase() : n.toUpperCase();
     });
-    
+
     const newFeedback: Record<number, string | null> = { ...noteFeedback };
     const activeExpectedNotes: string[] = [];
     let hasActiveNote = false;
     let anyMatch = false;
-    
+
     noteEvents.forEach((note, idx) => {
       // Apply visual sync offset to match when notes visually hit the bar
       const adjustedHitTime = note.time - VISUAL_SYNC_OFFSET;
       const endTime = adjustedHitTime + (note.duration || 0.5);
       const isInWindow = currentTime >= adjustedHitTime - EARLY_ACCEPT && currentTime <= endTime + LATE_LEEWAY;
-      
+
       if (!isInWindow) {
         if (activeNoteStartTimeRef.current[idx]) delete activeNoteStartTimeRef.current[idx];
         return;
       }
-      
+
       const barTouched = currentTime >= adjustedHitTime;
       if (barTouched && !activeNoteStartTimeRef.current[idx]) {
         activeNoteStartTimeRef.current[idx] = currentTime;
       }
-      
+
       const expectedNote = getExpectedNoteName(note.string, note.fret);
       const expectedFlat = expectedNote.replace('#', 'b');
-      
+
       // Track active notes at the bar
       if (barTouched) {
         hasActiveNote = true;
@@ -347,28 +347,28 @@ export function SongPractice({ isOpen, onClose, song, userId, onComplete }: Song
           activeExpectedNotes.push(expectedNote);
         }
       }
-      
+
       const isCorrect = detectedNoteNames.some(dn => dn === expectedNote || dn === expectedFlat) ||
-        (detectedChord && (detectedChord.toUpperCase().startsWith(expectedNote) || 
+        (detectedChord && (detectedChord.toUpperCase().startsWith(expectedNote) ||
                           detectedChord.toUpperCase().startsWith(expectedFlat)));
-      
+
       if (isCorrect && barTouched) {
         anyMatch = true;
       }
-      
+
       // Once a note is marked correct, it stays correct (latch behavior)
       if (noteFeedback[idx] === 'correct') {
         newFeedback[idx] = 'correct';
         if (barTouched) anyMatch = true;
         return;
       }
-      
+
       // Grace period before marking wrong - gives chord detection time to respond
       const WRONG_GRACE_PERIOD = 0.3; // seconds
-      const timeSinceBarTouched = activeNoteStartTimeRef.current[idx] 
-        ? currentTime - activeNoteStartTimeRef.current[idx] 
+      const timeSinceBarTouched = activeNoteStartTimeRef.current[idx]
+        ? currentTime - activeNoteStartTimeRef.current[idx]
         : 0;
-      
+
       if (currentTime < adjustedHitTime) {
         // Early window - only mark correct, not wrong
         newFeedback[idx] = isCorrect ? 'correct' : noteFeedback[idx] || null;
@@ -389,7 +389,7 @@ export function SongPractice({ isOpen, onClose, song, userId, onComplete }: Song
         }
       }
     });
-    
+
     setNoteFeedback(newFeedback);
     setCurrentExpectedNotes(activeExpectedNotes);
     setIsChordMatching(hasActiveNote ? anyMatch : null);
@@ -448,7 +448,7 @@ export function SongPractice({ isOpen, onClose, song, userId, onComplete }: Song
   const handleRestartFromMistake = async () => {
     if (firstMistakeTime === null) return;
     const restartTime = Math.max(0, firstMistakeTime - 3);
-    
+
     setShowMistakeOptions(false);
     setHasMadeMistake(false);
     setFirstMistakeTime(null);
@@ -457,7 +457,7 @@ export function SongPractice({ isOpen, onClose, song, userId, onComplete }: Song
     setCurrentTime(restartTime);
     startTimeRef.current = Date.now() - (restartTime * 1000 / playbackSpeed);
     setIsPlaying(true);
-    
+
     if (chordDetectionRef.current?.isConnected()) {
       await chordDetectionRef.current.startRecording();
     }
@@ -472,20 +472,20 @@ export function SongPractice({ isOpen, onClose, song, userId, onComplete }: Song
 
   const handleComplete = () => {
     chordDetectionRef.current?.stopRecording();
-    
+
     const elapsedMs = practiceStartTimeRef.current ? Date.now() - practiceStartTimeRef.current : 0;
     const minutesPracticed = Math.round(elapsedMs / 60000);
     const progressPercent = showCompletion ? 100 : Math.max(10, Math.round((currentTime / totalDuration) * 100));
-    
+
     const songId = song.songId || `${song.title.toLowerCase().replace(/\s+/g, '_')}_${song.artist.toLowerCase().replace(/\s+/g, '_')}`;
-    
+
     onComplete(minutesPracticed, progressPercent, {
       songId,
       title: song.title,
       artist: song.artist,
       genre: song.genre
     });
-    
+
     setTimeout(onClose, 400);
   };
 
@@ -527,7 +527,7 @@ export function SongPractice({ isOpen, onClose, song, userId, onComplete }: Song
     const isActive = currentTime >= adjustedTime && currentTime < adjustedTime + (note.duration || 0.5);
     const isPast = currentTime >= adjustedTime + (note.duration || 0.5);
     const feedback = noteFeedback[noteIndex];
-    
+
     return { isActive, isPast, feedback };
   };
 
@@ -535,7 +535,7 @@ export function SongPractice({ isOpen, onClose, song, userId, onComplete }: Song
   // No approaching state - notes go directly from normal to correct/wrong
   const getNoteColors = (state: ReturnType<typeof getNoteState>, isOpen: boolean) => {
     const { isActive, isPast, feedback } = state;
-    
+
     if (isPast) {
       return { bg: '#E5E7EB', border: '#D1D5DB', text: '#9CA3AF' };
     }
@@ -559,14 +559,14 @@ export function SongPractice({ isOpen, onClose, song, userId, onComplete }: Song
   const getBarState = () => {
     const firstNoteTime = noteEvents.length > 0 ? Math.min(...noteEvents.map(n => n.time)) : LEAD_IN_TIME;
     const isLeadIn = currentTime < firstNoteTime - VISUAL_SYNC_OFFSET - 0.3;
-    
+
     const activeNote = noteEvents.find(n => {
       const adjustedTime = n.time - VISUAL_SYNC_OFFSET;
       return currentTime >= adjustedTime && currentTime < adjustedTime + (n.duration || 0.5);
     });
     const activeIdx = activeNote ? noteEvents.indexOf(activeNote) : -1;
     const activeFeedback = activeIdx >= 0 ? noteFeedback[activeIdx] : null;
-    
+
     return { isLeadIn, isActive: !!activeNote, activeFeedback };
   };
 
@@ -575,12 +575,12 @@ export function SongPractice({ isOpen, onClose, song, userId, onComplete }: Song
   // -------------------------------------------------------------------------
 
   const barState = getBarState();
-  
+
   // Bar styling - shows green for correct, red for wrong (no blue states)
   let barColor = '#93C5FD';
   let barGlow = 'none';
   let barWidth = 4;
-  
+
   if (barState.isLeadIn) {
     barColor = '#94A3B8';
     barGlow = 'none';
@@ -615,11 +615,6 @@ export function SongPractice({ isOpen, onClose, song, userId, onComplete }: Song
 
         {/* Header */}
         <div className="flex-shrink-0 px-5 py-4 bg-white/90 dark:bg-slate-800">
-          <div className="flex items-center justify-center gap-3 mb-2">
-            <span className="text-xs font-medium px-3 py-1 rounded-full bg-blue-100/50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 border border-blue-200/50 dark:border-blue-700">
-              ← Play in reverse
-            </span>
-          </div>
           <div className="flex items-center justify-between">
             <div>
               <h2 className="text-lg font-bold text-gray-800 dark:text-white">{song.title}</h2>
@@ -636,7 +631,7 @@ export function SongPractice({ isOpen, onClose, song, userId, onComplete }: Song
 
         {/* Main Practice Area */}
         <div className="flex-1 relative overflow-hidden mx-4 rounded-2xl bg-white/95 dark:bg-slate-800/95 border-2 border-gray-200 dark:border-slate-600" style={{ minHeight: '280px' }}>
-          
+
           {/* String Labels (left column) */}
           <div
             className="absolute left-0 top-0 bottom-0 z-40 flex flex-col bg-white/95 dark:bg-slate-800 border-r-2 border-gray-200 dark:border-slate-600"
@@ -693,19 +688,19 @@ export function SongPractice({ isOpen, onClose, song, userId, onComplete }: Song
               const noteWidth = Math.max(NOTE_MIN_WIDTH, (note.duration || 0.5) * PIXELS_PER_SECOND * 0.8);
               const noteX = getNoteX(note.time, noteWidth);
               const noteY = getStringY(note.string);
-              
+
               // Only render notes that are visible (within view + buffer)
               const timeUntilNote = note.time - currentTime;
               const maxVisibleTime = VISIBLE_SECONDS_AHEAD + 1;
               if (timeUntilNote > maxVisibleTime || timeUntilNote < -2) return null;
-              
+
               const state = getNoteState(note, idx);
               const isOpen = note.fret === 0;
               const colors = getNoteColors(state, isOpen);
-              
+
               const scale = state.isActive ? 1.1 : state.isPast ? 0.95 : 1;
               const opacity = state.isPast ? 0.4 : 1;
-              
+
               // Shadow matches feedback color when active
               let shadow = '0 2px 4px rgba(0, 0, 0, 0.1)';
               if (state.isActive) {
@@ -805,7 +800,7 @@ export function SongPractice({ isOpen, onClose, song, userId, onComplete }: Song
 
         {/* Footer Controls */}
         <div className="flex-shrink-0 px-5 py-4 bg-white/90 dark:bg-slate-800">
-          
+
           {/* Chord Detection Display */}
           <div className="flex items-center justify-center mb-4">
             <div
@@ -836,49 +831,49 @@ export function SongPractice({ isOpen, onClose, song, userId, onComplete }: Song
               {!chordDetectionConnected && (
                 <div className="text-sm text-red-500 mb-2">Not connected to chord server</div>
               )}
-              
+
               {/* Expected note indicator */}
               {currentExpectedNotes.length > 0 && chordDetectionConnected && (
                 <div className="text-xs text-gray-500 mb-1">
                   Expecting: <span className="font-bold text-gray-700">{currentExpectedNotes.join(', ')}</span>
                 </div>
               )}
-              
+
               {/* Detected chord */}
               <div
                 className="text-4xl font-bold"
                 style={{
-                  color: !chordDetectionConnected 
-                    ? '#EF4444' 
+                  color: !chordDetectionConnected
+                    ? '#EF4444'
                     : isChordMatching === true
                       ? '#16A34A'
                       : isChordMatching === false
                         ? '#DC2626'
-                        : detectedChord 
-                          ? '#3B82F6' 
+                        : detectedChord
+                          ? '#3B82F6'
                           : '#9CA3AF'
                 }}
               >
                 {!chordDetectionConnected ? '🔌' : detectedChord || '--'}
               </div>
-              
+
               {/* Match indicator */}
               {chordDetectionConnected && isChordMatching !== null && (
-                <div 
+                <div
                   className="text-sm font-semibold mt-1"
                   style={{ color: isChordMatching ? '#16A34A' : '#DC2626' }}
                 >
                   {isChordMatching ? '✓ Correct!' : '✗ Wrong'}
                 </div>
               )}
-              
+
               {/* Confidence */}
               {detectedChord && chordConfidence > 0 && (
                 <div className="text-xs text-gray-500 mt-1">
                   Confidence: {(chordConfidence * 100).toFixed(0)}%
                 </div>
               )}
-              
+
               {/* All detected notes */}
               {chordDetectionConnected && detectedNotes.length > 0 && (
                 <div className="text-sm text-gray-500 mt-2 pt-2 border-t border-gray-200">
