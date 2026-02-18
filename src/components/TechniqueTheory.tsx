@@ -277,7 +277,7 @@ export function TechniqueTheory({ onSectionChange, initialTab = 'technique' }: T
         <>
           <div className="max-w-6xl mx-auto">
             {/* Pianist Character Image - Above slider */}
-            <div className="flex justify-center relative" style={{ zIndex: 40, marginTop: '-90px', marginBottom: '-80px' }}>
+            <div className="flex justify-center relative" style={{ zIndex: 40, marginTop: '-90px', marginBottom: '-80px', pointerEvents: 'none' }}>
               <img
                 src={pianistCharacter}
                 alt="Pianist character"
@@ -415,7 +415,7 @@ export function TechniqueTheory({ onSectionChange, initialTab = 'technique' }: T
           </Card>
 
           {/* Pensive Guitar Character Image - Above slider */}
-          <div className="flex justify-center relative" style={{ zIndex: 40, marginTop: '-80px', marginBottom: '-30px' }}>
+          <div className="flex justify-center relative" style={{ zIndex: 40, marginTop: '-80px', marginBottom: '-30px', pointerEvents: 'none' }}>
             <img
               src={pensiveGuitarCharacter}
               alt="Pensive guitar character"
