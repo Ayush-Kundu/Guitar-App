@@ -47,7 +47,7 @@ const NOTE_HEIGHT = 28; // px
 const NOTE_MIN_WIDTH = 36; // px
 const VISIBLE_SECONDS_AHEAD = 4; // How many seconds of notes to show ahead
 const LEAD_IN_TIME = 3; // Seconds before first note hits after pressing play
-const VISUAL_SYNC_OFFSET = 0.12; // Seconds - compensates for frame timing to sync visual with state
+const STATE_ADVANCE_TIME = 0.25; // Seconds - how early to trigger active state before visual bar hit
 
 // Speed options
 const SPEED_OPTIONS = [0.25, 0.5, 0.75, 1.0, 2.0];
@@ -200,7 +200,7 @@ export function SongPractice({ isOpen, onClose, song, userId, onComplete }: Song
     const BUFFER = 4;
     if (data?.events?.length > 0) {
       setTotalDuration(calculateDurationFromEvents(data.events) + LEAD_IN_TIME + BUFFER);
-    } else {
+          } else {
       const [mins, secs] = duration.split(':').map(Number);
       setTotalDuration((mins || 0) * 60 + (secs || 0) + LEAD_IN_TIME + BUFFER);
     }
@@ -218,12 +218,17 @@ export function SongPractice({ isOpen, onClose, song, userId, onComplete }: Song
       chordDetectionRef.current.setOnStatusChange((connected) => {
         console.log('[SongPractice] Chord detection status:', connected);
         setChordDetectionConnected(connected);
-        if (connected && song?.chords?.length > 0) {
-          // Also send after connection to ensure API receives it
-          console.log('[SongPractice] Confirming song context after connection:', song.chords);
-          chordDetectionRef.current?.setSongContext(song.chords, song.title);
-        } else if (connected) {
-          console.warn('[SongPractice] No chords available for song context!', song);
+        if (connected) {
+          // Use set_song with song ID (matches browser behavior) when available
+          if (song?.songId) {
+            console.log('[SongPractice] Setting song by ID after connection:', song.songId);
+            chordDetectionRef.current?.setSongById(song.songId);
+          } else if (song?.chords?.length > 0) {
+            console.log('[SongPractice] Confirming song context after connection:', song.chords);
+            chordDetectionRef.current?.setSongContext(song.chords, song.title);
+          } else {
+            console.warn('[SongPractice] No song ID or chords available!', song);
+          }
         }
       });
 
@@ -231,12 +236,14 @@ export function SongPractice({ isOpen, onClose, song, userId, onComplete }: Song
         if (result.type === 'listening') return;
 
         // Only update chord from 'chord' type messages (song-constrained)
-        // This ensures we display the same chord as the API's "Song-Constrained" box
+        // Discard detections with confidence > 1.0 — these are bogus (likely feedback artifacts)
         if (result.type === 'chord' && result.chord) {
-          console.log('[SongPractice] Updating chord from chord-type message:', result.chord);
-          setDetectedChord(result.chord);
-          if (result.confidence !== undefined) setChordConfidence(result.confidence);
-          if (result.stability !== undefined) setChordStability(result.stability);
+          const conf = result.confidence ?? 0;
+          if (conf <= 1.0) {
+            setDetectedChord(result.chord);
+            if (result.confidence !== undefined) setChordConfidence(result.confidence);
+            if (result.stability !== undefined) setChordStability(result.stability);
+          }
         }
 
         // Capture notes from any message type
@@ -322,17 +329,17 @@ export function SongPractice({ isOpen, onClose, song, userId, onComplete }: Song
     let anyMatch = false;
 
     noteEvents.forEach((note, idx) => {
-      // Apply visual sync offset to match when notes visually hit the bar
-      const adjustedHitTime = note.time - VISUAL_SYNC_OFFSET;
-      const endTime = adjustedHitTime + (note.duration || 0.5);
-      const isInWindow = currentTime >= adjustedHitTime - EARLY_ACCEPT && currentTime <= endTime + LATE_LEEWAY;
+      // Use STATE_ADVANCE_TIME to match visual state timing
+      const stateTime = note.time - STATE_ADVANCE_TIME;
+      const endTime = stateTime + (note.duration || 0.5);
+      const isInWindow = currentTime >= stateTime - EARLY_ACCEPT && currentTime <= endTime + LATE_LEEWAY;
 
       if (!isInWindow) {
         if (activeNoteStartTimeRef.current[idx]) delete activeNoteStartTimeRef.current[idx];
         return;
       }
 
-      const barTouched = currentTime >= adjustedHitTime;
+      const barTouched = currentTime >= stateTime;
       if (barTouched && !activeNoteStartTimeRef.current[idx]) {
         activeNoteStartTimeRef.current[idx] = currentTime;
       }
@@ -369,7 +376,7 @@ export function SongPractice({ isOpen, onClose, song, userId, onComplete }: Song
         ? currentTime - activeNoteStartTimeRef.current[idx]
         : 0;
 
-      if (currentTime < adjustedHitTime) {
+      if (currentTime < stateTime) {
         // Early window - only mark correct, not wrong
         newFeedback[idx] = isCorrect ? 'correct' : noteFeedback[idx] || null;
       } else {
@@ -382,8 +389,8 @@ export function SongPractice({ isOpen, onClose, song, userId, onComplete }: Song
           if (!hasMadeMistake) {
             setHasMadeMistake(true);
             setFirstMistakeTime(currentTime);
-          }
-        } else {
+        }
+      } else {
           // During grace period, keep previous state (null or unchanged)
           newFeedback[idx] = noteFeedback[idx] || null;
         }
@@ -402,9 +409,10 @@ export function SongPractice({ isOpen, onClose, song, userId, onComplete }: Song
   const handlePlay = async () => {
     if (!isPlaying) {
       if (chordDetectionRef.current?.isConnected()) {
-        // Re-send song context before starting recording to ensure API knows the song
-        if (song?.chords?.length > 0) {
-          console.log('[SongPractice] Re-sending song context before recording:', song.chords);
+        // Re-send song context before starting recording
+        if (song?.songId) {
+          chordDetectionRef.current.setSongById(song.songId);
+        } else if (song?.chords?.length > 0) {
           chordDetectionRef.current.setSongContext(song.chords, song.title);
         }
         await chordDetectionRef.current.startRecording();
@@ -501,11 +509,10 @@ export function SongPractice({ isOpen, onClose, song, userId, onComplete }: Song
   // -------------------------------------------------------------------------
 
   // Calculate note's X position relative to timeline left edge
-  // When note.time === currentTime, note center should align with bar center
+  // Note center aligns with bar center when note.time === currentTime
   const getNoteX = (noteTime: number, noteWidth: number): number => {
     const timeOffset = noteTime - currentTime;
     const pixelOffset = timeOffset * PIXELS_PER_SECOND;
-    // Note center at barX when timeOffset is 0
     return barX + pixelOffset - noteWidth / 2;
   };
 
@@ -520,12 +527,11 @@ export function SongPractice({ isOpen, onClose, song, userId, onComplete }: Song
   };
 
   // Determine note visual state
-  // VISUAL_SYNC_OFFSET makes notes activate slightly early to match visual position
+  // State triggers STATE_ADVANCE_TIME seconds BEFORE visual bar hit to compensate for rendering delay
   const getNoteState = (note: NoteEvent, noteIndex: number) => {
-    const adjustedTime = note.time - VISUAL_SYNC_OFFSET;
-    const timeUntilHit = adjustedTime - currentTime;
-    const isActive = currentTime >= adjustedTime && currentTime < adjustedTime + (note.duration || 0.5);
-    const isPast = currentTime >= adjustedTime + (note.duration || 0.5);
+    const stateTime = note.time - STATE_ADVANCE_TIME;
+    const isActive = currentTime >= stateTime && currentTime < stateTime + (note.duration || 0.5);
+    const isPast = currentTime >= stateTime + (note.duration || 0.5);
     const feedback = noteFeedback[noteIndex];
 
     return { isActive, isPast, feedback };
@@ -555,14 +561,14 @@ export function SongPractice({ isOpen, onClose, song, userId, onComplete }: Song
     return { bg: '#BFDBFE', border: '#60A5FA', text: '#FFFFFF' };
   };
 
-  // Bar visual state
+  // Bar visual state - uses same advance timing as notes
   const getBarState = () => {
     const firstNoteTime = noteEvents.length > 0 ? Math.min(...noteEvents.map(n => n.time)) : LEAD_IN_TIME;
-    const isLeadIn = currentTime < firstNoteTime - VISUAL_SYNC_OFFSET - 0.3;
+    const isLeadIn = currentTime < firstNoteTime - STATE_ADVANCE_TIME - 0.3;
 
     const activeNote = noteEvents.find(n => {
-      const adjustedTime = n.time - VISUAL_SYNC_OFFSET;
-      return currentTime >= adjustedTime && currentTime < adjustedTime + (n.duration || 0.5);
+      const stateTime = n.time - STATE_ADVANCE_TIME;
+      return currentTime >= stateTime && currentTime < stateTime + (n.duration || 0.5);
     });
     const activeIdx = activeNote ? noteEvents.indexOf(activeNote) : -1;
     const activeFeedback = activeIdx >= 0 ? noteFeedback[activeIdx] : null;
@@ -627,7 +633,7 @@ export function SongPractice({ isOpen, onClose, song, userId, onComplete }: Song
               <X className="w-4 h-4 text-gray-500 dark:text-gray-300" />
             </button>
           </div>
-        </div>
+          </div>
 
         {/* Main Practice Area */}
         <div className="flex-1 relative overflow-hidden mx-4 rounded-2xl bg-white/95 dark:bg-slate-800/95 border-2 border-gray-200 dark:border-slate-600" style={{ minHeight: '280px' }}>
@@ -644,9 +650,9 @@ export function SongPractice({ isOpen, onClose, song, userId, onComplete }: Song
                 style={{ color: STRING_COLORS[i] }}
               >
                 {name}
-              </div>
-            ))}
-          </div>
+                </div>
+              ))}
+            </div>
 
           {/* Timeline Area (right of string labels) */}
           <div
@@ -661,7 +667,7 @@ export function SongPractice({ isOpen, onClose, song, userId, onComplete }: Song
                 <div
                   key={`string-${i}`}
                   className="absolute left-0 right-0"
-                  style={{
+                      style={{
                     top: `${yPercent}%`,
                     height: 2,
                     backgroundColor: '#D1D5DB',
@@ -672,9 +678,9 @@ export function SongPractice({ isOpen, onClose, song, userId, onComplete }: Song
             })}
 
             {/* Hit Bar (fixed position) */}
-            <div
+          <div
               className="absolute top-0 bottom-0 z-30"
-              style={{
+            style={{
                 left: barX - barWidth / 2,
                 width: barWidth,
                 backgroundColor: barColor,
@@ -737,19 +743,19 @@ export function SongPractice({ isOpen, onClose, song, userId, onComplete }: Song
             })}
 
             {/* Completion Overlay */}
-            {showCompletion && (
-              <div
-                className="absolute inset-0 z-50 flex items-center justify-center"
-                style={{
-                  backgroundColor: `rgba(255, 255, 255, ${completionOpacity * 0.95})`,
+          {showCompletion && (
+            <div
+              className="absolute inset-0 z-50 flex items-center justify-center"
+              style={{
+                backgroundColor: `rgba(255, 255, 255, ${completionOpacity * 0.95})`,
                   backdropFilter: `blur(${completionOpacity * 8}px)`
-                }}
-              >
-                <div
-                  className="flex items-center justify-center rounded-full"
-                  style={{
-                    opacity: completionOpacity,
-                    transform: `scale(${0.6 + completionOpacity * 0.4})`,
+              }}
+            >
+              <div
+                className="flex items-center justify-center rounded-full"
+                style={{
+                  opacity: completionOpacity,
+                  transform: `scale(${0.6 + completionOpacity * 0.4})`,
                     width: 120,
                     height: 120,
                     background: 'linear-gradient(135deg, #FBBF24, #F59E0B, #D97706)',
@@ -758,16 +764,16 @@ export function SongPractice({ isOpen, onClose, song, userId, onComplete }: Song
                   }}
                 >
                   <Trophy className="text-white" style={{ width: 60, height: 60 }} />
-                </div>
               </div>
-            )}
+            </div>
+          )}
 
-            {/* Mistake Options Overlay */}
-            {showMistakeOptions && (
-              <div
-                className="absolute inset-0 z-50 flex items-center justify-center"
-                style={{
-                  backgroundColor: 'rgba(254, 242, 242, 0.97)',
+          {/* Mistake Options Overlay */}
+          {showMistakeOptions && (
+            <div
+              className="absolute inset-0 z-50 flex items-center justify-center"
+              style={{
+                backgroundColor: 'rgba(254, 242, 242, 0.97)',
                   backdropFilter: 'blur(8px)'
                 }}
               >
@@ -777,26 +783,26 @@ export function SongPractice({ isOpen, onClose, song, userId, onComplete }: Song
                     Mistake at <span className="font-semibold text-red-500">{formatTime(firstMistakeTime || 0)}</span>
                   </p>
                   <div className="flex gap-3 w-full">
-                    <button
-                      onClick={handleRestartFromStart}
+                  <button
+                    onClick={handleRestartFromStart}
                       className="flex-1 px-4 py-2.5 rounded-lg text-sm font-medium text-white transition-all hover:opacity-90 active:scale-95"
                       style={{ backgroundColor: '#DC2626', border: '2px solid #B91C1C' }}
-                    >
-                      Start Over
-                    </button>
-                    <button
-                      onClick={handleRestartFromMistake}
+                  >
+                    Start Over
+                  </button>
+                  <button
+                    onClick={handleRestartFromMistake}
                       className="flex-1 px-4 py-2.5 rounded-lg text-sm font-medium transition-all hover:opacity-90 active:scale-95"
                       style={{ backgroundColor: '#FEE2E2', border: '2px solid #F87171', color: '#DC2626' }}
                     >
                       Try Again
-                    </button>
-                  </div>
+                  </button>
                 </div>
               </div>
-            )}
+            </div>
+          )}
           </div>
-        </div>
+          </div>
 
         {/* Footer Controls */}
         <div className="flex-shrink-0 px-5 py-4 bg-white/90 dark:bg-slate-800">
@@ -812,18 +818,18 @@ export function SongPractice({ isOpen, onClose, song, userId, onComplete }: Song
                     ? 'rgba(34, 197, 94, 0.15)'
                     : isChordMatching === false
                       ? 'rgba(239, 68, 68, 0.15)'
-                      : detectedChord
+                  : detectedChord
                         ? 'rgba(59, 130, 246, 0.1)'
-                        : 'rgba(156, 163, 175, 0.08)',
+                    : 'rgba(156, 163, 175, 0.08)',
                 border: `2px solid ${!chordDetectionConnected
                   ? 'rgba(239, 68, 68, 0.3)'
                   : isChordMatching === true
                     ? 'rgba(34, 197, 94, 0.5)'
                     : isChordMatching === false
                       ? 'rgba(239, 68, 68, 0.5)'
-                      : detectedChord
+                  : detectedChord
                         ? 'rgba(59, 130, 246, 0.3)'
-                        : 'rgba(156, 163, 175, 0.2)'}`,
+                    : 'rgba(156, 163, 175, 0.2)'}`,
                 minWidth: 280,
                 transition: 'all 0.15s ease-out'
               }}
@@ -849,13 +855,13 @@ export function SongPractice({ isOpen, onClose, song, userId, onComplete }: Song
                       ? '#16A34A'
                       : isChordMatching === false
                         ? '#DC2626'
-                        : detectedChord
+                    : detectedChord
                           ? '#3B82F6'
                           : '#9CA3AF'
                 }}
               >
                 {!chordDetectionConnected ? '🔌' : detectedChord || '--'}
-              </div>
+                </div>
 
               {/* Match indicator */}
               {chordDetectionConnected && isChordMatching !== null && (
@@ -864,22 +870,22 @@ export function SongPractice({ isOpen, onClose, song, userId, onComplete }: Song
                   style={{ color: isChordMatching ? '#16A34A' : '#DC2626' }}
                 >
                   {isChordMatching ? '✓ Correct!' : '✗ Wrong'}
-                </div>
-              )}
+                  </div>
+                )}
 
               {/* Confidence */}
               {detectedChord && chordConfidence > 0 && (
                 <div className="text-xs text-gray-500 mt-1">
                   Confidence: {(chordConfidence * 100).toFixed(0)}%
-                </div>
-              )}
+                  </div>
+                )}
 
               {/* All detected notes */}
-              {chordDetectionConnected && detectedNotes.length > 0 && (
+                {chordDetectionConnected && detectedNotes.length > 0 && (
                 <div className="text-sm text-gray-500 mt-2 pt-2 border-t border-gray-200">
                   Notes: <span className="font-semibold text-gray-700">{detectedNotes.slice(0, 6).join(', ')}</span>
-                </div>
-              )}
+                  </div>
+                )}
             </div>
           </div>
 

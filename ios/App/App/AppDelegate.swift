@@ -9,10 +9,14 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     var window: UIWindow?
 
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
-        // Configure audio session for microphone use (chord detection)
+        // Configure audio session for instrument/chord detection
+        // Use .measurement mode to disable all iOS audio processing
+        // (echo cancellation, noise suppression, AGC) which distort guitar audio
         do {
             let audioSession = AVAudioSession.sharedInstance()
-            try audioSession.setCategory(.playAndRecord, mode: .default, options: [.defaultToSpeaker, .allowBluetooth])
+            try audioSession.setCategory(.playAndRecord, mode: .measurement, options: [.defaultToSpeaker, .allowBluetooth])
+            try audioSession.setPreferredSampleRate(44100)
+            try audioSession.setPreferredIOBufferDuration(0.023) // ~1024 samples at 44100Hz
             try audioSession.setActive(true)
         } catch {
             print("Failed to configure audio session: \(error)")

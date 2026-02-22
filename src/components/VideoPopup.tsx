@@ -411,9 +411,9 @@ export function VideoPopup({
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent
+      <DialogContent 
         className="max-w-xl w-[calc(100%-2rem)] sm:w-[calc(100%-3rem)] p-0 overflow-hidden bg-gradient-to-br from-indigo-50 via-purple-50 to-pink-50 dark:from-gray-900 dark:via-slate-800 dark:to-gray-900 [&>button:last-of-type]:hidden"
-        style={{
+        style={{ 
           border: '2px solid rgb(237, 237, 237)',
           borderRadius: '16px',
           maxHeight: '85vh'
@@ -464,8 +464,8 @@ export function VideoPopup({
               >
                 <div className="p-4 sm:p-5">
                   {renderContent(content.content)}
-                </div>
-              </div>
+            </div>
+          </div>
 
               {/* Start Quiz Button */}
               <button
@@ -481,8 +481,8 @@ export function VideoPopup({
                 <HelpCircle className="w-4 h-4" />
                 Start Quiz
               </button>
-            </>
-          )}
+                </>
+              )}
 
           {viewState === 'quiz' && (
             <div 
@@ -506,23 +506,23 @@ export function VideoPopup({
                 }}
               >
                 {renderResults()}
-              </div>
+          </div>
 
               {/* Done Button - only enabled if quiz passed */}
               {quizPassed && (
-                <button 
-                  onClick={handleDone}
+            <button 
+              onClick={handleDone}
                   className="w-full h-10 sm:h-11 text-sm sm:text-base text-white font-semibold rounded-xl transition-all hover:scale-[1.02] flex items-center justify-center gap-2"
-                  style={{ 
-                    backgroundColor: 'rgb(34, 197, 94)',
-                    border: '2px solid rgb(22, 163, 74)',
-                    borderBottom: '4px solid rgb(21, 128, 61)',
-                    boxShadow: '0 4px 6px -1px rgba(34, 197, 94, 0.3)'
-                  }}
-                >
-                  <CheckCircle2 className="w-4 h-4" />
+              style={{ 
+                backgroundColor: 'rgb(34, 197, 94)',
+                border: '2px solid rgb(22, 163, 74)',
+                borderBottom: '4px solid rgb(21, 128, 61)',
+                boxShadow: '0 4px 6px -1px rgba(34, 197, 94, 0.3)'
+              }}
+            >
+              <CheckCircle2 className="w-4 h-4" />
                   Complete
-                </button>
+            </button>
               )}
             </>
           )}
