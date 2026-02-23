@@ -1,6 +1,7 @@
 /**
  * Chord Detection Service
  * Connects to kundu.dev/c_d WebSocket API for real-time chord/note detection
+ * Matches browser behavior exactly
  */
 
 import React from 'react';
@@ -36,17 +37,17 @@ export interface ChordDetectionConfig {
   debug?: boolean;
 }
 
-// Match browser defaults from kundu.dev/c_d
+// Match browser defaults EXACTLY from kundu.dev/c_d
 const DEFAULT_CONFIG: ChordDetectionConfig = {
   instrument: 'guitar',
-  sensitivity: 0.8,
-  confidence_threshold: 0.45,
-  silence_threshold: 0.005,
+  sensitivity: 1.0,              // Browser default is 1.0, NOT 0.8
+  confidence_threshold: 0.2,     // Browser default
+  silence_threshold: 0.005,      // Browser default
   overlap: 0.75,
   chord_window: 0.3,
   chord_window_confidence: 0.45,
   multi_pitch: true,
-  song_influence: 0.7,
+  song_influence: 0.6,           // Browser default slider position
   map_similar_variants: true,
   debug: false
 };
@@ -61,7 +62,7 @@ export class ChordDetectionService {
   private onResult: ((result: ChordDetectionResult) => void) | null = null;
   private onStatusChange: ((connected: boolean, status: string) => void) | null = null;
   private actualSampleRate: number = 44100;
-  private needsResample: boolean = false;
+  private pendingSongId: string | null = null;
 
   constructor() {
     this.config = { ...DEFAULT_CONFIG };
@@ -71,17 +72,16 @@ export class ChordDetectionService {
     this.config = { ...this.config, ...config };
 
     if (this.ws && this.ws.readyState === WebSocket.OPEN) {
-      // Server expects config nested inside a 'config' key
       this.ws.send(JSON.stringify({
         type: 'config_update',
-        config: { ...this.config }
+        config: { ...config }
       }));
     }
   }
 
   /**
-   * Load a song by server-side song ID (matches browser behavior)
-   * This is the preferred way to set song context
+   * Load a song by server-side song ID (matches browser behavior exactly)
+   * This is the ONLY way to enable song-constrained detection
    */
   setSongById(songId: string) {
     if (this.ws && this.ws.readyState === WebSocket.OPEN) {
@@ -92,40 +92,29 @@ export class ChordDetectionService {
       console.log('[ChordDetection] Setting song by ID:', songId);
       this.ws.send(JSON.stringify(message));
     } else {
+      // Save for after connection
+      this.pendingSongId = songId;
       console.log('[ChordDetection] Song ID saved for after connection:', songId);
     }
   }
 
+  /**
+   * @deprecated Use setSongById instead - this fallback method may not work correctly
+   */
   setSongContext(chords: string[], songTitle?: string) {
-    this.config.song_chords = chords;
-    this.config.song_influence = 0.7;
-
-    if (this.ws && this.ws.readyState === WebSocket.OPEN) {
-      // Server expects config values nested inside 'config' key
-      this.ws.send(JSON.stringify({
-        type: 'config_update',
-        config: {
-          song_chords: chords,
-          song_influence: 0.7,
-          map_similar_variants: true
-        }
-      }));
-      console.log('[ChordDetection] Sending song context:', chords);
-    } else {
-      console.log('[ChordDetection] Song context saved for next connection:', chords);
+    console.warn('[ChordDetection] setSongContext is deprecated - use setSongById for reliable song-constrained detection');
+    // Try to use set_song with a guessed ID instead
+    if (songTitle) {
+      const guessedId = songTitle.toLowerCase().replace(/[^a-z0-9]+/g, '_');
+      this.setSongById(guessedId);
     }
   }
 
   clearSongContext() {
-    this.config.song_chords = undefined;
-
+    this.pendingSongId = null;
     if (this.ws && this.ws.readyState === WebSocket.OPEN) {
       this.ws.send(JSON.stringify({
-        type: 'config_update',
-        config: {
-          song_chords: [],
-          song_info: null
-        }
+        type: 'clear_song'
       }));
     }
   }
@@ -153,9 +142,18 @@ export class ChordDetectionService {
           console.log('[ChordDetection] Connected to', wsUrl);
           this.onStatusChange?.(true, 'Connected');
 
-          // Send initial configuration (no type field, matches browser behavior)
-          console.log('[ChordDetection] Sending config:', this.config);
-          this.ws?.send(JSON.stringify(this.config));
+          // Send clean initial config (no song_chords - browser behavior)
+          const cleanConfig = { ...this.config };
+          delete cleanConfig.song_chords; // Don't include song_chords in initial config
+          console.log('[ChordDetection] Sending initial config:', cleanConfig);
+          this.ws?.send(JSON.stringify(cleanConfig));
+
+          // If we have a pending song, load it AFTER config (browser behavior)
+          if (this.pendingSongId) {
+            setTimeout(() => {
+              this.setSongById(this.pendingSongId!);
+            }, 100);
+          }
 
           resolve(true);
         };
@@ -163,11 +161,6 @@ export class ChordDetectionService {
         this.ws.onmessage = (event) => {
           try {
             const data = JSON.parse(event.data);
-
-            if (data.type === 'connected') {
-              console.log('[ChordDetection] Server confirmed:', data.message || 'OK');
-            }
-
             this.handleMessage(data);
           } catch (error) {
             console.error('[ChordDetection] Parse error:', error);
@@ -186,7 +179,6 @@ export class ChordDetectionService {
           this.stopRecording();
         };
 
-        // Timeout after 10 seconds
         setTimeout(() => {
           if (this.ws?.readyState !== WebSocket.OPEN) {
             console.error('[ChordDetection] Connection timeout');
@@ -203,27 +195,51 @@ export class ChordDetectionService {
     });
   }
 
-  private handleMessage(data: ChordDetectionResult) {
-    if (data.type === 'connected') return;
+  private handleMessage(data: any) {
+    // Log all messages for debugging
+    console.log('[ChordDetection] Received:', data.type, data);
+
+    if (data.type === 'connected') {
+      console.log('[ChordDetection] Server confirmed connection');
+      return;
+    }
+    
     if (data.type === 'error') {
       console.error('[ChordDetection] Server error:', data);
       return;
     }
-    if (data.type === 'song_loaded' || data.type === 'song_cleared') {
-      console.log('[ChordDetection]', data.type, data);
+    
+    if (data.type === 'song_loaded') {
+      console.log('[ChordDetection] Song loaded:', data);
+      return;
+    }
+    
+    if (data.type === 'song_cleared') {
+      console.log('[ChordDetection] Song cleared');
       return;
     }
 
+    // Handle silence - CRITICAL: pass to callback so chord clears
+    if (data.type === 'silence' || data.type === 'listening') {
+      this.onResult?.({
+        type: 'silence',
+        chord: undefined,
+        notes: [],
+      });
+      return;
+    }
+
+    // Handle chord messages - main detection result
     if (data.type === 'chord') {
       this.onResult?.(data);
-    } else if (data.type === 'notes') {
-      const notesOnlyData: ChordDetectionResult = {
-        type: 'notes',
-        notes: data.notes,
-        dominant_notes: data.dominant_notes,
-        frequencies: data.frequencies,
-      };
-      this.onResult?.(notesOnlyData);
+      return;
+    }
+
+    // Handle notes messages - may include chord_candidate for low-confidence
+    if (data.type === 'notes') {
+      // Pass through the FULL data including chord_candidate (browser behavior)
+      this.onResult?.(data);
+      return;
     }
   }
 
@@ -244,16 +260,13 @@ export class ChordDetectionService {
         }
       });
 
-      // Match browser: use AudioContext or webkitAudioContext, request 44100Hz
       const AudioCtx = (window as any).AudioContext || (window as any).webkitAudioContext;
       this.audioContext = new AudioCtx({ sampleRate: 44100 });
 
-      // iOS requires explicit resume after user gesture
       if (this.audioContext!.state === 'suspended') {
         await this.audioContext!.resume();
       }
 
-      // Handle iOS interruptions that suspend the context
       this.audioContext!.onstatechange = () => {
         console.log('[ChordDetection] AudioContext state:', this.audioContext?.state);
         if (this.audioContext?.state === 'suspended' && this.isRecording) {
@@ -262,13 +275,11 @@ export class ChordDetectionService {
       };
 
       this.actualSampleRate = this.audioContext!.sampleRate;
-      this.needsResample = this.actualSampleRate !== 44100;
+      const needsResample = this.actualSampleRate !== 44100;
       console.log('[ChordDetection] AudioContext sample rate:', this.actualSampleRate,
-        this.needsResample ? '(will resample to 44100)' : '(native 44100)');
+        needsResample ? '(will resample to 44100)' : '(native 44100)');
 
       const source = this.audioContext!.createMediaStreamSource(this.mediaStream);
-
-      // Use 4096 buffer size to match browser exactly
       this.scriptProcessor = this.audioContext!.createScriptProcessor(4096, 1, 1);
 
       this.scriptProcessor.onaudioprocess = (event) => {
@@ -277,11 +288,11 @@ export class ChordDetectionService {
         const inputData = event.inputBuffer.getChannelData(0);
 
         try {
-          if (this.needsResample) {
-            const resampled = this.resampleBuffer(inputData, this.actualSampleRate, 44100);
+          if (needsResample) {
+            // Use higher quality resampling to reduce artifacts
+            const resampled = this.resampleBufferHighQuality(inputData, this.actualSampleRate, 44100);
             this.ws.send(resampled.buffer);
           } else {
-            // Copy buffer to prevent WKWebView buffer reuse issues
             const copy = new Float32Array(inputData);
             this.ws.send(copy.buffer);
           }
@@ -290,9 +301,6 @@ export class ChordDetectionService {
         }
       };
 
-      // Mute the output to prevent feedback loop on iOS
-      // ScriptProcessor must connect to destination to fire events,
-      // but we zero the gain so no audio reaches the speaker
       const silencer = this.audioContext!.createGain();
       silencer.gain.value = 0;
 
@@ -312,17 +320,37 @@ export class ChordDetectionService {
     }
   }
 
-  private resampleBuffer(input: Float32Array, fromRate: number, toRate: number): Float32Array {
+  /**
+   * Higher quality resampling using sinc interpolation (reduces aliasing)
+   */
+  private resampleBufferHighQuality(input: Float32Array, fromRate: number, toRate: number): Float32Array {
     const ratio = fromRate / toRate;
     const outputLength = Math.round(input.length / ratio);
     const output = new Float32Array(outputLength);
 
+    // Use windowed sinc interpolation for better quality
+    const filterSize = 8;
+    
     for (let i = 0; i < outputLength; i++) {
       const srcIndex = i * ratio;
-      const srcFloor = Math.floor(srcIndex);
-      const srcCeil = Math.min(srcFloor + 1, input.length - 1);
-      const frac = srcIndex - srcFloor;
-      output[i] = input[srcFloor] * (1 - frac) + input[srcCeil] * frac;
+      let sum = 0;
+      let weightSum = 0;
+
+      for (let j = -filterSize; j <= filterSize; j++) {
+        const idx = Math.floor(srcIndex) + j;
+        if (idx >= 0 && idx < input.length) {
+          const x = srcIndex - idx;
+          // Lanczos window
+          const sinc = x === 0 ? 1 : Math.sin(Math.PI * x) / (Math.PI * x);
+          const lanczos = Math.abs(x) < filterSize ? 
+            (Math.sin(Math.PI * x / filterSize) / (Math.PI * x / filterSize)) : 0;
+          const weight = sinc * (x === 0 ? 1 : lanczos);
+          sum += input[idx] * weight;
+          weightSum += weight;
+        }
+      }
+      
+      output[i] = weightSum > 0 ? sum / weightSum : 0;
     }
 
     return output;
@@ -388,15 +416,38 @@ export function useChordDetection() {
     });
 
     serviceRef.current.setOnResult((result) => {
-      if (result.chord) {
-        setDetectedChord(result.chord);
+      // Handle silence - clear chord
+      if (result.type === 'silence') {
+        setDetectedChord(null);
+        setDetectedNotes([]);
+        setConfidence(0);
+        return;
       }
+
+      // Handle chord type - main detection
+      if (result.type === 'chord' && result.chord) {
+        setDetectedChord(result.chord);
+        if (result.confidence !== undefined) setConfidence(result.confidence);
+      }
+      
+      // Handle notes type - may have chord_candidate
+      if (result.type === 'notes') {
+        if (result.chord_candidate) {
+          // Low-confidence chord - display it (browser behavior)
+          setDetectedChord(result.chord_candidate);
+        } else if (!result.notes?.length) {
+          // No notes and no candidate = silence, clear chord
+          setDetectedChord(null);
+        }
+        // If notes but no chord_candidate, keep previous chord (browser behavior)
+      }
+
+      // Update notes from any message type
       if (result.notes) {
         const notes = result.notes.map(n => Array.isArray(n) ? String(n[0]) : String(n));
         setDetectedNotes(notes);
-      }
-      if (result.confidence !== undefined) {
-        setConfidence(result.confidence);
+      } else if (result.dominant_notes) {
+        setDetectedNotes(result.dominant_notes);
       }
     });
 

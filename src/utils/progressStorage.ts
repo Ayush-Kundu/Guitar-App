@@ -616,8 +616,10 @@ export const updateSongProgress = (
 
   // Calculate new progress - add at least 5% per practice session, or use the session progress if higher
   // This ensures progress always increases with each practice
+  // Cap at 99% unless the player earned the trophy (100% correctness, no mistakes)
   const progressIncrement = Math.max(5, progressPercent);
-  const newProgress = Math.min(100, existing.progress + progressIncrement);
+  const maxProgress = progressPercent >= 100 ? 100 : 99;
+  const newProgress = Math.min(maxProgress, existing.progress + progressIncrement);
   
   console.log('[updateSongProgress] Progress calculation:', {
     existingProgress: existing.progress,

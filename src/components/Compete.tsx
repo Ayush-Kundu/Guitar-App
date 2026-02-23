@@ -927,16 +927,16 @@ export function Compete() {
                   )}
                 </div>
                 
-                <div className="flex-1">
-                  <div className="flex items-center gap-2">
-                    <p className={`font-semibold text-lg ${player.isCurrentUser ? 'text-teal-700 dark:text-teal-300' : 'text-gray-900 dark:text-white'}`}>
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-2 min-w-0">
+                    <p className={`font-semibold text-lg truncate ${player.isCurrentUser ? 'text-teal-700 dark:text-teal-300' : 'text-gray-900 dark:text-white'}`}>
                       {player.name} {player.isCurrentUser && '(You)'}
                     </p>
                   </div>
                   <div className="flex items-center gap-3 text-sm text-gray-700 dark:text-gray-300">
                     <span>{player.rank}</span>
                     <span>•</span>
-                    
+                    <span>Level {player.level}</span>
                   </div>
                 </div>
                 
@@ -944,7 +944,7 @@ export function Compete() {
                   <div className="flex items-center gap-1 justify-end">
                     <Coins className="w-5 h-5 text-yellow-500" />
                     <p className="font-bold text-lg text-gray-900 dark:text-white">
-                      {player.points.toLocaleString()}
+                      {(player.isCurrentUser ? totalPoints : player.points).toLocaleString()}
                     </p>
                   </div>
                   <p className="text-sm text-gray-600 dark:text-gray-400">

@@ -48,7 +48,7 @@ export function VideoPopup({
   // Get the lesson content for this topic
   const lessonContent: LessonContent | null = getLessonContent(item.name, type);
   
-  // Default quiz for fallback - 7 questions to match required quiz length
+  // Default quiz for fallback - 5 questions to match required quiz length
   const defaultQuiz: QuizQuestion[] = [
     {
       question: 'What is the most important aspect of learning this technique?',
@@ -66,18 +66,8 @@ export function VideoPopup({
       correctAnswer: 1
     },
     {
-      question: 'Why is consistency important in guitar practice?',
-      options: ['It is not important', 'Daily practice builds lasting skills', 'Only long sessions matter', 'Practice once a week is enough'],
-      correctAnswer: 1
-    },
-    {
       question: 'What should you do if you make a mistake while practicing?',
       options: ['Start over from the beginning', 'Slow down and isolate the problem', 'Give up and try another day', 'Play faster to cover it up'],
-      correctAnswer: 1
-    },
-    {
-      question: 'How can you tell if you are making progress?',
-      options: ['You feel frustrated', 'Difficult parts become easier over time', 'You play the same speed always', 'Progress is impossible to measure'],
       correctAnswer: 1
     },
     {
@@ -95,11 +85,11 @@ export function VideoPopup({
   };
   
   const content = lessonContent || defaultContent;
-  // Ensure we have exactly 7 questions - supplement from default if needed
+  // Ensure we have exactly 5 questions - supplement from default if needed
   const contentQuiz = content.quiz || [];
-  const quiz = contentQuiz.length >= 7 
-    ? contentQuiz.slice(0, 7) 
-    : [...contentQuiz, ...defaultQuiz.slice(0, 7 - contentQuiz.length)];
+  const quiz = contentQuiz.length >= 5
+    ? contentQuiz.slice(0, 5)
+    : [...contentQuiz, ...defaultQuiz.slice(0, 5 - contentQuiz.length)];
 
   // Get category color for the progress bar
   const getCategoryColor = () => {

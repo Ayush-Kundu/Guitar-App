@@ -205,48 +205,49 @@ export function SongPractice({ isOpen, onClose, song, userId, onComplete }: Song
       setTotalDuration((mins || 0) * 60 + (secs || 0) + LEAD_IN_TIME + BUFFER);
     }
 
-    // Initialize chord detection
+    // Initialize chord detection - matches browser behavior exactly
     if (!chordDetectionRef.current) {
       chordDetectionRef.current = new ChordDetectionService();
 
-      // Set song context BEFORE connecting so it's included in initial config
-      if (song?.chords?.length > 0) {
-        console.log('[SongPractice] Pre-setting song context with chords:', song.chords);
-        chordDetectionRef.current.setSongContext(song.chords, song.title);
-      }
+      // DO NOT pre-set song context - browser sends clean config first, then loads song
+      // The song ID will be set after connection
 
       chordDetectionRef.current.setOnStatusChange((connected) => {
         console.log('[SongPractice] Chord detection status:', connected);
         setChordDetectionConnected(connected);
-        if (connected) {
-          // Use set_song with song ID (matches browser behavior) when available
-          if (song?.songId) {
-            console.log('[SongPractice] Setting song by ID after connection:', song.songId);
-            chordDetectionRef.current?.setSongById(song.songId);
-          } else if (song?.chords?.length > 0) {
-            console.log('[SongPractice] Confirming song context after connection:', song.chords);
-            chordDetectionRef.current?.setSongContext(song.chords, song.title);
-          } else {
-            console.warn('[SongPractice] No song ID or chords available!', song);
-          }
-        }
+        // Song is set via setSongById which handles pending songs internally
       });
 
       chordDetectionRef.current.setOnResult((result: ChordDetectionResult) => {
-        if (result.type === 'listening') return;
-
-        // Only update chord from 'chord' type messages (song-constrained)
-        // Discard detections with confidence > 1.0 — these are bogus (likely feedback artifacts)
-        if (result.type === 'chord' && result.chord) {
-          const conf = result.confidence ?? 0;
-          if (conf <= 1.0) {
-            setDetectedChord(result.chord);
-            if (result.confidence !== undefined) setChordConfidence(result.confidence);
-            if (result.stability !== undefined) setChordStability(result.stability);
-          }
+        // Handle silence - CLEAR the chord (browser behavior)
+        if (result.type === 'silence') {
+          setDetectedChord(null);
+          setDetectedNotes([]);
+          setChordConfidence(0);
+          return;
         }
 
-        // Capture notes from any message type
+        // Handle chord type - main song-constrained detection
+        if (result.type === 'chord' && result.chord) {
+          setDetectedChord(result.chord);
+          if (result.confidence !== undefined) setChordConfidence(result.confidence);
+          if (result.stability !== undefined) setChordStability(result.stability);
+        }
+        
+        // Handle notes type - may include chord_candidate for low-confidence (browser behavior)
+        if (result.type === 'notes') {
+          if (result.chord_candidate) {
+            // Display low-confidence chord candidate (browser shows these)
+            setDetectedChord(result.chord_candidate);
+          } else if (!result.notes?.length && !result.dominant_notes?.length) {
+            // No notes at all = silence, clear the display
+            setDetectedChord(null);
+            setDetectedNotes([]);
+          }
+          // If notes but no chord_candidate, keep previous chord displayed (browser behavior)
+        }
+
+        // Update detected notes from any message
         if (result.notes?.length) {
           const notes = result.notes.map(n =>
             Array.isArray(n) ? String(n[0]) : String(n)
@@ -256,6 +257,18 @@ export function SongPractice({ isOpen, onClose, song, userId, onComplete }: Song
           setDetectedNotes(result.dominant_notes);
         }
       });
+
+      // Set song ID BEFORE connecting so it's queued (will be sent after connection)
+      // Use the server's song ID format if available
+      if (song?.songId) {
+        console.log('[SongPractice] Queuing song ID for after connection:', song.songId);
+        chordDetectionRef.current.setSongById(song.songId);
+      } else {
+        // Fallback: try common server ID formats
+        const titleSlug = song.title.toLowerCase().replace(/[^a-z0-9]+/g, '_').replace(/_+$/, '');
+        console.log('[SongPractice] Queuing guessed song ID:', titleSlug);
+        chordDetectionRef.current.setSongById(titleSlug);
+      }
 
       chordDetectionRef.current.connect();
     }
@@ -293,6 +306,10 @@ export function SongPractice({ isOpen, onClose, song, userId, onComplete }: Song
         animationRef.current = requestAnimationFrame(animate);
       } else {
         setIsPlaying(false);
+        chordDetectionRef.current?.stopRecording();
+        setDetectedChord(null);
+        setDetectedNotes([]);
+        setChordConfidence(0);
         if (hasMadeMistake) {
           setShowMistakeOptions(true);
         } else {
@@ -389,6 +406,11 @@ export function SongPractice({ isOpen, onClose, song, userId, onComplete }: Song
           if (!hasMadeMistake) {
             setHasMadeMistake(true);
             setFirstMistakeTime(currentTime);
+            // Stop recording and clear chord display on mistake
+            chordDetectionRef.current?.stopRecording();
+            setDetectedChord(null);
+            setDetectedNotes([]);
+            setChordConfidence(0);
         }
       } else {
           // During grace period, keep previous state (null or unchanged)
@@ -481,13 +503,18 @@ export function SongPractice({ isOpen, onClose, song, userId, onComplete }: Song
   const handleComplete = () => {
     chordDetectionRef.current?.stopRecording();
 
+    // Only award progress/points if the song was played 100% correctly (trophy earned)
+    if (!showCompletion) {
+      setTimeout(onClose, 400);
+      return;
+    }
+
     const elapsedMs = practiceStartTimeRef.current ? Date.now() - practiceStartTimeRef.current : 0;
     const minutesPracticed = Math.round(elapsedMs / 60000);
-    const progressPercent = showCompletion ? 100 : Math.max(10, Math.round((currentTime / totalDuration) * 100));
 
     const songId = song.songId || `${song.title.toLowerCase().replace(/\s+/g, '_')}_${song.artist.toLowerCase().replace(/\s+/g, '_')}`;
 
-    onComplete(minutesPracticed, progressPercent, {
+    onComplete(minutesPracticed, 100, {
       songId,
       title: song.title,
       artist: song.artist,
