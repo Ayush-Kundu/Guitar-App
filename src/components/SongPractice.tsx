@@ -28,6 +28,7 @@ interface SongPracticeProps {
     difficulty?: number;
   };
   userId: string;
+  userLevel?: string;
   onComplete: (
     minutesPracticed: number,
     progressPercent: number,
@@ -87,7 +88,7 @@ const getExpectedNoteName = (stringNum: number, fret: number): string => {
 // MAIN COMPONENT
 // =============================================================================
 
-export function SongPractice({ isOpen, onClose, song, userId, onComplete }: SongPracticeProps) {
+export function SongPractice({ isOpen, onClose, song, userId, userLevel, onComplete }: SongPracticeProps) {
   // -------------------------------------------------------------------------
   // STATE
   // -------------------------------------------------------------------------
@@ -205,73 +206,72 @@ export function SongPractice({ isOpen, onClose, song, userId, onComplete }: Song
       setTotalDuration((mins || 0) * 60 + (secs || 0) + LEAD_IN_TIME + BUFFER);
     }
 
+    // Clean up any existing connection before creating a new one
+    if (chordDetectionRef.current) {
+      chordDetectionRef.current.stopRecording();
+      chordDetectionRef.current.disconnect();
+      chordDetectionRef.current = null;
+    }
+
     // Initialize chord detection - matches browser behavior exactly
-    if (!chordDetectionRef.current) {
-      chordDetectionRef.current = new ChordDetectionService();
+    const chordService = new ChordDetectionService();
+    chordDetectionRef.current = chordService;
 
-      // DO NOT pre-set song context - browser sends clean config first, then loads song
-      // The song ID will be set after connection
+    // Set user level for the chord detection API
+    if (userLevel) {
+      chordService.setUserLevel(userLevel);
+    }
 
-      chordDetectionRef.current.setOnStatusChange((connected) => {
-        console.log('[SongPractice] Chord detection status:', connected);
-        setChordDetectionConnected(connected);
-        // Song is set via setSongById which handles pending songs internally
-      });
+    chordService.setOnStatusChange((connected) => {
+      setChordDetectionConnected(connected);
+    });
 
-      chordDetectionRef.current.setOnResult((result: ChordDetectionResult) => {
-        // Handle silence - CLEAR the chord (browser behavior)
-        if (result.type === 'silence') {
-          setDetectedChord(null);
-          setDetectedNotes([]);
-          setChordConfidence(0);
-          return;
-        }
+    chordService.setOnResult((result: ChordDetectionResult) => {
+      const songId = result._currentSongId;
 
-        // Handle chord type - main song-constrained detection
-        if (result.type === 'chord' && result.chord) {
-          setDetectedChord(result.chord);
-          if (result.confidence !== undefined) setChordConfidence(result.confidence);
-          if (result.stability !== undefined) setChordStability(result.stability);
-        }
-        
-        // Handle notes type - may include chord_candidate for low-confidence (browser behavior)
-        if (result.type === 'notes') {
-          if (result.chord_candidate) {
-            // Display low-confidence chord candidate (browser shows these)
-            setDetectedChord(result.chord_candidate);
-          } else if (!result.notes?.length && !result.dominant_notes?.length) {
-            // No notes at all = silence, clear the display
+      if (result.type === 'chord') {
+        if (result.song_constrained && songId) {
+          if (result.final_chord) {
+            setDetectedChord(result.final_chord);
+            if (result.final_confidence !== undefined) setChordConfidence(result.final_confidence);
+          } else {
             setDetectedChord(null);
-            setDetectedNotes([]);
           }
-          // If notes but no chord_candidate, keep previous chord displayed (browser behavior)
+        } else {
+          if (result.chord) {
+            setDetectedChord(result.chord);
+            if (result.confidence !== undefined) setChordConfidence(result.confidence);
+          } else {
+            setDetectedChord(null);
+          }
         }
-
-        // Update detected notes from any message
+        if (result.stability !== undefined) setChordStability(result.stability);
         if (result.notes?.length) {
-          const notes = result.notes.map(n =>
-            Array.isArray(n) ? String(n[0]) : String(n)
-          );
-          setDetectedNotes(notes);
-        } else if (result.dominant_notes?.length) {
-          setDetectedNotes(result.dominant_notes);
+          setDetectedNotes(result.notes.map((n: any) => Array.isArray(n) ? String(n[0]) : String(n)));
         }
-      });
-
-      // Set song ID BEFORE connecting so it's queued (will be sent after connection)
-      // Use the server's song ID format if available
-      if (song?.songId) {
-        console.log('[SongPractice] Queuing song ID for after connection:', song.songId);
-        chordDetectionRef.current.setSongById(song.songId);
-      } else {
-        // Fallback: try common server ID formats
-        const titleSlug = song.title.toLowerCase().replace(/[^a-z0-9]+/g, '_').replace(/_+$/, '');
-        console.log('[SongPractice] Queuing guessed song ID:', titleSlug);
-        chordDetectionRef.current.setSongById(titleSlug);
+        return;
       }
 
-      chordDetectionRef.current.connect();
-    }
+      if (result.type === 'notes') {
+        if (result.notes?.length) {
+          setDetectedNotes(result.notes.map((n: any) => Array.isArray(n) ? String(n[0]) : String(n)));
+        } else {
+          setDetectedNotes([]);
+        }
+        if (!songId) {
+          if (result.chord_candidate) {
+            setDetectedChord(result.chord_candidate);
+            if (result.confidence !== undefined) setChordConfidence(result.confidence);
+          } else {
+            setDetectedChord(null);
+          }
+        }
+        return;
+      }
+    });
+
+    chordService.setSong(song.title, song.artist);
+    chordService.connect();
 
     return () => {
       if (chordDetectionRef.current) {
@@ -328,17 +328,31 @@ export function SongPractice({ isOpen, onClose, song, userId, onComplete }: Song
     };
   }, [isPlaying, totalDuration, showCompletion, playbackSpeed, hasMadeMistake]);
 
-  // Note feedback evaluation
+  // Note feedback evaluation - directly uses API's song-constrained chord
   useEffect(() => {
     if (!isPlaying || !noteEvents.length) return;
 
     const EARLY_ACCEPT = 0.3;
     const LATE_LEEWAY = 0.5;
 
+    // Extract note name from detected chord (e.g., "F9" -> "F", "G#m" -> "G#")
+    const getChordRoot = (chord: string | null): string | null => {
+      if (!chord) return null;
+      const match = chord.match(/^([A-G][#b]?)/i);
+      return match ? match[1].toUpperCase() : null;
+    };
+
+    // Get all detected note names
     const detectedNoteNames = detectedNotes.map(n => {
       const match = n.match(/^([A-G][#b]?)/i);
       return match ? match[1].toUpperCase() : n.toUpperCase();
     });
+
+    // Also get the root from the detected chord
+    const detectedChordRoot = getChordRoot(detectedChord);
+    if (detectedChordRoot && !detectedNoteNames.includes(detectedChordRoot)) {
+      detectedNoteNames.push(detectedChordRoot);
+    }
 
     const newFeedback: Record<number, string | null> = { ...noteFeedback };
     const activeExpectedNotes: string[] = [];
@@ -346,7 +360,6 @@ export function SongPractice({ isOpen, onClose, song, userId, onComplete }: Song
     let anyMatch = false;
 
     noteEvents.forEach((note, idx) => {
-      // Use STATE_ADVANCE_TIME to match visual state timing
       const stateTime = note.time - STATE_ADVANCE_TIME;
       const endTime = stateTime + (note.duration || 0.5);
       const isInWindow = currentTime >= stateTime - EARLY_ACCEPT && currentTime <= endTime + LATE_LEEWAY;
@@ -363,6 +376,7 @@ export function SongPractice({ isOpen, onClose, song, userId, onComplete }: Song
 
       const expectedNote = getExpectedNoteName(note.string, note.fret);
       const expectedFlat = expectedNote.replace('#', 'b');
+      const expectedSharp = expectedNote.replace('b', '#');
 
       // Track active notes at the bar
       if (barTouched) {
@@ -372,9 +386,10 @@ export function SongPractice({ isOpen, onClose, song, userId, onComplete }: Song
         }
       }
 
-      const isCorrect = detectedNoteNames.some(dn => dn === expectedNote || dn === expectedFlat) ||
-        (detectedChord && (detectedChord.toUpperCase().startsWith(expectedNote) ||
-                          detectedChord.toUpperCase().startsWith(expectedFlat)));
+      // Direct comparison with API chord root and detected notes
+      const isCorrect = detectedNoteNames.some(dn => 
+        dn === expectedNote || dn === expectedFlat || dn === expectedSharp
+      );
 
       if (isCorrect && barTouched) {
         anyMatch = true;
@@ -387,33 +402,25 @@ export function SongPractice({ isOpen, onClose, song, userId, onComplete }: Song
         return;
       }
 
-      // Grace period before marking wrong - gives chord detection time to respond
-      const WRONG_GRACE_PERIOD = 0.3; // seconds
+      // Grace period before marking wrong
+      const WRONG_GRACE_PERIOD = 0.3;
       const timeSinceBarTouched = activeNoteStartTimeRef.current[idx]
         ? currentTime - activeNoteStartTimeRef.current[idx]
         : 0;
 
       if (currentTime < stateTime) {
-        // Early window - only mark correct, not wrong
         newFeedback[idx] = isCorrect ? 'correct' : noteFeedback[idx] || null;
       } else {
-        // Bar has touched
         if (isCorrect) {
           newFeedback[idx] = 'correct';
         } else if (timeSinceBarTouched >= WRONG_GRACE_PERIOD) {
-          // Only mark wrong after grace period has passed
           newFeedback[idx] = 'wrong';
           if (!hasMadeMistake) {
             setHasMadeMistake(true);
             setFirstMistakeTime(currentTime);
-            // Stop recording and clear chord display on mistake
-            chordDetectionRef.current?.stopRecording();
-            setDetectedChord(null);
-            setDetectedNotes([]);
-            setChordConfidence(0);
-        }
-      } else {
-          // During grace period, keep previous state (null or unchanged)
+            // Keep chord detection running - don't stop recording or clear display
+          }
+        } else {
           newFeedback[idx] = noteFeedback[idx] || null;
         }
       }
@@ -432,11 +439,7 @@ export function SongPractice({ isOpen, onClose, song, userId, onComplete }: Song
     if (!isPlaying) {
       if (chordDetectionRef.current?.isConnected()) {
         // Re-send song context before starting recording
-        if (song?.songId) {
-          chordDetectionRef.current.setSongById(song.songId);
-        } else if (song?.chords?.length > 0) {
-          chordDetectionRef.current.setSongContext(song.chords, song.title);
-        }
+        chordDetectionRef.current.setSong(song.title, song.artist);
         await chordDetectionRef.current.startRecording();
       }
       startTimeRef.current = Date.now() - (currentTime * 1000 / playbackSpeed);
@@ -872,7 +875,7 @@ export function SongPractice({ isOpen, onClose, song, userId, onComplete }: Song
                 </div>
               )}
 
-              {/* Detected chord */}
+              {/* Detected chord - directly from API song-constrained output */}
               <div
                 className="text-4xl font-bold"
                 style={{
@@ -888,7 +891,7 @@ export function SongPractice({ isOpen, onClose, song, userId, onComplete }: Song
                 }}
               >
                 {!chordDetectionConnected ? '🔌' : detectedChord || '--'}
-                </div>
+              </div>
 
               {/* Match indicator */}
               {chordDetectionConnected && isChordMatching !== null && (
@@ -897,22 +900,15 @@ export function SongPractice({ isOpen, onClose, song, userId, onComplete }: Song
                   style={{ color: isChordMatching ? '#16A34A' : '#DC2626' }}
                 >
                   {isChordMatching ? '✓ Correct!' : '✗ Wrong'}
-                  </div>
-                )}
+                </div>
+              )}
 
               {/* Confidence */}
               {detectedChord && chordConfidence > 0 && (
                 <div className="text-xs text-gray-500 mt-1">
                   Confidence: {(chordConfidence * 100).toFixed(0)}%
-                  </div>
-                )}
-
-              {/* All detected notes */}
-                {chordDetectionConnected && detectedNotes.length > 0 && (
-                <div className="text-sm text-gray-500 mt-2 pt-2 border-t border-gray-200">
-                  Notes: <span className="font-semibold text-gray-700">{detectedNotes.slice(0, 6).join(', ')}</span>
-                  </div>
-                )}
+                </div>
+              )}
             </div>
           </div>
 

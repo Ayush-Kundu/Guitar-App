@@ -90,7 +90,7 @@ export function Dashboard({ onSectionChange }: DashboardProps) {
     // Also refresh periodically to catch changes from other components
     const intervalId = setInterval(() => {
       refreshDashboardData();
-    }, 2000); // Refresh every 2 seconds
+    }, 30000); // Refresh every 30 seconds
 
     document.addEventListener('visibilitychange', handleVisibilityChange);
     window.addEventListener('focus', handleFocus);

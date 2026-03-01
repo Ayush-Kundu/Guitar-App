@@ -16,8 +16,9 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
             let audioSession = AVAudioSession.sharedInstance()
             try audioSession.setCategory(.playAndRecord, mode: .measurement, options: [.defaultToSpeaker, .allowBluetooth])
             try audioSession.setPreferredSampleRate(44100)
-            try audioSession.setPreferredIOBufferDuration(0.023) // ~1024 samples at 44100Hz
+            try audioSession.setPreferredIOBufferDuration(0.093) // ~4096 samples at 44100Hz (matches ScriptProcessor)
             try audioSession.setActive(true)
+            print("Audio session configured: actual sample rate = \(audioSession.sampleRate)Hz, IO buffer = \(audioSession.ioBufferDuration)s")
         } catch {
             print("Failed to configure audio session: \(error)")
         }

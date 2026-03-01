@@ -18,42 +18,6 @@ export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
   },
 });
 
-// Test Supabase connection
-if (supabaseUrl && supabaseAnonKey) {
-  console.log('Supabase client initialized:', {
-    url: supabaseUrl ? '✓ Set' : '✗ Missing',
-    key: supabaseAnonKey ? '✓ Set' : '✗ Missing'
-  });
-  
-  // Test query to friend_requests table
-  (async () => {
-    try {
-      const { data, error } = await supabase
-        .from('friend_requests')
-        .select('*')
-        .limit(10);
-      
-      if (error) {
-        console.error('❌ friend_requests table test FAILED:', error.message);
-        console.error('   This might be due to RLS policies. Run this SQL in Supabase:');
-        console.error('   CREATE POLICY "Allow select" ON friend_requests FOR SELECT USING (true);');
-      } else {
-        console.log('✅ friend_requests table accessible! Found', data?.length || 0, 'records');
-        if (data && data.length > 0) {
-          console.log('Sample data:', data[0]);
-        }
-      }
-    } catch (e) {
-      console.error('❌ Failed to test friend_requests table:', e);
-    }
-  })();
-} else {
-  console.warn('Supabase environment variables not set:', {
-    url: supabaseUrl,
-    key: supabaseAnonKey ? 'Set' : 'Missing'
-  });
-}
-
 // Export the function to fetch users from Supabase
 export const fetchUsersFromSupabase = async () => {
   try {
@@ -61,13 +25,11 @@ export const fetchUsersFromSupabase = async () => {
       .from("profiles")        // 👈 Change to profiles table
       .select("user_id, username, guitar_level"); // 👈 Only use existing columns
     if (error) {
-      console.error("Error fetching users from Supabase:", error.message);
       return [];
     } else {
       return data || [];
     }
   } catch (error) {
-    console.error("Error fetching users:", error);
     return [];
   }
 };
@@ -284,12 +246,10 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
     try {
       const { data: { session }, error } = await supabase.auth.getSession();
       if (error) {
-        console.error('Error getting session:', error);
         return null;
       }
       return session?.access_token || null;
     } catch (error) {
-      console.error('Error in getAuthToken:', error);
       return null;
     }
   };
@@ -298,7 +258,6 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
   const handleWebSocketMessage = (message: WebSocketMessage) => {
     try {
       if (!message || !message.type || !message.data) {
-        console.debug('Invalid WebSocket message structure, ignoring');
         return;
       }
 
@@ -375,10 +334,8 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
           break;
           
         default:
-          console.debug('Unknown WebSocket message type:', message.type);
       }
     } catch (error) {
-      console.debug('Error handling WebSocket message:', error);
     }
   };
 
@@ -397,7 +354,6 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
         
         if (savedSession && savedUser) {
           const session = JSON.parse(savedSession);
-          console.log('Found saved session for user:', session.userId);
           
           // Verify session by fetching profile from Supabase
           const { data: profile, error } = await supabase
@@ -407,7 +363,6 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
             .single();
           
           if (profile && !error) {
-            console.log('✅ Session verified, profile found');
             
             // Create user object from profile
           const userData: User = {
@@ -436,16 +391,13 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
           
           setUser(userData);
           localStorage.setItem('guitarAppUser', JSON.stringify(userData));
-            console.log('User authenticated, ID:', userData.id);
             
             // Load progress from Supabase
             try {
               const cloudProgress = await loadProgressFromSupabase(profile.user_id);
               if (cloudProgress) {
-                console.log('✅ Progress loaded from cloud on init');
               }
             } catch (err) {
-              console.error('Error loading progress from Supabase:', err);
             }
           
           // Connect to WebSocket
@@ -456,21 +408,18 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
             setIsLoading(false);
             return; // Exit early, we have a valid session
           } else {
-            console.log('Session invalid, profile not found');
             // Clear invalid session
             localStorage.removeItem('guitarAppSession');
             localStorage.removeItem('guitarAppUser');
           }
         }
       } catch (error) {
-        console.error('Error checking session:', error);
         // Clear potentially corrupted session data
         localStorage.removeItem('guitarAppSession');
         localStorage.removeItem('guitarAppUser');
       }
       
       // No valid session - show login page
-      console.log('No active session - showing login page');
       setIsLoading(false);
     };
     
@@ -489,7 +438,6 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
       try {
         setRecentPointsActivities(JSON.parse(storedActivities));
       } catch (error) {
-        console.error('Error parsing stored activities:', error);
       }
     }
 
@@ -497,7 +445,6 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
       try {
         setFriends(JSON.parse(storedFriends));
       } catch (error) {
-        console.error('Error parsing stored friends:', error);
       }
     }
 
@@ -505,7 +452,6 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
       try {
         setFriendRequests(JSON.parse(storedFriendRequests));
       } catch (error) {
-        console.error('Error parsing stored friend requests:', error);
       }
     }
 
@@ -513,7 +459,6 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
       try {
         setChats(JSON.parse(storedChats));
       } catch (error) {
-        console.error('Error parsing stored chats:', error);
       }
     }
 
@@ -521,7 +466,6 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
       try {
         setMessages(JSON.parse(storedMessages));
       } catch (error) {
-        console.error('Error parsing stored messages:', error);
       }
     }
 
@@ -529,7 +473,6 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
       try {
         setCommunityPosts(JSON.parse(storedCommunityPosts));
       } catch (error) {
-        console.error('Error parsing stored community posts:', error);
       }
     } else {
       // Initialize with some demo community posts
@@ -622,11 +565,6 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
     if (!user) return;
 
     try {
-      console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
-      console.log('📥 FETCHING FRIENDS FROM SUPABASE');
-      console.log('   Current user ID:', user.id);
-      console.log('   Current user name:', user.name);
-      console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
       
       const friendIds: string[] = [];
       
@@ -640,11 +578,6 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
         .eq('from_user_id', user.id)
         .eq('status', 'accepted');
       
-      console.log('🔍 Accepted requests I SENT:', {
-        count: sentAccepted?.length || 0,
-        error: sentError?.message || null,
-        friends: sentAccepted?.map(r => ({ id: r.to_user_id, name: r.to_user_name })) || []
-      });
       
       if (sentAccepted) {
         friendIds.push(...sentAccepted.map(r => r.to_user_id));
@@ -657,11 +590,6 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
         .eq('to_user_id', user.id)
         .eq('status', 'accepted');
       
-      console.log('🔍 Accepted requests I RECEIVED:', {
-        count: receivedAccepted?.length || 0,
-        error: receivedError?.message || null,
-        friends: receivedAccepted?.map(r => ({ id: r.from_user_id, name: r.from_user_name })) || []
-      });
       
       if (receivedAccepted) {
         friendIds.push(...receivedAccepted.map(r => r.from_user_id));
@@ -685,17 +613,10 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
         friendIds.push(...friendships2.map(f => f.user_id_1));
       }
       
-      console.log('🔍 Friendships table backup:', {
-        asUser1: friendships1?.length || 0,
-        asUser2: friendships2?.length || 0
-      });
 
       // Remove duplicates and filter out any null/undefined values
       const uniqueFriendIds = [...new Set(friendIds)].filter(id => id != null);
       
-      console.log('✅ TOTAL FRIENDS FOUND:', uniqueFriendIds.length);
-      console.log('   Friend IDs:', uniqueFriendIds);
-      console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
       
       setFriends(uniqueFriendIds);
       
@@ -704,17 +625,14 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
         localStorage.setItem('guitarAppFriends', JSON.stringify(uniqueFriendIds));
       }
     } catch (error) {
-      console.error('❌ Error fetching friends:', error);
       
       // Fallback to localStorage
       if (typeof window !== 'undefined') {
         const storedFriends = localStorage.getItem('guitarAppFriends');
         if (storedFriends) {
           try {
-            console.log('📦 Falling back to localStorage friends');
             setFriends(JSON.parse(storedFriends));
           } catch (e) {
-            console.error('Error parsing stored friends:', e);
           }
         }
       }
@@ -723,27 +641,18 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
 
   const fetchFriendRequests = React.useCallback(async () => {
     if (!user) {
-      console.log('⚠️ fetchFriendRequests: No user logged in');
       return;
     }
     
-    console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
-    console.log('📥 FETCHING FRIEND REQUESTS');
-    console.log('User ID:', user.id);
-    console.log('Supabase URL:', supabaseUrl ? '✓ Set' : '✗ Missing');
-    console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
     
     // Check if Supabase is configured
     if (!supabaseUrl || !supabaseAnonKey) {
-      console.warn('⚠️ Supabase not configured, using localStorage only');
       const storedRequests = localStorage.getItem('guitarAppFriendRequests');
       if (storedRequests) {
         try {
           const parsedRequests = JSON.parse(storedRequests);
           setFriendRequests(parsedRequests);
-          console.log('📦 Loaded', parsedRequests.length, 'friend requests from localStorage');
         } catch (error) {
-          console.error('Error parsing stored friend requests:', error);
         }
       }
       return;
@@ -751,7 +660,6 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
 
     try {
       // Fetch ALL pending requests where user is either sender or receiver
-      console.log('🔍 Querying friend_requests table...');
       
       // First, let's see ALL pending friend requests in the table
       const { data: allPendingRequests, error: allError } = await supabase
@@ -759,26 +667,11 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
         .select('*')
         .eq('status', 'pending');
       
-      console.log('📋 ALL pending friend requests in database:', {
-        count: allPendingRequests?.length || 0,
-        data: allPendingRequests
-      });
       
       if (allPendingRequests && allPendingRequests.length > 0) {
-        console.log('🔍 Checking if any match current user...');
         allPendingRequests.forEach((req, i) => {
           const isReceiver = req.to_user_id === user.id;
           const isSender = req.from_user_id === user.id;
-          console.log(`   Request ${i + 1}:`, {
-            id: req.id,
-            from_user_id: req.from_user_id,
-            to_user_id: req.to_user_id,
-            current_user_id: user.id,
-            isReceiver,
-            isSender,
-            to_user_id_type: typeof req.to_user_id,
-            user_id_type: typeof user.id
-          });
         });
       }
 
@@ -789,14 +682,6 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
         .eq('to_user_id', user.id)
         .eq('status', 'pending');
 
-      console.log('📨 Received requests query result:', {
-        success: !receivedError,
-        count: receivedRequests?.length || 0,
-        error: receivedError?.message || null,
-        queryUserId: user.id,
-        data: receivedRequests
-      });
-
       // Fetch sent requests (where user is the sender)
       const { data: sentRequests, error: sentError } = await supabase
         .from('friend_requests')
@@ -804,27 +689,15 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
         .eq('from_user_id', user.id)
         .eq('status', 'pending');
 
-      console.log('📤 Sent requests query result:', {
-        success: !sentError,
-        count: sentRequests?.length || 0,
-        error: sentError?.message || null,
-        data: sentRequests
-      });
-
       // If both queries failed, fall back to localStorage
       if (receivedError && sentError) {
-        console.error('❌ Both Supabase queries failed!');
-        console.error('Received error:', receivedError);
-        console.error('Sent error:', sentError);
         
         const storedRequests = localStorage.getItem('guitarAppFriendRequests');
         if (storedRequests) {
           try {
             const parsedRequests = JSON.parse(storedRequests);
             setFriendRequests(parsedRequests);
-            console.log('📦 Loaded friend requests from localStorage (fallback)');
           } catch (error) {
-            console.error('Error parsing stored friend requests:', error);
           }
         }
         return;
@@ -869,24 +742,12 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
       // Also save to localStorage as backup
       localStorage.setItem('guitarAppFriendRequests', JSON.stringify(allRequests));
       
-      console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
-      console.log('✅ FRIEND REQUESTS LOADED');
-      console.log('Received:', formattedReceived.length);
-      console.log('Sent:', formattedSent.length);
-      console.log('Total:', allRequests.length);
       if (formattedReceived.length > 0) {
-        console.log('📬 PENDING REQUESTS:');
         formattedReceived.forEach((req, i) => {
-          console.log(`   ${i + 1}. From: ${req.fromUserName} (${req.fromUserId})`);
         });
       }
-      console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
       
     } catch (error) {
-      console.error('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
-      console.error('❌ FETCH FRIEND REQUESTS FAILED');
-      console.error('Error:', error);
-      console.error('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
       
       // Fall back to localStorage
       const storedRequests = localStorage.getItem('guitarAppFriendRequests');
@@ -894,9 +755,7 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
         try {
           const parsedRequests = JSON.parse(storedRequests);
           setFriendRequests(parsedRequests);
-          console.log('📦 Loaded friend requests from localStorage (fallback)');
         } catch (parseError) {
-          console.error('Error parsing stored friend requests:', parseError);
         }
       }
     }
@@ -904,8 +763,6 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
 
   const fetchBlockedUsers = React.useCallback(async () => {
     if (!user) return;
-
-    console.log('📥 Fetching blocked users from Supabase for user:', user.id);
 
     try {
       // Fetch blocked users from Supabase where current user is the blocker
@@ -915,17 +772,14 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
         .eq('blocker_id', user.id);
 
       if (blockedError) {
-        console.warn('Error fetching blocked users from Supabase:', blockedError);
         return;
       }
 
       if (blockedData) {
         const blockedIds = blockedData.map(b => b.blocked_id);
-        console.log('✅ Found', blockedIds.length, 'blocked users from Supabase');
         setBlockedUsers(blockedIds);
       }
     } catch (error) {
-      console.error('Error fetching blocked users:', error);
     }
   }, [user]);
 
@@ -934,7 +788,6 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
     if (!user) return;
 
     try {
-      console.log('📥 Fetching chats from Supabase for user:', user.id);
       
       // Fetch chats where user is either participant_1 or participant_2
       const { data: chatsData, error: chatsError } = await supabase
@@ -944,21 +797,18 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
         .order('updated_at', { ascending: false });
 
       if (chatsError) {
-        console.warn('Error fetching chats from Supabase:', chatsError);
         // Fall back to localStorage
         const storedChats = localStorage.getItem('guitarAppChats');
         if (storedChats) {
           try {
             setChats(JSON.parse(storedChats));
           } catch (e) {
-            console.error('Error parsing stored chats:', e);
           }
         }
         return;
       }
 
       if (chatsData && chatsData.length > 0) {
-        console.log('✅ Found', chatsData.length, 'chats from Supabase');
         
         // Convert Supabase format to local Chat format
         const formattedChats: Chat[] = chatsData.map(chat => {
@@ -985,16 +835,10 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
         // since we may need to add auto-generated chats
         
         // Log the chats we found to help debug matching
-        console.log('📋 Chats from Supabase:');
         formattedChats.forEach(chat => {
-          console.log(`   Chat ${chat.id}: participants=[${chat.participants.join(', ')}]`);
         });
 
         // Fetch messages from friend_messages table (primary source)
-        console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
-        console.log('📥 FETCHING FROM friend_messages TABLE');
-        console.log('   Current user ID:', user.id);
-        console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
         
         // Fetch ALL messages and filter client-side (more reliable than .or() query)
         const { data: allFriendMsgs, error: friendMsgsError } = await supabase
@@ -1003,9 +847,7 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
           .order('created_at', { ascending: true });
         
         if (friendMsgsError) {
-          console.error('❌ Error fetching friend_messages:', friendMsgsError);
         } else {
-          console.log('✅ Found', allFriendMsgs?.length || 0, 'TOTAL messages in friend_messages');
         }
         
         // Filter to messages where current user is sender OR receiver
@@ -1013,62 +855,46 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
           msg.send_user === user.id || msg.receive_user === user.id
         );
         
-        console.log('✅ After filtering for user', user.id.substring(0, 8) + '...:');
-        console.log('   Found', friendMsgsData.length, 'messages involving this user');
         friendMsgsData.forEach((m, i) => {
-          console.log(`   [${i}] send=${m.send_user?.substring(0, 8)}, recv=${m.receive_user?.substring(0, 8)}, msg="${m.message?.substring(0, 20)}"`);
         });
         
         // Convert friend_messages to ChatMessage format
         const friendMessages: ChatMessage[] = [];
         
         if (friendMsgsData && friendMsgsData.length > 0) {
-          console.log('   Current user ID:', user.id);
           
           for (const msg of friendMsgsData) {
-            console.log('   ────────────────────────────────');
-            console.log('   Processing message:', msg.id);
-            console.log('      send_user:', msg.send_user);
-            console.log('      receive_user:', msg.receive_user);
-            console.log('      content:', msg.message?.substring(0, 30));
             
             // Get sender info
             const senderUser = allUsers.find(u => u.id === msg.send_user);
             
             // Determine who the "other" user is in this conversation
             const otherUserId = msg.send_user === user.id ? msg.receive_user : msg.send_user;
-            console.log('      other user in conversation:', otherUserId);
             
             // Find the chat that involves BOTH the current user AND the other user
             let matchingChat = formattedChats.find(chat => {
               const hasCurrentUser = chat.participants.includes(user.id);
               const hasOtherUser = chat.participants.includes(otherUserId);
               if (hasCurrentUser || hasOtherUser) {
-                console.log(`      Checking chat ${chat.id}: participants=[${chat.participants.join(', ')}]`);
-                console.log(`         hasCurrentUser(${user.id})=${hasCurrentUser}, hasOtherUser(${otherUserId})=${hasOtherUser}`);
               }
               return hasCurrentUser && hasOtherUser;
             });
             
             // Strategy 2: Find ANY private chat that has the other user
             if (!matchingChat) {
-              console.log('      No exact match, trying to find chat with other user...');
               matchingChat = formattedChats.find(chat => 
                 chat.type === 'private' && chat.participants.includes(otherUserId)
               );
               if (matchingChat) {
-                console.log('      Found chat with other user:', matchingChat.id);
               }
             }
             
             // Strategy 3: Find the most recent private chat for current user
             if (!matchingChat) {
-              console.log('      No chat with other user, trying any private chat...');
               matchingChat = formattedChats.find(chat => 
                 chat.type === 'private' && chat.participants.includes(user.id)
               );
               if (matchingChat) {
-                console.log('      Using current user private chat:', matchingChat.id);
                 // Update this chat to include the other user
                 if (!matchingChat.participants.includes(otherUserId)) {
                   matchingChat.participants.push(otherUserId);
@@ -1081,12 +907,10 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
             
             if (matchingChat) {
               chatIdToUse = matchingChat.id;
-              console.log('   ✅ Matched message to chat:', chatIdToUse);
             } else {
               // Create deterministic chat ID from sorted user IDs
               const sortedIds = [msg.send_user, msg.receive_user].sort();
               chatIdToUse = `chat_${sortedIds[0].substring(0, 8)}_${sortedIds[1].substring(0, 8)}`;
-              console.log('   ⚠️ No existing chat, using generated ID:', chatIdToUse);
               
               // Add this chat to formattedChats
               const receiverUser = allUsers.find(u => u.id === msg.receive_user);
@@ -1113,17 +937,9 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
             };
             
             friendMessages.push(formattedMessage);
-            console.log('   📝 Added message:', {
-              id: formattedMessage.id,
-              chatId: formattedMessage.chatId,
-              from: formattedMessage.senderName,
-              content: formattedMessage.content?.substring(0, 30)
-            });
           }
         }
         
-        console.log('✅ Total messages from friend_messages:', friendMessages.length);
-        console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
         
         // Also fetch from messages table as backup
         const chatIds = formattedChats.map(c => c.id);
@@ -1137,7 +953,6 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
             .order('created_at', { ascending: true });
 
           if (!messagesError && messagesData) {
-            console.log('✅ Found', messagesData.length, 'messages from messages table');
             
             messagesTableData = messagesData.map(msg => ({
               id: msg.id,
@@ -1170,13 +985,6 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
         // Sort by timestamp
         uniqueMessages.sort((a, b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime());
         
-        console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
-        console.log('📤 SETTING CHATS AND MESSAGES IN STATE');
-        console.log('   Chats count:', formattedChats.length);
-        console.log('   Messages count:', uniqueMessages.length);
-        console.log('   Chats:', formattedChats.map(c => ({ id: c.id, participants: c.participants })));
-        console.log('   Messages:', uniqueMessages.map(m => ({ id: m.id, chatId: m.chatId, content: m.content?.substring(0, 20) })));
-        console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
         
         // Set chats (including any auto-generated from friend_messages)
         setChats(formattedChats);
@@ -1186,25 +994,21 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
         setMessages(uniqueMessages);
         localStorage.setItem('guitarAppMessages', JSON.stringify(uniqueMessages));
       } else {
-        console.log('ℹ️ No chats found in Supabase, checking localStorage');
         const storedChats = localStorage.getItem('guitarAppChats');
         if (storedChats) {
           try {
             setChats(JSON.parse(storedChats));
           } catch (e) {
-            console.error('Error parsing stored chats:', e);
           }
         }
       }
     } catch (error) {
-      console.error('Error fetching chats:', error);
       // Fall back to localStorage
       const storedChats = localStorage.getItem('guitarAppChats');
       if (storedChats) {
         try {
           setChats(JSON.parse(storedChats));
         } catch (e) {
-          console.error('Error parsing stored chats:', e);
         }
       }
     }
@@ -1225,7 +1029,6 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
           if (!isCancelled) await fetchBlockedUsers();
           if (!isCancelled) await fetchChats();
         } catch (error) {
-          console.debug('Error fetching friends data:', error);
         }
       };
       
@@ -1243,8 +1046,6 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     if (!user?.id) return;
 
-    console.log('🔔 Setting up real-time subscriptions for user:', user.id);
-
     // Use unique channel names per user to avoid conflicts when multiple users are on the page
     const uniqueId = `${user.id}-${Date.now()}`;
     
@@ -1259,42 +1060,36 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
     const debouncedFetchChats = async () => {
       const now = Date.now();
       if (isUnmounted || (now - lastChatsFetch) < DEBOUNCE_MS) {
-        console.log('⏳ Skipping fetchChats - debounced');
         return;
       }
       lastChatsFetch = now;
       try {
         await fetchChats();
       } catch (e) {
-        console.debug('fetchChats error:', e);
       }
     };
     
     const debouncedFetchFriends = async () => {
       const now = Date.now();
       if (isUnmounted || (now - lastFriendsFetch) < DEBOUNCE_MS) {
-        console.log('⏳ Skipping fetchFriends - debounced');
         return;
       }
       lastFriendsFetch = now;
       try {
         await fetchFriends();
       } catch (e) {
-        console.debug('fetchFriends error:', e);
       }
     };
     
     const debouncedFetchRequests = async () => {
       const now = Date.now();
       if (isUnmounted || (now - lastRequestsFetch) < DEBOUNCE_MS) {
-        console.log('⏳ Skipping fetchFriendRequests - debounced');
         return;
       }
       lastRequestsFetch = now;
       try {
         await fetchFriendRequests();
       } catch (e) {
-        console.debug('fetchFriendRequests error:', e);
       }
     };
 
@@ -1310,7 +1105,6 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
           filter: `participant_1=eq.${user.id}`
         },
         (payload) => {
-          console.log('🆕 New chat received (as participant_1):', payload.new);
           debouncedFetchChats();
         }
       )
@@ -1323,7 +1117,6 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
           filter: `participant_2=eq.${user.id}`
         },
         (payload) => {
-          console.log('🆕 New chat received (as participant_2):', payload.new);
           debouncedFetchChats();
         }
       )
@@ -1340,7 +1133,6 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
           table: 'messages'
         },
         (payload) => {
-          console.log('📨 New message received:', payload.new);
           const newMsg = payload.new as any;
           
           // Format the message
@@ -1384,7 +1176,6 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
           filter: `user_id_1=eq.${user.id}`
         },
         (payload) => {
-          console.log('🤝 New friendship received (as user_id_1):', payload.new);
           debouncedFetchFriends();
           debouncedFetchChats();
         }
@@ -1398,7 +1189,6 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
           filter: `user_id_2=eq.${user.id}`
         },
         (payload) => {
-          console.log('🤝 New friendship received (as user_id_2):', payload.new);
           debouncedFetchFriends();
           debouncedFetchChats();
         }
@@ -1417,11 +1207,9 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
           filter: `from_user_id=eq.${user.id}`
         },
         (payload) => {
-          console.log('📬 Friend request update (sent by me):', payload.new);
           const updatedRequest = payload.new as any;
           // If the request was accepted, refresh friends and chats
           if (updatedRequest.status === 'accepted') {
-            console.log('✅ My friend request was accepted! Refreshing data...');
             debouncedFetchFriends();
             debouncedFetchChats();
             debouncedFetchRequests();
@@ -1437,7 +1225,6 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
           filter: `to_user_id=eq.${user.id}`
         },
         (payload) => {
-          console.log('📬 New friend request received:', payload.new);
           debouncedFetchRequests();
         }
       )
@@ -1462,12 +1249,6 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
             return; // Not our message
           }
           
-          console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
-          console.log('📨 REAL-TIME: NEW FRIEND MESSAGE');
-          console.log('   send_user:', newMsg.send_user);
-          console.log('   receive_user:', newMsg.receive_user);
-          console.log('   content:', newMsg.message);
-          console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
           
           // Get sender info
           const senderUser = allUsers.find(u => u.id === newMsg.send_user);
@@ -1509,21 +1290,17 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
                 type: 'text'
               };
               
-              console.log('✅ REAL-TIME: Adding to chat:', matchingChat.id);
               
               // Add message to state immediately
               setMessages(prev => {
                 if (prev.some(m => m.id === formattedMessage.id)) {
-                  console.log('   (Duplicate, skipping)');
                   return prev;
                 }
-                console.log('   Message added to state!');
                 const updated = [...prev, formattedMessage];
                 localStorage.setItem('guitarAppMessages', JSON.stringify(updated));
                 return updated;
               });
             } else {
-              console.log('⚠️ REAL-TIME: No chat found, forcing refresh...');
               // Force immediate refresh (bypass debounce)
               fetchChats();
             }
@@ -1536,7 +1313,6 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
 
     // Cleanup subscriptions on unmount
     return () => {
-      console.log('🔕 Cleaning up real-time subscriptions');
       isUnmounted = true;
       supabase.removeChannel(chatsSubscription);
       supabase.removeChannel(messagesSubscription);
@@ -1654,7 +1430,6 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
         return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
       }
     } catch (e) {
-      console.warn('crypto.subtle not available, using fallback hash');
     }
     
     // Fallback: simple hash function for non-secure contexts
@@ -1685,9 +1460,6 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
   // Add this function to create user profile in Supabase
   const createUserProfile = async (user: any, additionalData: Partial<User>) => {
     try {
-      console.log('Creating user profile for:', user.id);
-      console.log('User data:', user);
-      console.log('Additional data:', additionalData);
       
       const points = additionalData.totalPoints || 0;
       const streak = additionalData.practiceStreak || 0;
@@ -1706,24 +1478,16 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
         streak: streak
       };
 
-      console.log('Profile data to insert:', profileData);
-
       const { data, error } = await supabase
         .from('profiles')
         .insert([profileData]);
 
       if (error) {
-        console.error('Error creating user profile:', error);
-        console.error('Error details:', error.details);
-        console.error('Error hint:', error.hint);
-        console.error('Error message:', error.message);
         throw error;
       } else {
-        console.log('User profile created in Supabase:', data);
         return data;
       }
     } catch (error) {
-      console.error('Failed to create user profile:', error);
       throw error;
     }
   };
@@ -1732,25 +1496,27 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
   const updateProfileInSupabase = async (userId: string, points: number, streak: number) => {
     try {
       const competeLevel = getCompeteLevel(points);
-      
-      console.log('📊 Updating Supabase profile:', { userId, points, competeLevel, streak });
-      
+
+      const updateData: any = {
+        points: points,
+        compete_level: competeLevel,
+        streak: streak
+      };
+
+      // Also sync username if available
+      if (user?.name) {
+        updateData.username = user.name;
+      }
+
       const { error } = await supabase
         .from('profiles')
-        .update({
-          points: points,
-          compete_level: competeLevel,
-          streak: streak
-        })
+        .update(updateData)
         .eq('user_id', userId);
 
       if (error) {
-        console.error('Error updating profile in Supabase:', error);
       } else {
-        console.log('✅ Profile updated in Supabase successfully');
       }
     } catch (error) {
-      console.error('Failed to update profile in Supabase:', error);
     }
   };
 
@@ -1758,7 +1524,6 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
   // This reads points and streak from localStorage (progressStorage) and updates Supabase
   const syncProfileToSupabase = async () => {
     if (!user) {
-      console.log('⚠️ Cannot sync to Supabase: No user logged in');
       return;
     }
 
@@ -1770,14 +1535,12 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
       const points = progress?.totalPoints || 0;
       const streak = getPracticeStreak(user.id);
       
-      console.log('🔄 Syncing to Supabase:', { userId: user.id, points, streak });
       
       await updateProfileInSupabase(user.id, points, streak);
       
       // Also sync full progress data
       await syncFullProgressToSupabase(user.id);
     } catch (error) {
-      console.error('Failed to sync profile to Supabase:', error);
     }
   };
 
@@ -1793,35 +1556,27 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
       });
 
       if (error) {
-        console.error('Error updating display name:', error);
       } else {
-        console.log('Display name updated successfully');
       }
     } catch (error) {
-      console.error('Failed to update display name:', error);
     }
   };
 
   // Updated signup function - stores credentials directly in profiles table
   const signUp = async (userData: Partial<User> & { password: string }) => {
-    console.log('📝 signUp called with:', { email: userData.email, name: userData.name });
     setIsLoading(true);
     
     try {
       // Validate email format
       const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
       if (!emailRegex.test(userData.email!)) {
-        console.log('❌ Invalid email format');
         throw new Error('Please enter a valid email address');
       }
 
       // Validate password length
       if (!userData.password || userData.password.length < 6) {
-        console.log('❌ Password too short');
         throw new Error('Password must be at least 6 characters long');
       }
-
-      console.log('✅ Validation passed, checking if email exists...');
 
       // Check if email already exists
       const { data: existingUsers, error: checkError } = await supabase
@@ -1829,23 +1584,17 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
         .select('email')
         .eq('email', userData.email!.toLowerCase());
 
-      console.log('📧 Email check result:', { existingUsers, checkError });
-
       if (checkError) {
-        console.error('❌ Error checking email:', checkError);
       }
 
       if (existingUsers && existingUsers.length > 0) {
-        console.log('❌ Email already exists');
         throw new Error('An account with this email already exists. Please sign in instead.');
       }
 
       // Generate new user ID and hash password
-      console.log('🔑 Generating user ID and hashing password...');
       const userId = generateUserId();
       const passwordHash = await hashPassword(userData.password);
       
-      console.log('✅ User ID generated:', userId);
 
       // Create profile with email and password_hash
       const profileData = {
@@ -1862,21 +1611,15 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
         streak: 0
       };
 
-      console.log('📤 Inserting profile:', profileData);
-
       const { data, error: insertError } = await supabase
         .from('profiles')
         .insert([profileData])
         .select();
 
-      console.log('📥 Insert result:', { data, insertError });
-
       if (insertError) {
-        console.error('❌ Error creating profile:', insertError);
         throw new Error(`Failed to create account: ${insertError.message}`);
       }
 
-      console.log('✅ Profile created successfully:', data);
         
         // Set user in context
       const newUser: User = {
@@ -1899,20 +1642,16 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
           isOnline: true
         };
       
-      console.log('👤 Setting user:', newUser);
         setUser(newUser);
         
         // Save to localStorage for session persistence
         if (typeof window !== 'undefined') {
           localStorage.setItem('guitarAppUser', JSON.stringify(newUser));
         localStorage.setItem('guitarAppSession', JSON.stringify({ userId, email: userData.email!.toLowerCase() }));
-        console.log('💾 Saved to localStorage');
       }
       
-      console.log('🎉 User signed up successfully!');
 
     } catch (error: any) {
-      console.error('❌ Signup error:', error);
       throw error;
     } finally {
       setIsLoading(false);
@@ -1924,7 +1663,6 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
     setIsLoading(true);
     
     try {
-      console.log('🔐 Signing in user with email:', email);
       
       // Query profiles table by email
       const { data: profile, error: profileError } = await supabase
@@ -1934,21 +1672,15 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
           .single();
 
         if (profileError || !profile) {
-        console.error('No profile found for email:', email);
         throw new Error('Incorrect email or password.');
       }
-
-      console.log('Found profile:', profile.user_id);
 
       // Hash the provided password and compare
       const passwordHash = await hashPassword(password);
 
       if (profile.password_hash !== passwordHash) {
-        console.error('Password mismatch');
         throw new Error('Incorrect email or password.');
       }
-
-      console.log('✅ Password verified successfully');
 
         // Set user in local state
       const userData: User = {
@@ -1984,25 +1716,16 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
       }
       
       // Load progress from Supabase (restores user's progress from cloud)
-      console.log('🔄 Loading progress from Supabase...');
       const cloudProgress = await loadProgressFromSupabase(profile.user_id);
       if (cloudProgress) {
-        console.log('✅ Progress loaded from cloud:', {
-          totalPoints: cloudProgress.totalPoints,
-          streak: cloudProgress.streak,
-          selectedSongsCount: cloudProgress.selectedSongs?.length || 0
-        });
       } else {
-        console.log('ℹ️ No cloud progress found, starting fresh');
         }
         
         // WebSocket is disabled for stability
         setIsConnected(false);
         
-        console.log('User signed in successfully');
       
     } catch (error: any) {
-      console.error('Signin error:', error);
       throw error;
     } finally {
       setIsLoading(false);
@@ -2014,7 +1737,6 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
     try {
       // Sync progress to Supabase before signing out
       if (user) {
-        console.log('🔄 Syncing progress to Supabase before sign out...');
         await syncFullProgressToSupabase(user.id);
       }
       
@@ -2037,10 +1759,8 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
       setCommunityPosts([]);
       setIsConnected(false);
       
-      console.log('User signed out successfully');
       
     } catch (error) {
-      console.error('Signout error:', error);
     }
   };
 
@@ -2141,11 +1861,9 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
       
       const totalProgress = Math.round(songProgress + techniqueProgress + theoryProgress + pointsProgress);
       
-      console.log(`[LevelProgress] Songs: ${completedSongs}/${totalSelectedSongs} (${songProgress.toFixed(1)}%), Technique: ${completedTechniques}/${totalTechniqueCards} (${techniqueProgress.toFixed(1)}%), Theory: ${completedTheory}/${totalTheoryCards} (${theoryProgress.toFixed(1)}%), Points: ${progress.totalPoints}/${levelPointThreshold} (${pointsProgress.toFixed(1)}%), Total: ${totalProgress}%`);
       
       return Math.min(totalProgress, 100);
     } catch (error) {
-      console.error('Error calculating level progress:', error);
       return 0;
     }
   };
@@ -2192,7 +1910,6 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
         progress: Math.floor(Math.random() * 100)
       }));
     } catch (error) {
-      console.error('Error loading content:', error);
       return [];
     }
   };
@@ -2261,7 +1978,6 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
           };
         }
       } catch (error) {
-        console.error('Error fetching user from Supabase:', error);
       }
     }
     
@@ -2271,7 +1987,6 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
     
     // Check if target is a demo user (can't receive real friend requests)
     if (targetUser.id.startsWith('user_')) {
-      console.warn('⚠️ Cannot send friend request to demo user:', targetUser.name);
       throw new Error('This is a demo user. Please search for real users to add as friends.');
     }
     
@@ -2297,24 +2012,12 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
     
     const { data: { session } } = await supabase.auth.getSession();
     
-    console.log('Friend request auth check:', {
-      hasSession: !!session,
-      sessionUserId: session?.user?.id,
-      appUserId: user.id
-    });
       
     // Always try Supabase first, use user.id if no session
     const fromUserId = session?.user?.id || user.id;
     
     try {
-      console.log('🚀 Attempting to insert friend request to Supabase...');
       
-      console.log('Attempting to insert friend request to Supabase:', {
-        from_user_id: fromUserId,
-        to_user_id: targetUser.id,
-        sessionUserId: session?.user?.id,
-        appUserId: user.id
-      });
 
       // Check if request already exists
       const { data: existingRequest, error: checkError } = await supabase
@@ -2326,11 +2029,9 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
         .maybeSingle();
 
       if (checkError) {
-        console.error('Error checking existing request:', checkError);
       }
 
       if (existingRequest) {
-        console.log('Friend request already exists:', existingRequest);
         throw new Error('Friend request already sent');
       }
 
@@ -2344,75 +2045,29 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
         to_user_name: targetUser.name
       };
 
-      console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
-      console.log('🚀 SENDING FRIEND REQUEST');
-      console.log('From User:', {
-        id: fromUserId,
-        name: user.name,
-        source: 'current user'
-      });
-      console.log('To User:', {
-        id: targetUser.id,
-        name: targetUser.name,
-        source: 'found in: ' + (allUsers.find(u => u.id === targetUser.id) ? 'allUsers' : 'Supabase lookup')
-      });
-      console.log('Insert Data:', JSON.stringify(insertData, null, 2));
-      console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
-
       // Try insert without .select() to avoid RLS issues on the return
       const { error: insertError } = await supabase
         .from('friend_requests')
         .insert(insertData);
 
       if (insertError) {
-        console.error('❌ SUPABASE INSERT FAILED');
-        console.error('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
-        console.error('Error Code:', insertError.code);
-        console.error('Error Message:', insertError.message);
-        console.error('Error Details:', insertError.details);
-        console.error('Error Hint:', insertError.hint);
-        console.error('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
         
         // Provide specific guidance based on error type
         if (insertError.code === '42501' || insertError.message?.includes('permission denied') || insertError.message?.includes('policy')) {
-          console.error('🔒 CAUSE: Row Level Security (RLS) is blocking the insert.');
-          console.error('   FIX: Either disable RLS on friend_requests table or add an INSERT policy:');
-          console.error('   SQL: CREATE POLICY "Allow inserts" ON friend_requests FOR INSERT WITH CHECK (true);');
         } else if (insertError.code === '42703' || insertError.message?.includes('column')) {
-          console.error('📋 CAUSE: Missing column(s) in the friend_requests table.');
-          console.error('   FIX: Add the missing columns with this SQL:');
-          console.error('   ALTER TABLE friend_requests ADD COLUMN IF NOT EXISTS from_user_name TEXT;');
-          console.error('   ALTER TABLE friend_requests ADD COLUMN IF NOT EXISTS to_user_name TEXT;');
         } else if (insertError.code === '23505' || insertError.message?.includes('duplicate')) {
-          console.error('🔁 CAUSE: A friend request already exists (duplicate key).');
         } else if (insertError.code === '42P01' || insertError.message?.includes('does not exist')) {
-          console.error('📦 CAUSE: The friend_requests table does not exist.');
-          console.error('   FIX: Create the table in Supabase.');
         } else if (insertError.message?.includes('JWT') || insertError.message?.includes('token')) {
-          console.error('🔑 CAUSE: Authentication/JWT token issue.');
-          console.error('   FIX: Try logging out and logging back in.');
         } else {
-          console.error('❓ CAUSE: Unknown error. Check the error message above.');
         }
-        console.error('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
         
         throw new Error(insertError.message || 'Failed to send friend request');
       }
-
-      console.log('✅ Successfully inserted friend request to Supabase!');
 
       // Fetch updated requests
       await fetchFriendRequests();
       return; // Success - exit function
     } catch (error: any) {
-      console.error('');
-      console.error('⚠️ FALLING BACK TO LOCAL STORAGE');
-      console.error('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
-      console.error('Reason: Supabase insert failed with error:', error.message || error);
-      console.error('The friend request will be saved locally instead.');
-      console.error('To fix this, check the error details above and apply the suggested fix.');
-      console.error('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
-      console.error('');
       
       // Fall back to local storage
       const newRequest: FriendRequest = {
@@ -2436,14 +2091,12 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
         localStorage.setItem('guitarAppFriendRequests', JSON.stringify(updatedRequests));
       }
       
-      console.log('📦 Friend request saved to local storage as fallback');
     }
   };
 
   const acceptFriendRequest = async (requestId: string): Promise<void> => {
     if (!user) throw new Error('User not logged in');
     
-    console.log('✅ Accepting friend request:', requestId);
     
     // Find the friend request
     const request = friendRequests.find(req => req.id === requestId);
@@ -2483,10 +2136,6 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
       // Handle both string (local) and integer (Supabase) IDs
       const requestIdNum = isNaN(Number(requestId)) ? null : parseInt(requestId);
       
-      console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
-      console.log('✅ ACCEPTING FRIEND REQUEST');
-      console.log('Request ID:', requestId, '→ Number:', requestIdNum);
-      console.log('Current User ID:', user.id);
       
       if (!requestIdNum) {
         throw new Error('Invalid request ID');
@@ -2499,9 +2148,6 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
         .eq('id', requestIdNum)
         .eq('status', 'pending')
         .single();
-
-      console.log('Friend request data:', requestData);
-      console.log('Fetch error:', fetchError);
 
       if (fetchError || !requestData) {
         throw new Error('Friend request not found in database');
@@ -2517,11 +2163,9 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
         .eq('id', requestIdNum);
 
       if (updateError) {
-        console.error('❌ Failed to update request status:', updateError);
         throw new Error(updateError.message || 'Failed to accept request');
       }
       
-      console.log('✅ Friend request status updated to accepted');
 
       // Create friendship in Supabase
       // user_id_1 = sender of friend request (from_user_id)
@@ -2529,9 +2173,6 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
       const senderUserId = requestData.from_user_id;  // The one who SENT the request
       const accepterUserId = user.id;                  // The one who ACCEPTED the request
       
-      console.log('Creating friendship in Supabase:');
-      console.log('  user_id_1 (sender):', senderUserId);
-      console.log('  user_id_2 (accepter):', accepterUserId);
       
       try {
         const { data: friendshipData, error: friendshipError } = await supabase
@@ -2544,17 +2185,10 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
           .select();
 
         if (friendshipError) {
-          console.error('❌ Friendship creation error:', friendshipError);
-          console.error('   Code:', friendshipError.code);
-          console.error('   Message:', friendshipError.message);
-          console.error('   Details:', friendshipError.details);
           // Still continue - the request is accepted
         } else {
-          console.log('✅ Friendship created in Supabase:', friendshipData);
-          console.log('   Friendship ID:', friendshipData?.[0]?.id);
         }
       } catch (friendshipError) {
-        console.error('❌ Friendships table error:', friendshipError);
       }
       
       // Also update local friends state immediately
@@ -2591,10 +2225,8 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
             .single();
 
           if (chatInsertError) {
-            console.error('❌ Failed to save chat to Supabase:', chatInsertError);
             // Fall back to local storage
           } else {
-            console.log('✅ Chat saved to Supabase:', insertedChat);
           }
 
           // Create welcome message and save to Supabase
@@ -2625,9 +2257,7 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
             });
 
           if (msgInsertError) {
-            console.error('❌ Failed to save welcome message to Supabase:', msgInsertError);
           } else {
-            console.log('✅ Welcome message saved to Supabase');
           }
 
           // Update local state
@@ -2660,13 +2290,9 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
             return updatedMessages;
           });
           
-          console.log('✅ Chat room created for friendship:', chatId);
-          console.log('✅ Welcome message added to chat');
         } else {
-          console.log('ℹ️ Chat already exists in Supabase:', existingChatData.id);
         }
       } catch (chatError) {
-        console.error('❌ Error creating chat room:', chatError);
         // Still continue - friendship is established
       }
 
@@ -2675,16 +2301,9 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
         setFriends(prev => [...prev, friendUserId]);
       }
 
-      console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
-      console.log('✅ FRIEND REQUEST ACCEPTED SUCCESSFULLY');
-      console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
-
       // Fetch updated friends and requests
       await Promise.all([fetchFriends(), fetchFriendRequests()]);
     } catch (error: any) {
-      console.error('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
-      console.error('❌ Error accepting friend request:', error);
-      console.error('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
       throw error;
     }
   };
@@ -2692,9 +2311,6 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
   const declineFriendRequest = async (requestId: string): Promise<void> => {
     if (!user) throw new Error('User not logged in');
     
-    console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
-    console.log('❌ DECLINING FRIEND REQUEST');
-    console.log('Request ID:', requestId);
     
     // Find the friend request
     const request = friendRequests.find(req => req.id === requestId);
@@ -2735,15 +2351,11 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
         .eq('id', requestIdNum)
         .single();
 
-      console.log('Friend request data:', requestData);
-
       if (fetchError || !requestData) {
-        console.error('Could not fetch request data:', fetchError);
         throw new Error('Friend request not found in database');
       }
 
       const senderUserId = requestData.from_user_id;
-      console.log('Sender user ID to block:', senderUserId);
 
       // Update request status to declined (don't filter by to_user_id to avoid ID mismatch issues)
       const { error: updateError } = await supabase
@@ -2755,16 +2367,11 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
         .eq('id', requestIdNum);
 
       if (updateError) {
-        console.error('❌ Failed to update request status:', updateError);
         throw new Error(updateError.message || 'Failed to decline friend request');
       }
       
-      console.log('✅ Friend request status updated to declined');
 
       // Add to blocked_users table - BLOCK THE SENDER so they can't send requests again
-      console.log('Adding to blocked_users table...');
-      console.log('  blocker_id (current user):', user.id);
-      console.log('  blocked_id (sender):', senderUserId);
       
       const { data: blockData, error: blockError } = await supabase
         .from('blocked_users')
@@ -2778,40 +2385,23 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
       if (blockError) {
         // Check if it's a duplicate entry error (already blocked)
         if (blockError.code === '23505') {
-          console.log('ℹ️ User already blocked');
         } else {
-          console.error('❌ Error adding to blocked_users:', blockError);
-          console.error('   Code:', blockError.code);
-          console.error('   Message:', blockError.message);
         }
       } else {
-        console.log('✅ User added to blocked_users in Supabase:', blockData);
         
         // Update local blockedUsers state
         setBlockedUsers(prev => [...prev, senderUserId]);
       }
 
-      console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
-      console.log('❌ FRIEND REQUEST DECLINED & USER BLOCKED');
-      console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
-
       // Fetch updated requests
       await fetchFriendRequests();
     } catch (error: any) {
-      console.error('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
-      console.error('❌ Error declining friend request:', error);
-      console.error('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
       throw error;
     }
   };
 
   const removeFriend = async (friendId: string): Promise<void> => {
     if (!user) throw new Error('User not logged in');
-
-    console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
-    console.log('🗑️ REMOVING FRIEND');
-    console.log('Friend ID to remove:', friendId);
-    console.log('Current user ID:', user.id);
 
     try {
       // Remove from friendships table in Supabase
@@ -2829,13 +2419,9 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
         .eq('user_id_2', user.id);
 
       if (deleteError1) {
-        console.warn('Delete error (user_id_1 = user.id):', deleteError1);
       }
       if (deleteError2) {
-        console.warn('Delete error (user_id_1 = friendId):', deleteError2);
       }
-
-      console.log('✅ Friendship removed from Supabase');
 
       // Remove from local state
       setFriends(prev => prev.filter(id => id !== friendId));
@@ -2848,9 +2434,7 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
             const friendsList = JSON.parse(storedFriends);
             const updatedFriends = friendsList.filter((id: string) => id !== friendId);
             localStorage.setItem('guitarAppFriends', JSON.stringify(updatedFriends));
-            console.log('✅ Friend removed from localStorage');
           } catch (e) {
-            console.warn('Error updating localStorage:', e);
           }
         }
       }
@@ -2860,27 +2444,15 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
         !(chat.type === 'private' && chat.participants.includes(friendId))
       ));
 
-      console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
-      console.log('✅ FRIEND REMOVED SUCCESSFULLY');
-      console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
-
       // Fetch updated friends
       await fetchFriends();
     } catch (error: any) {
-      console.error('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
-      console.error('❌ Error removing friend:', error);
-      console.error('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
       throw error;
     }
   };
 
   const blockUser = async (userId: string): Promise<void> => {
     if (!user) throw new Error('User not logged in');
-
-    console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
-    console.log('🚫 BLOCKING USER');
-    console.log('Blocker ID (current user):', user.id);
-    console.log('Blocked ID (user to block):', userId);
 
     try {
       // Insert into blocked_users table in Supabase
@@ -2896,16 +2468,10 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
       if (blockError) {
         // Check if it's a duplicate entry error (already blocked)
         if (blockError.code === '23505') {
-          console.log('ℹ️ User already blocked');
         } else {
-          console.error('❌ Error blocking user:', blockError);
-          console.error('   Code:', blockError.code);
-          console.error('   Message:', blockError.message);
           throw new Error(blockError.message || 'Failed to block user');
         }
       } else {
-        console.log('✅ User blocked in Supabase:', blockData);
-        console.log('   Block record ID:', blockData?.[0]?.id);
       }
 
       // Update local blockedUsers state
@@ -2928,26 +2494,15 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
         setFriends(prev => prev.filter(id => id !== userId));
       }
 
-      console.log('✅ User blocked successfully');
-      console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
-
       // Fetch updated data
       await Promise.all([fetchFriends(), fetchFriendRequests(), fetchBlockedUsers()]);
     } catch (error: any) {
-      console.error('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
-      console.error('❌ Error blocking user:', error);
-      console.error('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
       throw error;
     }
   };
 
   const unblockUser = async (userId: string): Promise<void> => {
     if (!user) throw new Error('User not logged in');
-
-    console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
-    console.log('✅ UNBLOCKING USER');
-    console.log('Unblocker ID (current user):', user.id);
-    console.log('Unblocked ID (user to unblock):', userId);
 
     try {
       // Delete from blocked_users table in Supabase
@@ -2958,24 +2513,15 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
         .eq('blocked_id', userId);
 
       if (unblockError) {
-        console.error('❌ Error unblocking user:', unblockError);
         throw new Error(unblockError.message || 'Failed to unblock user');
       }
-
-      console.log('✅ User unblocked in Supabase');
 
       // Update local blockedUsers state
       setBlockedUsers(prev => prev.filter(id => id !== userId));
 
-      console.log('✅ User unblocked successfully');
-      console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
-
       // Fetch updated blocked users
       await fetchBlockedUsers();
     } catch (error: any) {
-      console.error('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
-      console.error('❌ Error unblocking user:', error);
-      console.error('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
       throw error;
     }
   };
@@ -3014,12 +2560,9 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
         });
 
       if (chatError) {
-        console.error('❌ Failed to save chat to Supabase:', chatError);
       } else {
-        console.log('✅ Chat saved to Supabase:', chatId);
       }
     } catch (error) {
-      console.error('Error saving chat to Supabase:', error);
     }
 
     // Update chats state with new chat
@@ -3070,7 +2613,6 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
           created_at: now
         });
       } catch (e) {
-        console.error('Error saving system message:', e);
       }
       
       setMessages(prev => {
@@ -3116,7 +2658,6 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
           created_at: now
         });
       } catch (e) {
-        console.error('Error saving welcome message:', e);
       }
       
       setMessages(prev => {
@@ -3134,10 +2675,6 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
   const sendMessage = async (chatId: string, content: string, receiverId?: string): Promise<void> => {
     if (!user) throw new Error('User not logged in');
 
-    console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
-    console.log('📨 USER CONTEXT: MESSAGE RECEIVED FROM COMMUNITY');
-    console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
-
     const messageId = `msg_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
     const now = new Date().toISOString();
     
@@ -3154,22 +2691,6 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
     const receiverUser = allUsers.find(u => u.id === actualReceiverId);
     const receiverName = receiverUser?.name || 'Unknown';
     
-    console.log('📤 MESSAGE DETAILS:');
-    console.log('   chat_id:', chatId);
-    console.log('   message_id:', messageId);
-    console.log('   ─────────────────────────────────────');
-    console.log('   👤 SENDER (user_1):');
-    console.log('      id:', user.id);
-    console.log('      name:', user.name);
-    console.log('      username:', user.username);
-    console.log('   ─────────────────────────────────────');
-    console.log('   👤 RECEIVER (user_2):');
-    console.log('      id:', actualReceiverId);
-    console.log('      name:', receiverName);
-    console.log('   ─────────────────────────────────────');
-    console.log('   💬 MESSAGE:', content.trim());
-    console.log('   ⏰ TIMESTAMP:', now);
-    console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
 
     const newMessage: ChatMessage = {
       id: messageId,
@@ -3184,10 +2705,8 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
 
     // Save message to Supabase for real-time sync between users
     try {
-      console.log('📡 Saving message to Supabase...');
       
       // Save to friend_messages table (the main messages table)
-      console.log('📡 Inserting into friend_messages table...');
       const { data: friendMsgData, error: friendMsgError } = await supabase
         .from('friend_messages')
         .insert({
@@ -3199,14 +2718,7 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
         .select();
 
       if (friendMsgError) {
-        console.error('❌ Failed to save to friend_messages:', friendMsgError);
-        console.error('   Code:', friendMsgError.code);
-        console.error('   Message:', friendMsgError.message);
       } else {
-        console.log('✅ Message saved to friend_messages successfully!');
-        console.log('   Record ID:', friendMsgData?.[0]?.id);
-        console.log('   send_user:', user.id, '→', user.name);
-        console.log('   receive_user:', actualReceiverId, '→', receiverName);
       }
       
       // Also save to messages table (for chat display)
@@ -3225,9 +2737,7 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
         });
 
       if (msgError) {
-        console.error('❌ Failed to save message to messages table:', msgError);
       } else {
-        console.log('✅ Message also saved to messages table');
       }
 
       // Update chat's updated_at in Supabase
@@ -3237,7 +2747,6 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
         .eq('id', chatId);
 
     } catch (error) {
-      console.error('Error saving message to Supabase:', error);
     }
 
     // Send via WebSocket if connected (backup for real-time)
@@ -3328,21 +2837,16 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
         }]);
       
       if (supabaseError) {
-        console.error('Supabase error:', supabaseError);
         // If RLS error, try to handle it gracefully
         if (supabaseError.code === '42501') {
-          console.log('RLS policy blocked insert. This is expected behavior for security.');
         }
       } else {
-        console.log('Post saved to Supabase:', supabaseData);
       }
 
       
       
-      console.log('Community post created successfully:', result);
       
     } catch (error) {
-      console.error('Failed to send community post to server:', error);
       // Continue with local state update even if server request fails
     }
 
@@ -3391,7 +2895,6 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
         .order('timestamp', { ascending: false });
 
       if (error) {
-        console.error('Error fetching posts from Supabase:', error);
         return;
       }
 
@@ -3418,7 +2921,6 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
         setCommunityPosts(formattedPosts);
       }
     } catch (error) {
-      console.error('Failed to fetch community posts:', error);
     }
   };
 
@@ -3436,7 +2938,6 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
         .single();
 
       if (checkError && checkError.code !== 'PGRST116') {
-        console.error('Error checking existing like:', checkError);
         return;
       }
 
@@ -3449,12 +2950,10 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
           .eq('user_id', user.id);
 
         if (deleteError) {
-          console.error('Error removing like:', deleteError);
           return;
         }
 
         // DON'T update local state here - let the Community component handle it
-        console.log('Successfully unliked post in Supabase');
 
       } else {
         // Like: Add the like
@@ -3470,22 +2969,18 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
           }]);
 
         if (insertError) {
-          console.error('Error adding like:', insertError);
           return;
         }
 
         // DON'T update local state here - let the Community component handle it
-        console.log('Successfully liked post in Supabase');
       }
 
     } catch (error) {
-      console.error('Failed to toggle like:', error);
     }
   };
 
   // Updated function using profiles table instead of Admin API
   const fetchUsersFromSupabase = async (): Promise<void> => {
-    console.log('📥 Fetching users from Supabase profiles...');
     
     try {
       const { data: users, error } = await supabase
@@ -3493,8 +2988,6 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
         .select('user_id, username, guitar_level, points, compete_level, streak');
 
       if (error) {
-        console.error('❌ Error fetching users from Supabase:', error);
-        console.log('⚠️ Keeping demo users as fallback');
         return;
       }
 
@@ -3522,13 +3015,10 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
 
         // Only use Supabase users (no demo users)
         setAllUsers(supabaseUsers);
-        console.log('✅ Loaded users from Supabase:', supabaseUsers.length);
       } else {
-        console.log('⚠️ No users found in Supabase');
         setAllUsers([]);
       }
     } catch (error) {
-      console.error('❌ Failed to fetch users from Supabase:', error);
       setAllUsers([]);
     }
   };
@@ -3601,11 +3091,8 @@ async function saveResultsToSupabase(results: any) {
       .insert([results]);      // wrap in [] because insert expects an array
 
     if (error) {
-      console.error('Error saving results to Supabase:', error.message);
     } else {
-      console.log('Saved results to Supabase:', data);
     }
   } catch (err) {
-    console.error('Unexpected error:', err);
   }
 }

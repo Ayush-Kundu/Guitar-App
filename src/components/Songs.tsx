@@ -6,6 +6,7 @@ import { Progress } from './ui/progress';
 import { ActivityModal } from './ActivityModal';
 import { EmptyState } from './EmptyState';
 import { SongPractice } from './SongPractice';
+import { GuitarTutorial, shouldShowTutorial } from './GuitarTutorial';
 import { Dialog, DialogContent } from './ui/dialog';
 import { 
   Play, 
@@ -16,7 +17,8 @@ import {
   Music,
   Check,
   X,
-  Search
+  Search,
+  GraduationCap
 } from 'lucide-react';
 import { Badge } from './ui/badge';
 import { SkillProgressBar } from './SkillProgressBar';
@@ -48,6 +50,8 @@ export function Songs() {
   const [searchQuery, setSearchQuery] = useState('');
   const [removeConfirmOpen, setRemoveConfirmOpen] = useState(false);
   const [songToRemove, setSongToRemove] = useState<{ id: string; title: string } | null>(null);
+  const [tutorialOpen, setTutorialOpen] = useState(false);
+  const [tutorialChecked, setTutorialChecked] = useState(false);
 
   const refreshData = () => {
     if (user) {
@@ -62,6 +66,17 @@ export function Songs() {
   useEffect(() => {
     refreshData();
   }, [user]);
+
+  // Check if tutorial should show for novice users
+  useEffect(() => {
+    if (user && !tutorialChecked) {
+      setTutorialChecked(true);
+      if (shouldShowTutorial(user.id, user.level)) {
+        // Small delay to let the page render first
+        setTimeout(() => setTutorialOpen(true), 500);
+      }
+    }
+  }, [user, tutorialChecked]);
 
   // Refresh when practice modal closes
   useEffect(() => {
@@ -432,8 +447,23 @@ export function Songs() {
           <hr style={{ width: '80%', height: '2px', backgroundColor: 'rgba(0,0,0,0.08)', border: 'none', borderRadius: '9999px' }} />
         </div>
 
-        {/* Add Songs Button - Below HR */}
-        <div className="flex justify-center mb-6">
+        {/* Action Buttons - Below HR */}
+        <div className="flex justify-center gap-3 mb-6 flex-wrap">
+          {/* Tutorial Button - Only for Novice Users */}
+          {user.level === 'novice' && (
+            <button 
+              onClick={() => setTutorialOpen(true)}
+              className="flex items-center gap-2 px-6 py-3 rounded-xl font-medium text-white transition-all hover:scale-105"
+              style={{ 
+                backgroundColor: 'rgb(217, 119, 6)',
+                border: '2px solid rgb(180, 83, 9)',
+                borderBottom: '4px solid rgb(180, 83, 9)'
+              }}
+            >
+              <GraduationCap className="w-5 h-5" />
+              Learn Guitar Basics
+            </button>
+          )}
           <button 
             onClick={() => setCatalogOpen(true)}
             className="flex items-center gap-2 px-6 py-3 rounded-xl font-medium text-white transition-all hover:scale-105"
@@ -540,6 +570,7 @@ export function Songs() {
           }}
           song={selectedSong}
           userId={user.id}
+          userLevel={user.level}
           onComplete={handlePracticeComplete}
         />
       )}
@@ -761,6 +792,18 @@ export function Songs() {
           </div>
         </DialogContent>
       </Dialog>
+
+      {/* Guitar Basics Tutorial for Novice Users */}
+      <GuitarTutorial
+        isOpen={tutorialOpen}
+        onClose={() => setTutorialOpen(false)}
+        onComplete={() => {
+          setTutorialOpen(false);
+          // Optionally show a congratulations message
+        }}
+        userId={user.id}
+        userLevel={user.level}
+      />
     </div>
   );
 }

@@ -930,7 +930,7 @@ export function Compete() {
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 min-w-0">
                     <p className={`font-semibold text-lg truncate ${player.isCurrentUser ? 'text-teal-700 dark:text-teal-300' : 'text-gray-900 dark:text-white'}`}>
-                      {player.name} {player.isCurrentUser && '(You)'}
+                      {player.isCurrentUser ? (user?.name || player.name) : player.name} {player.isCurrentUser && '(You)'}
                     </p>
                   </div>
                   <div className="flex items-center gap-3 text-sm text-gray-700 dark:text-gray-300">

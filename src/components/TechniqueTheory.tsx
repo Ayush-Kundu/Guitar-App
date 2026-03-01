@@ -3,19 +3,19 @@ import { useUser } from '../contexts/UserContext';
 import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
 import { ActivityModal } from './ActivityModal';
 import { VideoPopup } from './VideoPopup';
-import { 
-  Hand, 
-  RotateCcw, 
-  TrendingUp, 
+import {
+  Hand,
+  RotateCcw,
+  TrendingUp,
   Star,
   Target,
   Activity,
   Award,
-  Brain, 
-  BookOpen, 
-  Lightbulb, 
-  Layers, 
-  Music, 
+  Brain,
+  BookOpen,
+  Lightbulb,
+  Layers,
+  Music,
   Clock
 } from 'lucide-react';
 import pianistCharacter from '../assets/20251111_0914_Guitar Character Pianist_remix_01k9syg7bnfa4r2s22f6tzfrz5.png';
@@ -38,7 +38,7 @@ export function TechniqueTheory({ onSectionChange, initialTab = 'technique' }: T
   const [selectedItem, setSelectedItem] = useState<any>(null);
   const [practiceType, setPracticeType] = useState<'technique' | 'theory'>('technique');
   const [progressData, setProgressData] = useState<any>(null);
-  
+
   // Update mainTab when initialTab prop changes
   useEffect(() => {
     setMainTab(initialTab);
@@ -370,8 +370,8 @@ export function TechniqueTheory({ onSectionChange, initialTab = 'technique' }: T
                           <span className="font-medium">{technique.progress}%</span>
                         </div>
                         <div className="w-full bg-gray-200 rounded-full h-3">
-                          <div 
-                            className="h-3 rounded-full transition-all duration-300" 
+                          <div
+                            className="h-3 rounded-full transition-all duration-300"
                             style={{ width: `${technique.progress}%`, backgroundColor: getTechniqueProgressColor(technique.category) }}
                           ></div>
                         </div>
@@ -505,8 +505,8 @@ export function TechniqueTheory({ onSectionChange, initialTab = 'technique' }: T
                         <span className="font-medium">{topic.progress}%</span>
                       </div>
                       <div className="w-full bg-gray-200 rounded-full h-3">
-                        <div 
-                          className="h-3 rounded-full transition-all duration-300" 
+                        <div
+                          className="h-3 rounded-full transition-all duration-300"
                           style={{ width: `${topic.progress}%`, backgroundColor: getTheoryProgressColor(topic.category) }}
                         ></div>
                       </div>

@@ -1,18 +1,19 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Dialog, DialogContent, DialogTitle } from './ui/dialog';
-import { 
+import {
   RotateCcw,
   CheckCircle2,
   BookOpen,
   HelpCircle,
   XCircle,
-  Trophy
+  Trophy,
+  Send
 } from 'lucide-react';
 import { 
   updateTechniqueProgress, 
   updateTheoryProgress
 } from '../utils/progressStorage';
-import { getLessonContent, LessonContent, QuizQuestion } from '../data/lesson-content';
+import type { LessonContent, QuizQuestion } from '../data/lesson-content';
 
 interface VideoPopupProps {
   isOpen: boolean;
@@ -44,10 +45,52 @@ export function VideoPopup({
   const [showAnswerFeedback, setShowAnswerFeedback] = useState(false);
   const [quizPassed, setQuizPassed] = useState(false);
   const contentRef = useRef<HTMLDivElement>(null);
+  const feedbackTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const [lessonContent, setLessonContent] = useState<LessonContent | null>(null);
+  const [aiQuestion, setAiQuestion] = useState('');
+  const [aiResponse, setAiResponse] = useState('');
+  const [aiLoading, setAiLoading] = useState(false);
 
-  // Get the lesson content for this topic
-  const lessonContent: LessonContent | null = getLessonContent(item.name, type);
-  
+  const askAI = async (question: string) => {
+    const apiKey = import.meta.env.VITE_GEMINI_API_KEY as string | undefined;
+    if (!apiKey) return;
+
+    setAiLoading(true);
+    setAiResponse('');
+
+    const systemPrompt = `You are Strummy, a friendly and encouraging guitar coach. You help users learn guitar by answering questions about chords, strumming patterns, music theory, song recommendations, practice routines, and technique. Keep answers concise and practical. Use simple language suitable for beginners unless the user indicates they are advanced. The user is currently studying "${item.name}" in the ${item.category} category. Keep your response under 100 words.`;
+
+    try {
+      const res = await fetch(
+        `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`,
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            contents: [{ role: 'user', parts: [{ text: question }] }],
+            systemInstruction: { parts: [{ text: systemPrompt }] },
+            generationConfig: { maxOutputTokens: 150 },
+          }),
+        }
+      );
+      const data = await res.json();
+      if (data?.error) {
+        if (data.error.code === 429) {
+          setAiResponse('Rate limit reached — please wait a minute and try again.');
+        } else {
+          setAiResponse(data.error.message || 'API error. Please try again.');
+        }
+        return;
+      }
+      const text = data?.candidates?.[0]?.content?.parts?.[0]?.text || 'Sorry, I could not generate a response.';
+      setAiResponse(text);
+    } catch {
+      setAiResponse('Something went wrong. Please try again.');
+    } finally {
+      setAiLoading(false);
+    }
+  };
+
   // Default quiz for fallback - 5 questions to match required quiz length
   const defaultQuiz: QuizQuestion[] = [
     {
@@ -107,7 +150,7 @@ export function VideoPopup({
     return 'rgb(255, 209, 71)'; // Yellow for scales
   };
 
-  // Reset state when popup opens
+  // Reset state and lazy-load lesson content when popup opens
   useEffect(() => {
     if (isOpen) {
       setViewState('content');
@@ -116,8 +159,22 @@ export function VideoPopup({
       setAnswers([]);
       setShowAnswerFeedback(false);
       setQuizPassed(false);
+      setAiQuestion('');
+      setAiResponse('');
+      setAiLoading(false);
+      setLessonContent(null);
+
+      import('../data/lesson-content').then(mod => {
+        setLessonContent(mod.getLessonContent(item.name, type));
+      });
     }
-  }, [isOpen]);
+    return () => {
+      if (feedbackTimerRef.current) {
+        clearTimeout(feedbackTimerRef.current);
+        feedbackTimerRef.current = null;
+      }
+    };
+  }, [isOpen, item.name, type]);
 
   // Handle quiz answer selection
   const handleAnswerSelect = (answerIndex: number) => {
@@ -134,7 +191,7 @@ export function VideoPopup({
     setAnswers(newAnswers);
     
     // Wait for feedback, then move to next question or results
-    setTimeout(() => {
+    feedbackTimerRef.current = setTimeout(() => {
       if (currentQuestionIndex < quiz.length - 1) {
         setCurrentQuestionIndex(currentQuestionIndex + 1);
         setSelectedAnswer(null);
@@ -457,11 +514,51 @@ export function VideoPopup({
             </div>
           </div>
 
+              {/* Ask AI */}
+              <div className="space-y-2">
+                <div className="flex items-center gap-2">
+                  <input
+                    type="text"
+                    placeholder={`Ask about ${item.name}...`}
+                    value={aiQuestion}
+                    onChange={e => setAiQuestion(e.target.value)}
+                    onKeyDown={e => {
+                      if (e.key === 'Enter' && aiQuestion.trim()) {
+                        askAI(aiQuestion);
+                      }
+                    }}
+                    className="flex-1 min-w-0 bg-gray-100 dark:bg-gray-700 rounded-lg px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-blue-300 dark:text-gray-200"
+                  />
+                  <button
+                    onClick={() => {
+                      if (aiQuestion.trim()) {
+                        askAI(aiQuestion);
+                      }
+                    }}
+                    className="flex-shrink-0 w-9 h-9 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 rounded-lg flex items-center justify-center transition-colors"
+                  >
+                    <Send className="w-4 h-4 text-gray-500 dark:text-gray-400" />
+                  </button>
+                </div>
+                {aiLoading && (
+                  <div className="flex gap-1.5 px-1 py-1">
+                    <div className="w-2 h-2 bg-orange-400 rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
+                    <div className="w-2 h-2 bg-orange-400 rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
+                    <div className="w-2 h-2 bg-orange-400 rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
+                  </div>
+                )}
+                {aiResponse && !aiLoading && (
+                  <div className="bg-gray-100 dark:bg-gray-700 rounded-lg px-3 py-2 text-sm text-gray-700 dark:text-gray-300">
+                    {aiResponse}
+                  </div>
+                )}
+              </div>
+
               {/* Start Quiz Button */}
               <button
                 onClick={handleStartQuiz}
                 className="w-full h-10 sm:h-11 text-sm sm:text-base text-white font-semibold rounded-xl transition-all hover:scale-[1.02] flex items-center justify-center gap-2"
-                style={{ 
+                style={{
                   backgroundColor: 'rgb(59, 130, 246)',
                   border: '2px solid rgb(37, 99, 235)',
                   borderBottom: '4px solid rgb(29, 78, 216)',

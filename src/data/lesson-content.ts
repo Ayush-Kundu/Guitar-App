@@ -1363,6 +1363,188 @@ export const techniqueContent: Record<string, LessonContent> = {
       { question: 'Mastery ensures scales are tools for:', options: ['Mechanical exercises', 'Individual expression', 'Tuning', 'Breaking strings'], correctAnswer: 1 },
       { question: 'Artistry is achieved through:', options: ['Random notes', 'Dynamics, articulation, and rhythmic variation', 'Playing as fast as possible', 'Following a book exactly'], correctAnswer: 1 }
     ]
+  },
+
+  // ========== EXPRESSION TECHNIQUES ==========
+  'Basic Hammer-On': {
+    title: 'Basic Hammer-On',
+    content: `A hammer-on creates a note by "hammering" your finger onto a fret without picking. Start by picking an open string or fretted note, then quickly and firmly bring another finger down onto a higher fret. The key is speed and accuracy—your finger must strike the string with enough force to make it ring clearly. Hammer-ons create smooth, connected sounds essential for legato playing. Practice on one string first: pick the open string, then hammer onto fret 2, then fret 3. Focus on making each hammered note as loud as the picked note.`,
+    quiz: [
+      { question: 'What creates the sound in a hammer-on?', options: ['Picking the string', 'Your finger striking the fret firmly', 'Strumming all strings', 'The tuning pegs'], correctAnswer: 1 },
+      { question: 'What is the goal for volume between picked and hammered notes?', options: ['Hammered notes should be quieter', 'They should be equal in volume', 'Hammered notes should be louder', 'Volume does not matter'], correctAnswer: 1 },
+      { question: 'Hammer-ons are essential for which playing style?', options: ['Strumming', 'Legato playing', 'Percussive playing', 'Open tuning'], correctAnswer: 1 }
+    ]
+  },
+  'Basic Pull-Off': {
+    title: 'Basic Pull-Off',
+    content: `A pull-off is the opposite of a hammer-on: you pluck the string by pulling your finger off to create the next note. Start with two fingers on the same string—pick the higher note, then pull your finger sideways (not straight up) to let the lower note ring. The sideways motion "plucks" the string internally. Pull-offs require finger strength and control. Practice slowly: fret notes at frets 3 and 1, pick fret 3, then pull off to fret 1. Aim for clear, even notes. Combined with hammer-ons, pull-offs enable fluid, expressive phrases.`,
+    quiz: [
+      { question: 'How should you remove your finger during a pull-off?', options: ['Straight up', 'Sideways to pluck the string', 'Push down harder', 'Toward the headstock only'], correctAnswer: 1 },
+      { question: 'What does the pulling motion do to the string?', options: ['Mutes it', 'Plucks it internally', 'Loosens the tuning', 'Nothing'], correctAnswer: 1 },
+      { question: 'Pull-offs combined with hammer-ons enable:', options: ['Louder volume', 'Fluid, expressive phrases', 'Perfect tuning', 'Faster string changes'], correctAnswer: 1 }
+    ]
+  },
+  'Simple Slide Up': {
+    title: 'Simple Slide Up',
+    content: `A slide connects two notes by maintaining pressure while moving along the string. For a slide up, fret a note, pick it, then slide your finger up to a higher fret while keeping pressure constant. The pitch rises smoothly without re-picking. Slides add expression and connect phrases naturally. Practice sliding from fret 5 to fret 7 on one string—maintain firm pressure throughout and arrive precisely on the target fret. Listen for smooth, uninterrupted pitch change. Slides work on any string and add vocal-like quality to melodies.`,
+    quiz: [
+      { question: 'What must you maintain during a slide?', options: ['Light pressure', 'Constant pressure', 'No contact with the string', 'Open strings only'], correctAnswer: 1 },
+      { question: 'Do you re-pick when sliding to the new note?', options: ['Yes, always', 'No, the original pick sustains the slide', 'Only on high strings', 'Only on acoustic guitars'], correctAnswer: 1 },
+      { question: 'What quality do slides add to melodies?', options: ['Percussive sound', 'Vocal-like, smooth quality', 'Buzzing', 'Rhythmic accents only'], correctAnswer: 1 }
+    ]
+  },
+  'Simple Slide Down': {
+    title: 'Simple Slide Down',
+    content: `A slide down works the same as a slide up, but you move to a lower fret. Pick a note, then slide your finger down while keeping pressure. The pitch falls smoothly. Slides down often signal endings or descending phrases and add bluesy or expressive character. Practice sliding from fret 7 to fret 5, focusing on smooth motion and accurate landing. Vary the speed—slow slides are dramatic, fast slides are energetic. Master both slide directions to phrase melodies expressively.`,
+    quiz: [
+      { question: 'What happens to pitch during a slide down?', options: ['It rises', 'It falls smoothly', 'It stays the same', 'It becomes silent'], correctAnswer: 1 },
+      { question: 'What musical character do slides down often add?', options: ['Bright, happy sound', 'Bluesy or expressive character', 'Perfect intonation', 'Nothing significant'], correctAnswer: 1 },
+      { question: 'What determines the character of a slide?', options: ['String gauge', 'Speed of the slide', 'Tuning', 'Pick thickness'], correctAnswer: 1 }
+    ]
+  },
+  'Palm Muting Basics': {
+    title: 'Palm Muting Basics',
+    content: `Palm muting creates a muted, chunky sound by resting the edge of your picking hand lightly on the strings near the bridge. Too much pressure completely mutes the strings; too little lets them ring openly. Find the sweet spot where notes sound percussive but retain pitch. Palm muting is essential for rock, punk, and metal rhythm guitar. Practice on power chords: rest your palm, pick a chord, and adjust position until you get a tight, controlled sound. Move your palm slightly to vary the tone from tight to more open.`,
+    quiz: [
+      { question: 'Where should your palm rest for palm muting?', options: ['On the frets', 'Near the bridge on the strings', 'On the headstock', 'Behind the nut'], correctAnswer: 1 },
+      { question: 'What happens with too much palm pressure?', options: ['Notes ring clearly', 'Strings completely mute', 'Volume increases', 'Pitch rises'], correctAnswer: 1 },
+      { question: 'Palm muting is essential for which genres?', options: ['Classical only', 'Rock, punk, and metal', 'Only jazz', 'Only acoustic folk'], correctAnswer: 1 }
+    ]
+  },
+  'Half-Step Bend': {
+    title: 'Half-Step Bend',
+    content: `String bending raises pitch by pushing the string across the fretboard. A half-step bend raises pitch by one fret. Fret a note, then push the string up (on strings 1-3) or down (on strings 4-6) while maintaining pressure. Use multiple fingers for support—place fingers behind the bending finger to add strength. The target pitch is the note one fret higher. Practice by playing the target note first, then bending to match that pitch. Bends add emotional expression and are fundamental to blues, rock, and country guitar.`,
+    quiz: [
+      { question: 'How much does a half-step bend raise the pitch?', options: ['Two frets', 'One fret', 'Half a fret', 'No change'], correctAnswer: 1 },
+      { question: 'Why use multiple fingers when bending?', options: ['For appearance', 'To add strength and control', 'It is not necessary', 'To change the tone'], correctAnswer: 1 },
+      { question: 'How should you practice bend accuracy?', options: ['Guess the pitch', 'Play the target note first, then bend to match', 'Never practice bends', 'Only use a tuner'], correctAnswer: 1 }
+    ]
+  },
+  'Whole-Step Bend': {
+    title: 'Whole-Step Bend',
+    content: `A whole-step bend raises pitch by two frets—twice as far as a half-step bend. This requires more finger strength and control. The technique is the same: support your bending finger with others, push the string, and match the target pitch (two frets higher). Whole-step bends are more dramatic and common in blues and rock solos. Practice by playing the note two frets higher, memorizing that pitch, then bending to match. Consistent intonation separates good players from great ones.`,
+    quiz: [
+      { question: 'How far does a whole-step bend raise the pitch?', options: ['One fret', 'Two frets', 'Three frets', 'No change'], correctAnswer: 1 },
+      { question: 'What makes whole-step bends challenging?', options: ['They require less strength', 'They require more finger strength and control', 'They are quieter', 'They only work on acoustic guitars'], correctAnswer: 1 },
+      { question: 'What separates good players from great ones in bending?', options: ['Speed', 'Consistent intonation', 'Guitar cost', 'String gauge'], correctAnswer: 1 }
+    ]
+  },
+  'Basic Vibrato': {
+    title: 'Basic Vibrato',
+    content: `Vibrato adds warmth and sustain by oscillating the pitch slightly. After fretting a note, repeatedly bend and release the string in small amounts—either horizontally (classical style) or vertically (rock/blues style). The motion should be controlled and rhythmic, not erratic. Vibrato makes notes sing and adds emotional depth. Start slowly: fret a note, bend up slightly, release, repeat. Gradually increase speed while maintaining even oscillation. Good vibrato is one of the most recognizable elements of a guitarist's personal sound.`,
+    quiz: [
+      { question: 'What does vibrato do to the pitch?', options: ['Keeps it perfectly steady', 'Oscillates it slightly', 'Drops it by an octave', 'Mutes the string'], correctAnswer: 1 },
+      { question: 'What should vibrato motion be like?', options: ['Erratic and random', 'Controlled and rhythmic', 'As fast as possible', 'Invisible'], correctAnswer: 1 },
+      { question: 'Why is vibrato important for guitarists?', options: ['It helps with tuning', 'It adds emotional depth and personal sound', 'It prevents string breakage', 'It is not important'], correctAnswer: 1 }
+    ]
+  },
+  'Legato Slides': {
+    title: 'Legato Slides',
+    content: `Legato slides combine sliding technique with smooth, connected phrasing. Instead of picking each note, you pick once and slide to multiple notes in sequence. This creates fluid, horn-like lines. Practice sliding patterns: pick fret 5, slide to 7, then to 9 on the same string without re-picking. The key is maintaining pressure throughout so each note rings clearly. Legato slides are essential for expressive soloing and appear in jazz, blues, rock, and fusion. Combine with hammer-ons and pull-offs for complete legato technique.`,
+    quiz: [
+      { question: 'What makes legato slides "legato"?', options: ['Picking every note', 'Smooth, connected notes without re-picking', 'Playing staccato', 'Using a capo'], correctAnswer: 1 },
+      { question: 'What must you maintain during legato slides?', options: ['Light touch', 'Constant pressure for clear notes', 'Open strings', 'Palm muting'], correctAnswer: 1 },
+      { question: 'Legato slides are often combined with:', options: ['Palm muting only', 'Hammer-ons and pull-offs', 'Only strumming', 'Power chords'], correctAnswer: 1 }
+    ]
+  },
+  'Natural Harmonics': {
+    title: 'Natural Harmonics',
+    content: `Natural harmonics are bell-like tones produced by lightly touching a string at specific fret positions without pressing down. The clearest harmonics occur at frets 12, 7, and 5. Touch the string directly above the fret wire (not between frets), pick the string, then immediately lift your finger. The string vibrates in sections, producing overtones instead of the fundamental note. Harmonics are used for tuning, creating atmospheric sounds, and adding texture to compositions. Practice at fret 12 first—it produces the clearest harmonic.`,
+    quiz: [
+      { question: 'How do you produce a natural harmonic?', options: ['Press the string firmly', 'Lightly touch the string without pressing down', 'Use a capo', 'Strum all strings'], correctAnswer: 1 },
+      { question: 'Where are the clearest natural harmonics found?', options: ['Frets 1, 2, 3', 'Frets 12, 7, 5', 'Any random fret', 'Only on the 6th string'], correctAnswer: 1 },
+      { question: 'What are harmonics commonly used for?', options: ['Playing chords', 'Tuning and atmospheric sounds', 'Palm muting', 'Only classical music'], correctAnswer: 1 }
+    ]
+  },
+  'Pinch Harmonics': {
+    title: 'Pinch Harmonics',
+    content: `Pinch harmonics (also called artificial or squealie harmonics) create high-pitched screaming sounds common in rock and metal. After picking the string, immediately graze it with the edge of your thumb. The thumb contact creates a harmonic node. Position and timing are critical—experiment with pick angle and picking location along the string to find sweet spots. Different positions produce different harmonic pitches. Pinch harmonics require practice to achieve consistently. They add aggressive expression and are signature sounds for many rock guitarists.`,
+    quiz: [
+      { question: 'What creates the pinch harmonic sound?', options: ['Just picking harder', 'Grazing the string with your thumb edge after picking', 'Using a thicker pick', 'Open strings only'], correctAnswer: 1 },
+      { question: 'What affects the pitch of a pinch harmonic?', options: ['String gauge only', 'Picking position along the string', 'Tuning only', 'Nothing affects it'], correctAnswer: 1 },
+      { question: 'Pinch harmonics are most common in which genre?', options: ['Classical', 'Rock and metal', 'Folk', 'Reggae'], correctAnswer: 1 }
+    ]
+  },
+  'PIMA Finger Assignment': {
+    title: 'PIMA Finger Assignment',
+    content: `PIMA is the classical guitar fingering system: P (pulgar/thumb) for bass strings 4-6, I (index) for string 3, M (middle) for string 2, and A (annular/ring) for string 1. This system creates efficient finger-to-string assignments for fingerpicking. Maintaining consistent assignments builds muscle memory and enables complex patterns. Practice simple patterns: P on string 6, I-M-A on strings 3-2-1. Classical technique also uses rest strokes (following through to the next string) and free strokes (plucking into the air). Master PIMA for solid fingerstyle foundation.`,
+    quiz: [
+      { question: 'What does "P" stand for in PIMA?', options: ['Pick', 'Pulgar (thumb)', 'Pinky', 'Pattern'], correctAnswer: 1 },
+      { question: 'Which strings does the thumb (P) typically play?', options: ['Strings 1-3', 'Strings 4-6 (bass strings)', 'Only string 1', 'All strings'], correctAnswer: 1 },
+      { question: 'Why is consistent finger assignment important?', options: ['For appearance', 'It builds muscle memory for complex patterns', 'It is not important', 'Only for shows'], correctAnswer: 1 }
+    ]
+  },
+  'Reading Guitar TAB': {
+    title: 'Reading Guitar TAB',
+    content: `Guitar tablature (TAB) shows exactly where to place your fingers using numbers on six lines representing the strings. The bottom line is the low E string (6th), top line is high E (1st). Numbers indicate fret positions: "0" means open string, "3" means third fret. TAB reads left to right like text. While TAB doesn't show rhythm precisely (unlike standard notation), it's invaluable for learning songs quickly. Practice reading simple TAB: find a beginner song, follow the numbers, and play each note. TAB democratized guitar learning and remains essential for modern players.`,
+    quiz: [
+      { question: 'What do the six lines in TAB represent?', options: ['Frets', 'The six guitar strings', 'Time signatures', 'Chord names'], correctAnswer: 1 },
+      { question: 'What does "0" mean in TAB?', options: ['Don\'t play that string', 'Open string', 'Tenth fret', 'Mute the string'], correctAnswer: 1 },
+      { question: 'What is TAB\'s main limitation?', options: ['It\'s too detailed', 'It doesn\'t show rhythm precisely', 'It only works for acoustic', 'It\'s too expensive'], correctAnswer: 1 }
+    ]
+  },
+  'Fretboard Note Location': {
+    title: 'Fretboard Note Location',
+    content: `Knowing where notes are on the fretboard unlocks the entire instrument. Start with the E and A strings (6th and 5th), as these are root notes for most chords and scales. Each fret raises pitch by a half step. Use landmarks: frets 3, 5, 7, 9, 12 are marked with dots. Fret 12 is the octave of the open string. Learn the natural notes first (A-B-C-D-E-F-G), then add sharps/flats. Practice daily: pick a random note name, find it on strings 6 and 5. Over time, expand to all strings. This knowledge transforms your playing from pattern-based to truly musical.`,
+    quiz: [
+      { question: 'Why learn the E and A strings first?', options: ['They\'re easiest to tune', 'They\'re root notes for most chords and scales', 'They sound best', 'No particular reason'], correctAnswer: 1 },
+      { question: 'What note is at fret 12?', options: ['A different note', 'The octave of the open string', 'Always C', 'A harmonic only'], correctAnswer: 1 },
+      { question: 'How does fretboard knowledge transform playing?', options: ['Makes guitar louder', 'Changes playing from pattern-based to truly musical', 'Only helps classical players', 'It doesn\'t help'], correctAnswer: 1 }
+    ]
+  },
+  'Using a Capo': {
+    title: 'Using a Capo',
+    content: `A capo clamps across the fretboard, raising all strings' pitch equally—essentially moving the nut position. Placing a capo at fret 2 makes the guitar play one whole step higher. Capos allow you to play familiar chord shapes in different keys without learning new fingerings. For example, G-C-D shapes with a capo at fret 2 sound as A-D-E. This is invaluable for singing (matching vocal range) and playing with other musicians. Position the capo just behind the fret wire for clean sound. Experiment with capo positions to find comfortable keys.`,
+    quiz: [
+      { question: 'What does a capo do?', options: ['Lowers pitch', 'Raises all strings\' pitch equally', 'Changes tone only', 'Adds distortion'], correctAnswer: 1 },
+      { question: 'Why is a capo useful for singers?', options: ['Makes guitar quieter', 'Allows matching vocal range with familiar chord shapes', 'Changes the lyrics', 'It\'s not useful for singers'], correctAnswer: 1 },
+      { question: 'Where should you position the capo?', options: ['In the middle of two frets', 'Just behind the fret wire', 'On the headstock', 'On the body'], correctAnswer: 1 }
+    ]
+  },
+  'Whammy Bar Control': {
+    title: 'Whammy Bar Control',
+    content: `The whammy bar (tremolo arm) bends all strings' pitch simultaneously by changing bridge tension. Pushing down loosens strings (lowers pitch), pulling up tightens them (raises pitch). Vibrato using the whammy bar creates wide, wavering effects. Dive bombs drop pitch dramatically by pushing the bar fully down. For controlled use, practice subtle vibrato—small movements creating gentle pitch oscillation. Whammy technique requires a floating bridge setup and affects tuning stability. Start with gentle movements, learn to return to pitch, then explore dramatic effects.`,
+    quiz: [
+      { question: 'What does pushing the whammy bar down do?', options: ['Raises pitch', 'Lowers pitch', 'Mutes strings', 'Changes tone only'], correctAnswer: 1 },
+      { question: 'What is a "dive bomb"?', options: ['A drum technique', 'Dropping pitch dramatically by pushing the bar fully', 'A type of chord', 'A tuning method'], correctAnswer: 1 },
+      { question: 'What challenge comes with whammy bar use?', options: ['It\'s too quiet', 'It can affect tuning stability', 'It only works on acoustic', 'None'], correctAnswer: 1 }
+    ]
+  },
+  'Volume Swells': {
+    title: 'Volume Swells',
+    content: `Volume swells create a violin-like attack by eliminating the pick's initial transient. Turn the volume knob to zero, pick a note or chord, then smoothly roll the volume up. The note fades in rather than attacking sharply. This technique creates atmospheric, pad-like sounds perfect for ambient music, ballads, and adding texture. Practice coordination: pick and roll simultaneously. You can also use a volume pedal for foot control. Volume swells transform the guitar from a percussive instrument into a smooth, flowing voice.`,
+    quiz: [
+      { question: 'What does a volume swell eliminate?', options: ['The note itself', 'The pick\'s initial attack/transient', 'The sustain', 'The vibrato'], correctAnswer: 1 },
+      { question: 'What kind of sound do volume swells create?', options: ['Percussive', 'Violin-like, fading in', 'Distorted', 'Muted'], correctAnswer: 1 },
+      { question: 'What alternative tool can create volume swells?', options: ['Capo', 'Volume pedal', 'Tuner', 'Metronome'], correctAnswer: 1 }
+    ]
+  },
+  'Bend and Release': {
+    title: 'Bend and Release',
+    content: `Bend and release combines an upward bend with a controlled return to the original pitch. Bend to your target note (half or whole step), hold briefly, then smoothly release back. This creates an expressive "crying" sound fundamental to blues and rock. The release must be controlled—don't just let the string snap back. Practice: bend to pitch, count "1-2", release over "3-4". Vary the speed and add vibrato at the top of the bend for extra expression. This technique appears constantly in blues, rock, and country solos.`,
+    quiz: [
+      { question: 'What happens after the bend in "bend and release"?', options: ['You pick again', 'The string returns smoothly to original pitch', 'The note stops', 'You slide to another fret'], correctAnswer: 1 },
+      { question: 'How should the release be executed?', options: ['Let the string snap back', 'Controlled, smooth return', 'As fast as possible', 'With palm muting'], correctAnswer: 1 },
+      { question: 'What character does bend and release add?', options: ['Percussive', 'Expressive, crying sound', 'Silence', 'Harmonic overtones'], correctAnswer: 1 }
+    ]
+  },
+  'Pre-Bend': {
+    title: 'Pre-Bend',
+    content: `A pre-bend starts with the string already bent before picking. Silently bend to your target pitch, then pick and release. The note starts high and falls—the opposite of a regular bend. Pre-bends create dramatic effects, especially when releasing into vibrato. Practice: bend to a whole step without picking, then pick and slowly release while adding vibrato. This technique is common in blues and rock for emotional, expressive phrases. Pre-bends require accurate pitch sense since you can't hear the starting note.`,
+    quiz: [
+      { question: 'When is the string bent in a pre-bend?', options: ['After picking', 'Before picking', 'Never', 'During a slide'], correctAnswer: 1 },
+      { question: 'What direction does the pitch move after picking a pre-bend?', options: ['Up', 'Down (from high to lower)', 'It stays the same', 'Random'], correctAnswer: 1 },
+      { question: 'What skill does pre-bending require?', options: ['Fast picking', 'Accurate pitch sense', 'Reading TAB', 'Using a capo'], correctAnswer: 1 }
+    ]
+  },
+  'Unison Bends': {
+    title: 'Unison Bends',
+    content: `A unison bend plays two notes of the same pitch simultaneously—one fretted normally, one bent up to match. Typically played on adjacent strings, you fret a note on one string while bending another string up to the same pitch. The two notes create a thick, powerful sound as they come into unison. This technique appears extensively in blues, rock, and country. Practice: fret the 7th fret on the B string, and bend the 5th fret on the G string up a whole step to match. When both notes match, you'll hear them "lock in" together.`,
+    quiz: [
+      { question: 'What creates the unison bend sound?', options: ['Two different notes', 'Two notes of the same pitch—one bent, one fretted', 'Playing one string', 'Using a capo'], correctAnswer: 1 },
+      { question: 'What happens when unison bend notes match?', options: ['They cancel out', 'They "lock in" creating a thick sound', 'Nothing special', 'The guitar goes out of tune'], correctAnswer: 1 },
+      { question: 'On which strings are unison bends typically played?', options: ['The same string', 'Adjacent strings', 'Only bass strings', 'Only treble strings'], correctAnswer: 1 }
+    ]
   }
 };
 
@@ -2680,6 +2862,167 @@ export const theoryContent: Record<string, LessonContent> = {
       { question: 'Expert rhythm involves designing _____ rhythmic systems.', options: ['Standard', 'Personal', 'Silent', 'Simple'], correctAnswer: 1 },
       { question: 'Original frameworks influence the _____ you create.', options: ['Guitars', 'Songs', 'Picks', 'Strings'], correctAnswer: 1 },
       { question: 'Creating frameworks is a(n) _____ level rhythmic skill.', options: ['Novice', 'Expert', 'Beginner', 'Elementary'], correctAnswer: 1 }
+    ]
+  },
+
+  // ========== EAR TRAINING ==========
+  'High vs Low Pitch': {
+    title: 'High vs Low Pitch',
+    content: `Recognizing pitch direction is the foundation of ear training. When comparing two notes, ask: "Is the second note higher, lower, or the same?" Higher pitches sound "brighter" or "thinner," while lower pitches sound "darker" or "fuller." Practice by playing two random notes on your guitar and identifying the direction. This skill helps with tuning, melody recognition, and eventually transcribing music by ear. Start with notes far apart, then gradually reduce the distance as your ear develops.`,
+    quiz: [
+      { question: 'What describes a higher pitch sound?', options: ['Darker, fuller', 'Brighter, thinner', 'Louder', 'Longer'], correctAnswer: 1 },
+      { question: 'Why is pitch direction important for guitarists?', options: ['For choosing strings', 'For tuning and melody recognition', 'For cleaning the guitar', 'For buying picks'], correctAnswer: 1 },
+      { question: 'How should you progress in pitch recognition practice?', options: ['Start with close notes', 'Start far apart, gradually reduce distance', 'Only use one note', 'Skip this skill'], correctAnswer: 1 }
+    ]
+  },
+  'Interval Recognition Basics': {
+    title: 'Interval Recognition Basics',
+    content: `Intervals are the distance between two notes and have distinct sounds. Learn to recognize major 2nds (whole step), major 3rds, perfect 4ths, perfect 5ths, and octaves first. Use reference songs: a perfect 4th sounds like "Here Comes the Bride," a perfect 5th like "Star Wars" theme opening. Practice singing intervals, then finding them on guitar. Interval recognition transforms you from playing patterns to understanding the actual musical distances you're creating.`,
+    quiz: [
+      { question: 'What is an interval?', options: ['A chord type', 'The distance between two notes', 'A strumming pattern', 'A type of guitar'], correctAnswer: 1 },
+      { question: 'What song reference helps identify a perfect 5th?', options: ['Happy Birthday', 'Star Wars theme opening', 'Jingle Bells', 'Row Your Boat'], correctAnswer: 1 },
+      { question: 'Interval recognition helps move from playing _____ to understanding distances.', options: ['Loudly', 'Patterns', 'Silently', 'Randomly'], correctAnswer: 1 }
+    ]
+  },
+  'Major vs Minor Chord Quality': {
+    title: 'Major vs Minor Chord Quality',
+    content: `Major chords sound bright, happy, or resolved. Minor chords sound darker, sad, or tense. The difference is one note: the third. Major chords have a major third (4 half steps from root), minor chords have a minor third (3 half steps). Train your ear by playing C major, then C minor—notice how the feeling changes. This skill is essential for identifying chord progressions by ear and understanding why songs have their emotional character.`,
+    quiz: [
+      { question: 'How do major chords typically sound?', options: ['Sad and dark', 'Bright and happy', 'Muted', 'Dissonant'], correctAnswer: 1 },
+      { question: 'What note differs between major and minor chords?', options: ['The root', 'The third', 'The fifth', 'The seventh'], correctAnswer: 1 },
+      { question: 'Why is recognizing chord quality important?', options: ['For tuning', 'For identifying progressions and understanding emotional character', 'For cleaning strings', 'For choosing a guitar'], correctAnswer: 1 }
+    ]
+  },
+  'Chord Progression Recognition': {
+    title: 'Chord Progression Recognition',
+    content: `Common progressions repeat across thousands of songs. The I-IV-V (1-4-5) and I-V-vi-IV (1-5-6-4) progressions are everywhere in pop, rock, and country. Train by listening to songs and identifying when chords change and which direction they move (up or down). Learn to recognize the "home" chord (I) and how other chords create tension that resolves back to it. Start with simple songs, identify the key, then map the Roman numerals to each chord.`,
+    quiz: [
+      { question: 'Which progression appears in many pop songs?', options: ['I-II-III-IV', 'I-V-vi-IV', 'VII-VI-V-IV', 'I-I-I-I'], correctAnswer: 1 },
+      { question: 'What does the "I" chord represent?', options: ['The loudest chord', 'The home chord of the key', 'The first chord you play', 'Any major chord'], correctAnswer: 1 },
+      { question: 'What creates tension in a progression?', options: ['Playing louder', 'Chords that want to resolve back to I', 'Using a capo', 'Playing faster'], correctAnswer: 1 }
+    ]
+  },
+
+  // ========== FRETBOARD KNOWLEDGE ==========
+  'Notes on Strings 6 and 5': {
+    title: 'Notes on Strings 6 and 5',
+    content: `The low E (6th) and A (5th) strings are your navigation system—they're the root notes for most barre chords and movable patterns. Learn every natural note on these strings: E string has F at fret 1, G at 3, A at 5, B at 7, C at 8, D at 10, E at 12. A string has B at fret 2, C at 3, D at 5, E at 7, F at 8, G at 10, A at 12. Practice by naming notes ascending and descending, then randomly. This knowledge unlocks the entire fretboard.`,
+    quiz: [
+      { question: 'Why are strings 6 and 5 called your "navigation system"?', options: ['They\'re loudest', 'They\'re root notes for most patterns', 'They break less', 'They tune easiest'], correctAnswer: 1 },
+      { question: 'What note is at fret 5 on the low E string?', options: ['E', 'A', 'D', 'G'], correctAnswer: 1 },
+      { question: 'Knowing these strings unlocks:', options: ['Nothing', 'The entire fretboard', 'Only chords', 'Only scales'], correctAnswer: 1 }
+    ]
+  },
+  'Octave Shapes': {
+    title: 'Octave Shapes',
+    content: `Octave shapes let you find the same note in different positions. From a note on string 6, go up 2 frets and down 2 strings to find its octave. From string 5, the octave is 2 frets up and 2 strings down. From string 4, it's 3 frets up and 2 strings down (to string 2), or 2 frets up and 2 strings down (to string 2 on many guitars). Memorizing these shapes means if you know one note, you can instantly find it everywhere on the neck.`,
+    quiz: [
+      { question: 'From string 6, where is the octave?', options: ['Same fret, string 1', '2 frets up, 2 strings down', '5 frets up, same string', '12 frets up'], correctAnswer: 1 },
+      { question: 'Why are octave shapes useful?', options: ['They sound quieter', 'They let you find any note everywhere on the neck', 'They help tuning only', 'They don\'t help much'], correctAnswer: 1 },
+      { question: 'What is an octave?', options: ['A chord type', 'The same note at a higher or lower pitch', 'A rhythm pattern', 'A type of pick'], correctAnswer: 1 }
+    ]
+  },
+  'CAGED System Introduction': {
+    title: 'CAGED System Introduction',
+    content: `CAGED connects five open chord shapes (C, A, G, E, D) across the neck. Each shape can be played as a barre chord and moved to any key. The shapes connect: the C shape's top notes connect to the A shape's bottom notes, and so on. This system maps the entire fretboard using familiar chord shapes. Learn each shape as a chord, then as a scale pattern overlaying it. CAGED transforms the guitar from a pattern instrument to a unified system where everything connects.`,
+    quiz: [
+      { question: 'What does CAGED stand for?', options: ['A tuning system', 'Five connected chord shapes (C-A-G-E-D)', 'A scale pattern', 'A type of guitar'], correctAnswer: 1 },
+      { question: 'How do CAGED shapes connect?', options: ['They don\'t', 'Each shape\'s ends connect to the next shape', 'Only at fret 12', 'Through open strings only'], correctAnswer: 1 },
+      { question: 'CAGED transforms the guitar into:', options: ['A percussion instrument', 'A unified system where everything connects', 'A bass guitar', 'An easier instrument'], correctAnswer: 1 }
+    ]
+  },
+
+  // ========== IMPROVISATION ==========
+  'Pentatonic Improvisation': {
+    title: 'Pentatonic Improvisation',
+    content: `The pentatonic scale (5 notes) is the most forgiving scale for improvisation—every note sounds good over most chord progressions in its key. Learn the minor pentatonic "box 1" shape first (root on string 6). Play along with backing tracks, focusing on rhythm and phrasing rather than speed. Use bends, slides, and vibrato to add expression. Start by playing just 3-4 notes, making them musical before adding more. Pentatonic improvisation is the gateway to all soloing.`,
+    quiz: [
+      { question: 'Why is pentatonic called "forgiving"?', options: ['It\'s easier to spell', 'Every note sounds good over most progressions', 'It has fewer notes', 'It\'s quieter'], correctAnswer: 1 },
+      { question: 'What should beginners focus on before speed?', options: ['More notes', 'Rhythm and phrasing', 'Louder playing', 'Faster picking'], correctAnswer: 1 },
+      { question: 'Pentatonic improvisation is the gateway to:', options: ['Chord playing', 'All soloing', 'Tuning', 'Reading music'], correctAnswer: 1 }
+    ]
+  },
+  'Call and Response': {
+    title: 'Call and Response',
+    content: `Call and response is musical conversation: play a phrase (call), then answer it (response). The response can repeat, vary, or contrast the call. This technique structures solos and creates dialogue within your playing. Practice by playing a 2-bar phrase, then answering it in the next 2 bars. Vary the responses—sometimes echo the call, sometimes contrast it. This prevents solos from becoming aimless streams of notes and creates satisfying musical narratives.`,
+    quiz: [
+      { question: 'What is call and response?', options: ['A tuning method', 'Musical conversation between phrases', 'A chord progression', 'A type of guitar'], correctAnswer: 1 },
+      { question: 'How can you respond to a call?', options: ['Only by repeating exactly', 'Repeat, vary, or contrast', 'Always play louder', 'Always play the same notes'], correctAnswer: 1 },
+      { question: 'What does call and response prevent?', options: ['Good tone', 'Solos becoming aimless streams of notes', 'Staying in tune', 'Playing too slowly'], correctAnswer: 1 }
+    ]
+  },
+  'Target Notes': {
+    title: 'Target Notes',
+    content: `Target notes are chord tones you aim for when the chord changes. Landing on a chord tone (root, 3rd, 5th, 7th) on beat 1 of each chord makes your solo sound connected to the harmony. Plan your phrases to arrive at these targets rather than playing random scale notes. Practice by identifying chord tones for each chord in a progression, then improvising while hitting those notes on strong beats. This technique is the difference between sounding like you're "playing over" chords versus "playing with" them.`,
+    quiz: [
+      { question: 'What are target notes?', options: ['Random notes', 'Chord tones you aim for during chord changes', 'The loudest notes', 'Notes to avoid'], correctAnswer: 1 },
+      { question: 'When should you land on target notes?', options: ['Only at the end', 'On strong beats, especially beat 1', 'Never', 'Only on upbeats'], correctAnswer: 1 },
+      { question: 'Target notes help you sound like you\'re playing _____ the chords.', options: ['Against', 'With', 'Over', 'Under'], correctAnswer: 1 }
+    ]
+  },
+  'Phrasing and Space': {
+    title: 'Phrasing and Space',
+    content: `Great soloists know when NOT to play. Space (silence) creates tension, lets notes breathe, and gives listeners time to absorb ideas. A phrase followed by a rest is more impactful than continuous notes. Think of soloing like speaking: sentences have pauses, emphasis, and rhythm. Practice by deliberately leaving gaps—play 4 notes, rest for 2 beats, play 4 more. Record yourself and listen for whether your solos "breathe." Space is as important as notes in creating memorable musical statements.`,
+    quiz: [
+      { question: 'Why is space important in solos?', options: ['It\'s not important', 'It creates tension and lets notes breathe', 'It saves energy', 'It fills time'], correctAnswer: 1 },
+      { question: 'What should soloing be compared to?', options: ['Running', 'Speaking with pauses and rhythm', 'Continuous noise', 'Silence only'], correctAnswer: 1 },
+      { question: 'What should you listen for in recordings?', options: ['Maximum notes', 'Whether your solos breathe', 'Only loud parts', 'Only fast parts'], correctAnswer: 1 }
+    ]
+  },
+
+  // ========== GENRES ==========
+  'Blues Music Basics': {
+    title: 'Blues Music Basics',
+    content: `Blues is the foundation of rock, jazz, and R&B guitar. The 12-bar blues is a repeating chord progression: 4 bars of I, 2 bars of IV, 2 bars of I, then V-IV-I-V (the "turnaround"). Blues uses dominant 7th chords and the blues scale (minor pentatonic plus the "blue note"—the flat 5th). Expression comes from bends, vibrato, and "feel"—slightly behind the beat. Learn a 12-bar blues in E or A, practice the blues scale, and focus on making three notes sound soulful before adding more.`,
+    quiz: [
+      { question: 'How many bars is a standard blues progression?', options: ['8', '12', '16', '4'], correctAnswer: 1 },
+      { question: 'What is the "blue note"?', options: ['A loud note', 'The flat 5th added to minor pentatonic', 'The root note', 'Any wrong note'], correctAnswer: 1 },
+      { question: 'Blues "feel" often means playing:', options: ['Exactly on the beat', 'Slightly behind the beat', 'As fast as possible', 'Only open strings'], correctAnswer: 1 }
+    ]
+  },
+  'Rock Music Fundamentals': {
+    title: 'Rock Music Fundamentals',
+    content: `Rock guitar centers on power chords, driving rhythms, and expressive lead playing. Power chords (root and 5th only) cut through distortion cleanly. Rhythm playing uses palm muting, accents, and locked-in timing with drums. Lead playing draws from pentatonic and blues scales with aggressive bends and vibrato. Rock tone typically involves overdrive or distortion. Learn the basic power chord shape, practice palm-muted eighth notes, and develop tight timing. Rock is about energy and attitude as much as technique.`,
+    quiz: [
+      { question: 'What notes make up a power chord?', options: ['Root, 3rd, 5th', 'Root and 5th only', 'All six strings', 'Random notes'], correctAnswer: 1 },
+      { question: 'Why do power chords work well with distortion?', options: ['They\'re louder', 'They cut through cleanly without mud', 'They\'re quieter', 'They don\'t'], correctAnswer: 1 },
+      { question: 'Rock is about technique and:', options: ['Perfect pitch', 'Energy and attitude', 'Classical form', 'Reading music'], correctAnswer: 1 }
+    ]
+  },
+  'Jazz Basics': {
+    title: 'Jazz Basics',
+    content: `Jazz guitar involves extended chords (7ths, 9ths, 13ths), swing rhythm, and improvisation over chord changes. The ii-V-I progression is fundamental (e.g., Dm7-G7-Cmaj7 in C major). Jazz uses "comping"—rhythmic chord accompaniment with varied voicings. Soloing emphasizes chord tones and chromatic approach notes. Tone is typically clean with warm, rounded sound. Start by learning major 7th, minor 7th, and dominant 7th chord shapes, practice the ii-V-I progression, and listen to jazz guitarists like Wes Montgomery and Joe Pass.`,
+    quiz: [
+      { question: 'What is the fundamental jazz progression?', options: ['I-IV-V', 'ii-V-I', 'I-V-I', 'IV-IV-IV'], correctAnswer: 1 },
+      { question: 'What is "comping"?', options: ['Playing loud', 'Rhythmic chord accompaniment', 'Playing only single notes', 'A tuning method'], correctAnswer: 1 },
+      { question: 'Jazz tone is typically:', options: ['Heavy distortion', 'Clean with warm, rounded sound', 'Maximum volume', 'Acoustic only'], correctAnswer: 1 }
+    ]
+  },
+  'Folk and Acoustic Styles': {
+    title: 'Folk and Acoustic Styles',
+    content: `Folk guitar emphasizes fingerpicking, open chords, and storytelling through song. Common techniques include Travis picking (alternating bass with melody), arpeggiated patterns, and open tunings like DADGAD. Folk songs often use simple progressions (I-IV-V, I-vi-IV-V) but with sophisticated picking patterns. The acoustic guitar's natural tone is the focus—no effects needed. Learn basic fingerpicking patterns, practice chord transitions with continuous picking, and study artists like James Taylor and Nick Drake for inspiration.`,
+    quiz: [
+      { question: 'What is Travis picking?', options: ['Fast strumming', 'Alternating bass with melody', 'Only bass notes', 'Electric technique'], correctAnswer: 1 },
+      { question: 'What tuning is common in folk music besides standard?', options: ['Drop C', 'DADGAD', 'Metal tuning', 'Random tuning'], correctAnswer: 1 },
+      { question: 'Folk guitar focuses on:', options: ['Heavy distortion', 'The acoustic guitar\'s natural tone', 'Maximum volume', 'Only power chords'], correctAnswer: 1 }
+    ]
+  },
+  'Country Guitar Concepts': {
+    title: 'Country Guitar Concepts',
+    content: `Country guitar blends techniques from multiple genres: chicken pickin' (hybrid picking with muted notes), pedal steel bends (bending one string while holding another), double stops (playing two notes together), and Telecaster twang. The major pentatonic scale dominates, giving a bright, happy sound. Rhythm playing often uses boom-chick patterns. Train licks involve cascading notes. Master hybrid picking first—hold the pick normally and use middle/ring fingers for other strings. Country demands precision, clean tone, and stylistic authenticity.`,
+    quiz: [
+      { question: 'What is chicken pickin\'?', options: ['Playing quietly', 'Hybrid picking with muted notes', 'Only fingerpicking', 'Loud strumming'], correctAnswer: 1 },
+      { question: 'Which scale dominates country guitar?', options: ['Minor pentatonic', 'Major pentatonic', 'Chromatic', 'Blues scale only'], correctAnswer: 1 },
+      { question: 'Country guitar demands precision and:', options: ['Heavy distortion', 'Stylistic authenticity', 'Random playing', 'No technique'], correctAnswer: 1 }
+    ]
+  },
+  'Metal Techniques': {
+    title: 'Metal Techniques',
+    content: `Metal guitar requires precision, speed, and power. Key techniques: palm muting (tight, chunky rhythm), gallop picking (triplet-based pattern), alternate picking at high speed, and downtuned guitars for heavier sound. Riffs are often based on power chords and single-note patterns using the minor scale, harmonic minor, or Phrygian mode for dark sounds. Lead playing uses legato, sweep picking, and tapping for speed. Practice palm-muted gallops slowly with a metronome, gradually increasing speed while maintaining tightness.`,
+    quiz: [
+      { question: 'What is a gallop picking pattern?', options: ['Slow strumming', 'Triplet-based picking pattern', 'Only downstrokes', 'Random picking'], correctAnswer: 1 },
+      { question: 'Which mode creates a dark sound in metal?', options: ['Ionian', 'Phrygian', 'Lydian', 'Major'], correctAnswer: 1 },
+      { question: 'Metal rhythm playing requires:', options: ['Loose timing', 'Tight palm muting and precision', 'Only open chords', 'No distortion'], correctAnswer: 1 }
     ]
   }
 };
