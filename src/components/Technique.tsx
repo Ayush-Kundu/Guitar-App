@@ -1,383 +1,423 @@
 import React, { useState, useEffect } from 'react';
 import { useUser } from '../contexts/UserContext';
-import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
+import { Card, CardContent } from './ui/card';
 import { Button } from './ui/button';
-import { Progress } from './ui/progress';
 import { ActivityModal } from './ActivityModal';
 import { 
-  getDailyRoutine,
-  loadProgress,
-  TECHNIQUE_GOALS
-} from '../utils/progressStorage';
+  techniquePath, 
+  Unit, 
+  Lesson,
+  getUnitProgress,
+  isUnitUnlocked,
+  isUnitComplete
+} from '../data/learning-journey';
+import { loadProgress, saveProgress } from '../utils/progressStorage';
 import { 
-  Hand, 
-  RotateCcw, 
-  TrendingUp, 
+  ChevronRight, 
+  Lock, 
+  CheckCircle2, 
+  Circle, 
   Play, 
   Clock, 
-  CheckCircle2,
-  Star,
-  Target,
+  Trophy,
   Zap,
-  Activity,
-  Award,
-  Timer,
-  Music
+  Target
 } from 'lucide-react';
-import pianistCharacter from '../assets/20251111_0914_Guitar Character Pianist_remix_01k9syg7bnfa4r2s22f6tzfrz5.png';
 
 interface TechniqueProps {
   onSectionChange?: (section: string) => void;
 }
 
-export function Technique({ onSectionChange }: TechniqueProps) {
-  const { user, getFilteredContent } = useUser();
-  const [modalOpen, setModalOpen] = useState(false);
-  const [modalActivity, setModalActivity] = useState<any>(null);
-  const [activeTab, setActiveTab] = useState<'chords' | 'strums' | 'plucks' | 'scales'>('chords');
-  const [dailyRoutine, setDailyRoutine] = useState<any>(null);
-  const [progressData, setProgressData] = useState<any>(null);
+// =============================================================================
+// PROGRESS STORAGE HELPERS
+// =============================================================================
 
-  // Load daily routine and progress data
-  useEffect(() => {
-    if (user) {
-      setDailyRoutine(getDailyRoutine(user.id));
-      setProgressData(loadProgress(user.id));
-    }
-  }, [user]);
+function getCompletedLessons(userId: string): Set<string> {
+  const progress = loadProgress(userId);
+  return new Set(progress?.completedLessons || []);
+}
 
-  if (!user) return null;
+function getCompletedUnits(userId: string): Set<string> {
+  const progress = loadProgress(userId);
+  return new Set(progress?.completedUnits || []);
+}
 
-  // Get personalized techniques based on user level and preferences
-  const techniques = getFilteredContent('techniques');
+function markLessonComplete(userId: string, lessonId: string, unitId: string) {
+  const progress = loadProgress(userId);
+  const existingLessons = (progress as any).completedLessons || [];
+  const existingUnits = (progress as any).completedUnits || [];
+  
+  const completedLessons = new Set<string>(existingLessons);
+  const completedUnits = new Set<string>(existingUnits);
+  
+  completedLessons.add(lessonId);
+  
+  // Check if unit is now complete
+  const unit = techniquePath.find(u => u.id === unitId);
+  if (unit && unit.lessons.every(l => completedLessons.has(l.id))) {
+    completedUnits.add(unitId);
+  }
+  
+  // Update progress and save
+  (progress as any).completedLessons = Array.from(completedLessons);
+  (progress as any).completedUnits = Array.from(completedUnits);
+  saveProgress(progress);
+}
 
-  // Fallback techniques if no filtered content
-  const fallbackTechniques = {
-    novice: [
-      { name: 'Proper Posture', category: 'Foundation', progress: 90, difficulty: 1, timeToMaster: '1-2 days', description: 'Learn correct sitting and holding position' },
-      { name: 'Basic Fretting', category: 'Foundation', progress: 70, difficulty: 1, timeToMaster: '3-5 days', description: 'Press strings cleanly on frets' },
-      { name: 'Simple Strumming', category: 'Rhythm', progress: 50, difficulty: 1, timeToMaster: '1 week', description: 'Basic down-up strumming motion' }
-    ],
-    beginner: [
-      { name: 'Basic Strumming Patterns', category: 'Rhythm', progress: 85, difficulty: 2, timeToMaster: '2 weeks', description: 'Learn common rhythm patterns' },
-      { name: 'Chord Transitions', category: 'Chords', progress: 70, difficulty: 2, timeToMaster: '3 weeks', description: 'Smooth changes between chords' },
-      { name: 'Pick Holding', category: 'Foundation', progress: 90, difficulty: 1, timeToMaster: '1 week', description: 'Proper pick grip and control' },
-      { name: 'Muting Strings', category: 'Foundation', progress: 60, difficulty: 2, timeToMaster: '2 weeks', description: 'Control unwanted string noise' }
-    ],
-    expert: [
-      { name: 'Advanced Tapping', category: 'Master', progress: 80, difficulty: 7, timeToMaster: '1 year', description: 'Two-handed tapping techniques' },
-      { name: 'Multi-finger Tapping', category: 'Master', progress: 60, difficulty: 7, timeToMaster: '8 months', description: 'Complex finger independence' },
-      { name: 'Advanced Sweep Picking', category: 'Master', progress: 70, difficulty: 7, timeToMaster: '1 year', description: 'Fluid arpeggiated passages' },
-      { name: 'Polyrhythmic Playing', category: 'Master', progress: 40, difficulty: 7, timeToMaster: '1.5 years', description: 'Multiple rhythms simultaneously' }
-    ]
+// =============================================================================
+// UNIT CARD COMPONENT
+// =============================================================================
+
+interface UnitCardProps {
+  unit: Unit;
+  isUnlocked: boolean;
+  isComplete: boolean;
+  progress: number;
+  onSelect: (unit: Unit) => void;
+  index: number;
+}
+
+function UnitCard({ unit, isUnlocked, isComplete, progress, onSelect, index }: UnitCardProps) {
+  const getStatusColor = () => {
+    if (isComplete) return 'bg-emerald-500';
+    if (!isUnlocked) return 'bg-gray-400';
+    if (progress > 0) return 'bg-orange-500';
+    return 'bg-orange-500';
   };
 
-  const displayTechniques = techniques.length > 0 ? techniques : 
-    fallbackTechniques[user.level as keyof typeof fallbackTechniques] || fallbackTechniques.beginner;
-
-  // Filter techniques by active tab
-  const getFilteredTechniques = () => {
-    const categoryMap = {
-      chords: ['Chords', 'Foundation'],
-      strums: ['Rhythm', 'Strumming'],
-      plucks: ['Fingerpicking', 'Plucking'],
-      scales: ['Lead', 'Scales', 'Advanced', 'Master']
-    };
-    
-    const categories = categoryMap[activeTab];
-    return displayTechniques.filter(t => 
-      categories.some(cat => t.category.toLowerCase().includes(cat.toLowerCase()))
-    );
+  const getStatusIcon = () => {
+    if (isComplete) return <CheckCircle2 className="w-6 h-6 text-white" />;
+    if (!isUnlocked) return <Lock className="w-6 h-6 text-white/70" />;
+    return <Play className="w-6 h-6 text-white" />;
   };
-
-  // Get filtered techniques with stored progress (persists, doesn't reset)
-  const filteredTechniques = getFilteredTechniques().map((t: any) => {
-    const techniqueId = t.name.toLowerCase().replace(/\s+/g, '_');
-    const stored = progressData?.techniques?.[techniqueId];
-    return {
-      ...t,
-      // Progress persists - only updated through practice
-      progress: stored?.progress || 0,
-    };
-  });
-
-  const getCategoryIcon = (category: string) => {
-    switch (category) {
-      case 'Foundation': return Hand;
-      case 'Rhythm': return Activity;
-      case 'Chords': return RotateCcw;
-      case 'Fingerpicking': return Target;
-      case 'Lead': return TrendingUp;
-      case 'Advanced': return Star;
-      case 'Master': return Award;
-      default: return Hand;
-    }
-  };
-
-  const getCategoryColor = (category: string) => {
-    // Match colors to progress bars
-    if (category.toLowerCase().includes('chord') || category.toLowerCase().includes('foundation')) {
-      return 'text-red-600 bg-red-100'; // Red for Chords
-    } else if (category.toLowerCase().includes('rhythm') || category.toLowerCase().includes('strum')) {
-      return 'text-orange-600 bg-orange-100'; // Orange for Strums
-    } else if (category.toLowerCase().includes('fingerpicking') || category.toLowerCase().includes('pluck')) {
-      return 'text-yellow-600 bg-yellow-100'; // Yellow for Plucks
-    } else {
-      return 'text-yellow-600'; // Yellow text for Scales/Lead/Advanced/Master (background via inline style)
-    }
-  };
-
-  const getCategoryBgColor = (category: string) => {
-    // Return background color for inline styles
-    if (category.toLowerCase().includes('chord') || category.toLowerCase().includes('foundation')) {
-      return 'rgb(254, 226, 226)'; // Light red
-    } else if (category.toLowerCase().includes('rhythm') || category.toLowerCase().includes('strum')) {
-      return 'rgb(255, 237, 213)'; // Light orange
-    } else if (category.toLowerCase().includes('fingerpicking') || category.toLowerCase().includes('pluck')) {
-      return 'rgb(254, 249, 195)'; // Light yellow
-    } else {
-      return 'rgb(255, 249, 219)'; // Light yellow matching rgb(255, 209, 71)
-    }
-  };
-
-  const getDifficultyStars = (difficulty: number) => {
-    return Array.from({ length: 5 }, (_, i) => (
-      <Star 
-        key={i} 
-        className={`w-3 h-3 ${i < difficulty ? 'text-yellow-500 fill-current' : 'text-gray-300'}`} 
-      />
-    ));
-  };
-
-  const getProgressColor = (category: string) => {
-    // Match colors to the practice routine bars
-    if (category.toLowerCase().includes('chord') || category.toLowerCase().includes('foundation')) {
-      return 'rgb(239, 68, 68)'; // Red for Chords
-    } else if (category.toLowerCase().includes('rhythm') || category.toLowerCase().includes('strum')) {
-      return 'rgb(249, 115, 22)'; // Orange for Strums
-    } else if (category.toLowerCase().includes('fingerpicking') || category.toLowerCase().includes('pluck')) {
-      return 'rgb(234, 179, 8)'; // Yellow for Plucks
-    } else {
-      return 'rgb(255, 209, 71)'; // Yellow for Scales/Lead/Advanced/Master
-    }
-  };
-
-  const handlePractice = (technique: any) => {
-    setModalActivity({
-      type: 'practice',
-      activityType: 'technique',
-      name: technique.name,
-      description: `Practice ${technique.name} - ${technique.category} technique. ${technique.description || 'Focus on proper form and consistency.'}`,
-      data: technique
-    });
-    setModalOpen(true);
-  };
-
-  const handleHistory = (technique: any) => {
-    setModalActivity({
-      type: 'history',
-      name: technique.name,
-      data: technique
-    });
-    setModalOpen(true);
-  };
-
-  const handleStartPracticeSession = () => {
-    setModalActivity({
-      type: 'practice',
-      activityType: 'session',
-      name: 'Technique Practice Session',
-      description: `Customized practice session for ${user.level} level focusing on your music preferences: ${user.musicPreferences.join(', ')}`
-    });
-    setModalOpen(true);
-  };
-
-  // Get level-appropriate practice routine
-  const getPracticeRoutine = () => {
-    const routines = {
-      novice: {
-        warmup: { title: 'Finger Stretches (3 min)', description: 'Gentle finger and wrist exercises' },
-        focus: { title: 'Basic Chord Practice (10 min)', description: 'Practice holding and switching between basic chords' },
-        application: { title: 'Simple Songs (5 min)', description: 'Apply chords in easy songs' }
-      },
-      beginner: {
-        warmup: { title: 'Chromatic Exercises (5 min)', description: 'Basic finger exercises and stretches' },
-        focus: { title: 'Chord Transitions (15 min)', description: 'Work on smooth chord changes' },
-        application: { title: 'Song Practice (10 min)', description: 'Apply techniques in real songs' }
-      },
-      expert: {
-        warmup: { title: 'Advanced Warm-up (10 min)', description: 'Complex finger independence exercises' },
-        focus: { title: 'Master Techniques (30 min)', description: 'Advanced technique refinement' },
-        application: { title: 'Performance Pieces (20 min)', description: 'Work on concert-level repertoire' }
-      }
-    };
-    
-    return routines[user.level as keyof typeof routines] || routines.beginner;
-  };
-
-  const practiceRoutine = getPracticeRoutine();
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-amber-50 to-orange-50 p-4 pb-20">
-      {/* Practice Routine - Resets Daily */}
-      <div className="max-w-6xl mx-auto mb-8">
-        <div className="p-4 bg-white/70 backdrop-blur-sm rounded-xl shadow-sm" style={{ border: '2.5px solid rgb(237, 237, 237)' }}>
-          <h2 className="text-xl font-semibold text-gray-900 mb-4 text-center">Today's Practice Routine</h2>
-          <div className="space-y-3">
-            <div className="flex items-center gap-4">
-              <span className="font-medium text-gray-900 w-16">Chords</span>
-              <div className="flex-1 h-3 rounded-full bg-gray-200 overflow-hidden">
-                <div className="h-full" style={{ 
-                  width: `${Math.min(100, ((dailyRoutine?.chordsCompleted || 0) / (dailyRoutine?.chordsGoal || TECHNIQUE_GOALS.chords)) * 100)}%`, 
-                  backgroundColor: 'rgb(239, 68, 68)' 
-                }}></div>
+    <Card
+      onClick={() => isUnlocked && onSelect(unit)}
+      className={`relative overflow-hidden transition-all duration-300 ${
+        isUnlocked 
+          ? 'cursor-pointer hover:scale-[1.02] hover:shadow-lg' 
+          : 'opacity-60 cursor-not-allowed'
+      }`}
+      style={{
+        border: isComplete ? '2px solid rgb(34, 197, 94)' : '2px solid rgb(229, 231, 235)',
+        borderBottomWidth: '4px'
+      }}
+    >
+      {/* Progress bar at top */}
+      {isUnlocked && progress > 0 && !isComplete && (
+        <div className="absolute top-0 left-0 right-0 h-1 bg-gray-200">
+          <div 
+            className="h-full bg-orange-500 transition-all duration-500"
+            style={{ width: `${progress}%` }}
+          />
               </div>
-              <span className="text-gray-600 w-16 text-right">{dailyRoutine?.chordsCompleted || 0}min</span>
+      )}
+      
+      <CardContent className="p-4">
+        <div className="flex items-start gap-4">
+          {/* Unit number badge */}
+          <div 
+            className={`flex-shrink-0 w-14 h-14 rounded-xl flex items-center justify-center ${getStatusColor()} shadow-md`}
+          >
+            {isComplete ? (
+              getStatusIcon()
+            ) : (
+              <span className="text-2xl font-bold text-white">{unit.number}</span>
+            )}
             </div>
-            <div className="flex items-center gap-4">
-              <span className="font-medium text-gray-900 w-16">Strums</span>
-              <div className="flex-1 h-3 rounded-full bg-gray-200 overflow-hidden">
-                <div className="h-full" style={{ 
-                  width: `${Math.min(100, ((dailyRoutine?.strumsCompleted || 0) / (dailyRoutine?.strumsGoal || TECHNIQUE_GOALS.strums)) * 100)}%`, 
-                  backgroundColor: 'rgb(249, 115, 22)' 
-                }}></div>
+          
+          {/* Content */}
+          <div className="flex-1 min-w-0">
+            <div className="flex items-center gap-2 mb-1">
+              <span className="text-2xl">{unit.icon}</span>
+              <h3 className="font-bold text-gray-900 dark:text-white truncate">
+                {unit.title}
+              </h3>
+            </div>
+            <p className="text-sm text-gray-500 dark:text-gray-400 mb-2">
+              {unit.subtitle}
+            </p>
+            
+            {/* Progress info */}
+            <div className="flex items-center gap-3 text-xs">
+              <span className="flex items-center gap-1 text-gray-400">
+                <Target className="w-3 h-3" />
+                {unit.lessons.length} lessons
+              </span>
+              {isUnlocked && !isComplete && progress > 0 && (
+                <span className="flex items-center gap-1 text-orange-600 font-medium">
+                  <Zap className="w-3 h-3" />
+                  {progress}% complete
+                </span>
+              )}
+              {isComplete && (
+                <span className="flex items-center gap-1 text-green-600 font-medium">
+                  <Trophy className="w-3 h-3" />
+                  Completed!
+                </span>
+              )}
+              {!isUnlocked && (
+                <span className="flex items-center gap-1 text-gray-400">
+                  <Lock className="w-3 h-3" />
+                  Complete previous unit first
+                </span>
+              )}
+            </div>
               </div>
-              <span className="text-gray-600 w-16 text-right">{dailyRoutine?.strumsCompleted || 0}min</span>
+          
+          {/* Arrow */}
+          {isUnlocked && (
+            <ChevronRight className="w-5 h-5 text-gray-400 flex-shrink-0" />
+          )}
             </div>
-            <div className="flex items-center gap-4">
-              <span className="font-medium text-gray-900 w-16">Plucks</span>
-              <div className="flex-1 h-3 rounded-full bg-gray-200 overflow-hidden">
-                <div className="h-full" style={{ 
-                  width: `${Math.min(100, ((dailyRoutine?.plucksCompleted || 0) / (dailyRoutine?.plucksGoal || TECHNIQUE_GOALS.plucks)) * 100)}%`, 
-                  backgroundColor: 'rgb(234, 179, 8)' 
-                }}></div>
-              </div>
-              <span className="text-gray-600 w-16 text-right">{dailyRoutine?.plucksCompleted || 0}min</span>
-            </div>
-            <div className="flex items-center gap-4">
-              <span className="font-medium text-gray-900 w-16">Scales</span>
-              <div className="flex-1 h-3 rounded-full bg-gray-200 overflow-hidden">
-                <div className="h-full" style={{ 
-                  width: `${Math.min(100, ((dailyRoutine?.scalesCompleted || 0) / (dailyRoutine?.scalesGoal || TECHNIQUE_GOALS.scales)) * 100)}%`, 
-                  backgroundColor: 'rgb(255, 209, 71)' 
-                }}></div>
-              </div>
-              <span className="text-gray-600 w-16 text-right">{dailyRoutine?.scalesCompleted || 0}min</span>
-            </div>
+      </CardContent>
+    </Card>
+  );
+}
+
+// =============================================================================
+// LESSON LIST COMPONENT
+// =============================================================================
+
+interface LessonListProps {
+  unit: Unit;
+  completedLessons: Set<string>;
+  onLessonSelect: (lesson: Lesson) => void;
+  onBack: () => void;
+}
+
+function LessonList({ unit, completedLessons, onLessonSelect, onBack }: LessonListProps) {
+  return (
+    <div className="space-y-4">
+      {/* Header */}
+      <div className="flex items-center gap-3 mb-6">
+        <button
+          onClick={onBack}
+          className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+        >
+          <ChevronRight className="w-5 h-5 rotate-180 text-gray-600 dark:text-gray-400" />
+        </button>
+        <div>
+          <div className="flex items-center gap-2">
+            <span className="text-2xl">{unit.icon}</span>
+            <h2 className="text-xl font-bold text-gray-900 dark:text-white">
+              Unit {unit.number}: {unit.title}
+            </h2>
           </div>
+          <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
+            {unit.description}
+          </p>
         </div>
       </div>
 
-      <div className="max-w-6xl mx-auto">
-        {/* Pianist Character Image - Above slider */}
-        <div className="flex justify-center relative" style={{ zIndex: 20, marginBottom: '-40px' }}>
-          <img
-            src={pianistCharacter}
-            alt="Pianist character"
-            className="w-64 h-auto object-contain drop-shadow-lg"
-          />
+      {/* Lessons */}
+      <div className="space-y-3">
+        {unit.lessons.map((lesson, index) => {
+          const isCompleted = completedLessons.has(lesson.id);
+          const previousCompleted = index === 0 || completedLessons.has(unit.lessons[index - 1].id);
+          const isUnlocked = index === 0 || previousCompleted;
+          
+          return (
+            <Card
+              key={lesson.id}
+              onClick={() => isUnlocked && onLessonSelect(lesson)}
+              className={`transition-all duration-200 ${
+                isUnlocked 
+                  ? 'cursor-pointer hover:shadow-md hover:scale-[1.01]' 
+                  : 'opacity-50 cursor-not-allowed'
+              }`}
+              style={{
+                border: isCompleted 
+                  ? '2px solid rgb(34, 197, 94)' 
+                  : '2px solid rgb(229, 231, 235)',
+                borderBottomWidth: '3px'
+              }}
+            >
+              <CardContent className="p-4">
+                <div className="flex items-start gap-4">
+                  {/* Lesson number/status */}
+                  <div className={`flex-shrink-0 w-10 h-10 rounded-full flex items-center justify-center ${
+                    isCompleted 
+                      ? 'bg-green-500' 
+                      : isUnlocked 
+                        ? 'bg-blue-500' 
+                        : 'bg-gray-300'
+                  }`}>
+                    {isCompleted ? (
+                      <CheckCircle2 className="w-5 h-5 text-white" />
+                    ) : isUnlocked ? (
+                      <span className="text-white font-bold">{index + 1}</span>
+                    ) : (
+                      <Lock className="w-4 h-4 text-gray-500" />
+                    )}
         </div>
 
-        {/* Navigation Tabs */}
-        <div className="mb-4 bg-white/70 backdrop-blur-sm rounded-xl shadow-sm relative" style={{ border: '2.5px solid rgb(237, 237, 237)', zIndex: 30, padding: '6px' }}>
-          <div className="flex" style={{ gap: '6px' }}>
-            <button
-              onClick={() => setActiveTab('chords')}
-              className={`flex-1 rounded-lg font-semibold text-sm transition-all duration-200 ${activeTab === 'chords' ? 'shadow-md' : ''}`}
-              style={{
-                backgroundColor: activeTab === 'chords' ? 'rgb(239, 68, 68)' : 'transparent',
-                color: activeTab === 'chords' ? 'white' : 'rgb(107, 114, 128)',
-                height: '52px'
-              }}
-            >
-              Chords
-            </button>
-            <button
-              onClick={() => setActiveTab('strums')}
-              className={`flex-1 rounded-lg font-semibold text-sm transition-all duration-200 ${activeTab === 'strums' ? 'shadow-md' : ''}`}
-              style={{
-                backgroundColor: activeTab === 'strums' ? 'rgb(249, 115, 22)' : 'transparent',
-                color: activeTab === 'strums' ? 'white' : 'rgb(107, 114, 128)',
-                height: '52px'
-              }}
-            >
-              Strums
-            </button>
-            <button
-              onClick={() => setActiveTab('plucks')}
-              className={`flex-1 rounded-lg font-semibold text-sm transition-all duration-200 ${activeTab === 'plucks' ? 'shadow-md' : ''}`}
-              style={{
-                backgroundColor: activeTab === 'plucks' ? 'rgb(234, 179, 8)' : 'transparent',
-                color: activeTab === 'plucks' ? 'white' : 'rgb(107, 114, 128)',
-                height: '52px'
-              }}
-            >
-              Plucks
-            </button>
-            <button
-              onClick={() => setActiveTab('scales')}
-              className={`flex-1 rounded-lg font-semibold text-sm transition-all duration-200 ${activeTab === 'scales' ? 'shadow-md' : ''}`}
-              style={{
-                backgroundColor: activeTab === 'scales' ? 'rgb(255, 209, 71)' : 'transparent',
-                color: activeTab === 'scales' ? 'white' : 'rgb(107, 114, 128)',
-                height: '52px'
-              }}
-            >
-              Scales
-            </button>
-          </div>
-        </div>
-
-        {/* Techniques Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {filteredTechniques.map((technique, index) => {
-            const IconComponent = getCategoryIcon(technique.category);
-            return (
-              <Card key={index} className="bg-white/70 backdrop-blur-sm shadow-sm hover:shadow-md transition-shadow" style={{ border: '2.5px solid rgb(237, 237, 237)' }}>
-                <CardHeader className="pb-3">
-                  <div className="flex items-start justify-between">
-                    <div className="flex items-center gap-3">
-                      <div 
-                        className={`w-10 h-10 rounded-lg flex items-center justify-center ${getCategoryColor(technique.category)}`}
-                        style={{ backgroundColor: getCategoryBgColor(technique.category) }}
-                      >
-                        <IconComponent className="w-5 h-5" />
-                      </div>
-                      <div>
-                        <CardTitle className="text-lg">{technique.name}</CardTitle>
-                        <p className="text-sm text-gray-600">{technique.category}</p>
-                      </div>
+                  {/* Content */}
+                  <div className="flex-1 min-w-0">
+                    <h4 className="font-semibold text-gray-900 dark:text-white mb-1">
+                      {lesson.title}
+                    </h4>
+                    <p className="text-sm text-gray-500 dark:text-gray-400 mb-2">
+                      {lesson.subtitle}
+                    </p>
+                    <div className="flex items-center gap-3 text-xs text-gray-400">
+                      <span className="flex items-center gap-1">
+                        <Clock className="w-3 h-3" />
+                        {lesson.estimatedTime}
+                      </span>
+                      {lesson.quizRequired && (
+                        <span className="px-2 py-0.5 bg-orange-100 text-orange-700 rounded-full text-xs">
+                          Quiz
+                        </span>
+                      )}
                     </div>
                   </div>
-                </CardHeader>
-                
-                <CardContent className="space-y-4">
-                  {/* Progress */}
-                  <div className="space-y-2">
-                    <div className="flex justify-between text-sm">
-                      <span className="text-gray-600">Progress</span>
-                      <span className="font-medium">{technique.progress}%</span>
-                    </div>
-                    <div className="w-full bg-gray-200 rounded-full h-3">
-                      <div 
-                        className="h-3 rounded-full" 
-                        style={{ width: `${technique.progress}%`, backgroundColor: getProgressColor(technique.category) }}
-                      ></div>
-                    </div>
+                  
+                  {/* Action */}
+                  {isUnlocked && (
+                    <Button 
+                      size="sm"
+                      className={isCompleted ? 'bg-green-500 hover:bg-green-600' : 'bg-blue-500 hover:bg-blue-600'}
+                    >
+                      {isCompleted ? 'Review' : 'Start'}
+                    </Button>
+                  )}
                   </div>
                 </CardContent>
               </Card>
             );
           })}
         </div>
+    </div>
+  );
+}
 
+// =============================================================================
+// MAIN COMPONENT
+// =============================================================================
+
+export function Technique({ onSectionChange }: TechniqueProps) {
+  const { user } = useUser();
+  const [selectedUnit, setSelectedUnit] = useState<Unit | null>(null);
+  const [selectedLesson, setSelectedLesson] = useState<Lesson | null>(null);
+  const [modalOpen, setModalOpen] = useState(false);
+  const [completedLessons, setCompletedLessons] = useState<Set<string>>(new Set());
+  const [completedUnits, setCompletedUnits] = useState<Set<string>>(new Set());
+
+  // Load progress
+  useEffect(() => {
+    if (user) {
+      setCompletedLessons(getCompletedLessons(user.id));
+      setCompletedUnits(getCompletedUnits(user.id));
+    }
+  }, [user]);
+
+  const refreshProgress = () => {
+    if (user) {
+      setCompletedLessons(getCompletedLessons(user.id));
+      setCompletedUnits(getCompletedUnits(user.id));
+    }
+  };
+
+  if (!user) return null;
+
+  // Calculate overall progress
+  const totalLessons = techniquePath.reduce((sum, unit) => sum + unit.lessons.length, 0);
+  const completedCount = completedLessons.size;
+  const overallProgress = Math.round((completedCount / totalLessons) * 100);
+
+  const handleLessonSelect = (lesson: Lesson) => {
+    setSelectedLesson(lesson);
+    setModalOpen(true);
+  };
+
+  return (
+    <div className="page-content min-h-screen bg-gradient-to-br from-orange-100 via-red-50 to-pink-100 dark:from-gray-900 dark:to-gray-800 p-4 pb-20">
+      <div className="max-w-2xl mx-auto">
+        
+        {/* Header */}
+        <div className="text-center mb-8">
+          <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
+            🎸 Technique Journey
+          </h1>
+          <p className="text-gray-600 dark:text-gray-400">
+            Learn guitar step-by-step, from your first note to advanced techniques
+          </p>
+          
+          {/* Overall progress */}
+          <div className="mt-4 bg-white dark:bg-gray-800 rounded-xl p-4 shadow-sm border-2 border-gray-100 dark:border-gray-700">
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                Your Progress
+              </span>
+              <span className="text-sm font-bold text-orange-600">
+                {completedCount} / {totalLessons} lessons
+              </span>
+            </div>
+            <div className="h-3 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
+              <div 
+                className="h-full bg-orange-500 transition-all duration-500"
+                style={{ width: `${overallProgress}%` }}
+              />
+            </div>
+            <div className="mt-2 text-xs text-gray-500 dark:text-gray-400">
+              {completedUnits.size} of {techniquePath.length} units completed
+            </div>
+          </div>
+        </div>
+
+        {/* Content */}
+        {selectedUnit ? (
+          <LessonList
+            unit={selectedUnit}
+            completedLessons={completedLessons}
+            onLessonSelect={handleLessonSelect}
+            onBack={() => setSelectedUnit(null)}
+          />
+        ) : (
+          <div className="space-y-4">
+            {techniquePath.map((unit, index) => {
+              const isUnlocked = isUnitUnlocked(unit.id, completedUnits) || index === 0;
+              const isComplete = isUnitComplete(unit.id, completedLessons);
+              const progress = getUnitProgress(unit.id, completedLessons);
+              
+              return (
+                <UnitCard
+                  key={unit.id}
+                  unit={unit}
+                  isUnlocked={isUnlocked}
+                  isComplete={isComplete}
+                  progress={progress}
+                  onSelect={setSelectedUnit}
+                  index={index}
+                />
+              );
+            })}
+          </div>
+        )}
       </div>
 
+      {/* Lesson Modal */}
       <ActivityModal
         isOpen={modalOpen}
-        onClose={() => setModalOpen(false)}
-        activityType={modalActivity?.type || 'practice'}
-        activityData={modalActivity}
+        onClose={() => {
+          // Mark lesson complete when modal closes (after practicing)
+          if (selectedLesson && selectedUnit && user) {
+            markLessonComplete(user.id, selectedLesson.id, selectedUnit.id);
+            refreshProgress();
+          }
+          setModalOpen(false);
+          setSelectedLesson(null);
+        }}
+        activityType="practice"
+        activityData={selectedLesson ? {
+          name: selectedLesson.title,
+          description: selectedLesson.description,
+          category: 'Learning',
+          difficulty: 1,
+          estimatedTime: selectedLesson.estimatedTime
+        } : null}
       />
     </div>
   );

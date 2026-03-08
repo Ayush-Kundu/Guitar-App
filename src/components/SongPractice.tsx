@@ -171,7 +171,7 @@ export function SongPractice({ isOpen, onClose, song, userId, userLevel, onCompl
     if (!isOpen || !song) return;
 
     // Reset state
-    setCurrentTime(0);
+      setCurrentTime(0);
     setIsPlaying(false);
     setShowCompletion(false);
     setCompletionOpacity(0);
@@ -201,7 +201,7 @@ export function SongPractice({ isOpen, onClose, song, userId, userLevel, onCompl
     const BUFFER = 4;
     if (data?.events?.length > 0) {
       setTotalDuration(calculateDurationFromEvents(data.events) + LEAD_IN_TIME + BUFFER);
-          } else {
+      } else {
       const [mins, secs] = duration.split(':').map(Number);
       setTotalDuration((mins || 0) * 60 + (secs || 0) + LEAD_IN_TIME + BUFFER);
     }
@@ -223,7 +223,7 @@ export function SongPractice({ isOpen, onClose, song, userId, userLevel, onCompl
     }
 
     chordService.setOnStatusChange((connected) => {
-      setChordDetectionConnected(connected);
+          setChordDetectionConnected(connected);
     });
 
     chordService.setOnResult((result: ChordDetectionResult) => {
@@ -255,7 +255,7 @@ export function SongPractice({ isOpen, onClose, song, userId, userLevel, onCompl
       if (result.type === 'notes') {
         if (result.notes?.length) {
           setDetectedNotes(result.notes.map((n: any) => Array.isArray(n) ? String(n[0]) : String(n)));
-        } else {
+          } else {
           setDetectedNotes([]);
         }
         if (!songId) {
@@ -410,7 +410,7 @@ export function SongPractice({ isOpen, onClose, song, userId, userLevel, onCompl
 
       if (currentTime < stateTime) {
         newFeedback[idx] = isCorrect ? 'correct' : noteFeedback[idx] || null;
-      } else {
+          } else {
         if (isCorrect) {
           newFeedback[idx] = 'correct';
         } else if (timeSinceBarTouched >= WRONG_GRACE_PERIOD) {
@@ -419,8 +419,8 @@ export function SongPractice({ isOpen, onClose, song, userId, userLevel, onCompl
             setHasMadeMistake(true);
             setFirstMistakeTime(currentTime);
             // Keep chord detection running - don't stop recording or clear display
-          }
-        } else {
+        }
+      } else {
           newFeedback[idx] = noteFeedback[idx] || null;
         }
       }
@@ -891,7 +891,7 @@ export function SongPractice({ isOpen, onClose, song, userId, userLevel, onCompl
                 }}
               >
                 {!chordDetectionConnected ? '🔌' : detectedChord || '--'}
-              </div>
+                </div>
 
               {/* Match indicator */}
               {chordDetectionConnected && isChordMatching !== null && (
@@ -900,15 +900,15 @@ export function SongPractice({ isOpen, onClose, song, userId, userLevel, onCompl
                   style={{ color: isChordMatching ? '#16A34A' : '#DC2626' }}
                 >
                   {isChordMatching ? '✓ Correct!' : '✗ Wrong'}
-                </div>
-              )}
+                  </div>
+                )}
 
               {/* Confidence */}
               {detectedChord && chordConfidence > 0 && (
                 <div className="text-xs text-gray-500 mt-1">
                   Confidence: {(chordConfidence * 100).toFixed(0)}%
-                </div>
-              )}
+                  </div>
+                )}
             </div>
           </div>
 

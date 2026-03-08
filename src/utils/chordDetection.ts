@@ -345,7 +345,7 @@ export class ChordDetectionService {
         this.ws.onmessage = (event) => {
           try {
             const data = JSON.parse(event.data);
-
+            
             // Browser: first message is {type:'connected'}
             if (data.type === 'connected') {
               console.log('[CD] Server confirmed connection');
@@ -577,7 +577,7 @@ export function useChordDetection(userLevel?: string) {
   const [detectedChord, setDetectedChord] = React.useState<string | null>(null);
   const [detectedNotes, setDetectedNotes] = React.useState<string[]>([]);
   const [confidence, setConfidence] = React.useState(0);
-
+  
   const serviceRef = React.useRef<ChordDetectionService | null>(null);
 
   React.useEffect(() => {
@@ -609,15 +609,15 @@ export function useChordDetection(userLevel?: string) {
           }
         } else {
           // Browser: regular display → show chord
-          if (result.chord) {
-            setDetectedChord(result.chord);
+      if (result.chord) {
+        setDetectedChord(result.chord);
             if (result.confidence !== undefined) setConfidence(result.confidence);
           } else {
             setDetectedChord(null);
           }
-        }
+      }
         // Browser: if (data.notes) updateNotesDisplay(data.notes)
-        if (result.notes) {
+      if (result.notes) {
           setDetectedNotes(result.notes.map((n: any) => Array.isArray(n) ? String(n[0]) : String(n)));
         }
         return;
@@ -664,13 +664,13 @@ export function useChordDetection(userLevel?: string) {
       return ok || false;
     }, []),
     stopRecording: React.useCallback(() => {
-      serviceRef.current?.stopRecording();
-      setIsRecording(false);
+    serviceRef.current?.stopRecording();
+    setIsRecording(false);
     }, []),
     disconnect: React.useCallback(() => {
-      serviceRef.current?.disconnect();
-      setIsConnected(false);
-      setIsRecording(false);
+    serviceRef.current?.disconnect();
+    setIsConnected(false);
+    setIsRecording(false);
     }, []),
     setUserLevel: React.useCallback((level: string) => {
       serviceRef.current?.setUserLevel(level);

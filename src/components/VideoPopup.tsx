@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Dialog, DialogContent, DialogTitle } from './ui/dialog';
-import {
+import { 
   RotateCcw,
   CheckCircle2,
   BookOpen,
@@ -545,20 +545,20 @@ export function VideoPopup({
                     <div className="w-2 h-2 bg-orange-400 rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
                     <div className="w-2 h-2 bg-orange-400 rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
                     <div className="w-2 h-2 bg-orange-400 rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
-                  </div>
+            </div>
                 )}
                 {aiResponse && !aiLoading && (
                   <div className="bg-gray-100 dark:bg-gray-700 rounded-lg px-3 py-2 text-sm text-gray-700 dark:text-gray-300">
                     {aiResponse}
-                  </div>
+            </div>
                 )}
-              </div>
+          </div>
 
               {/* Start Quiz Button */}
-              <button
+            <button
                 onClick={handleStartQuiz}
                 className="w-full h-10 sm:h-11 text-sm sm:text-base text-white font-semibold rounded-xl transition-all hover:scale-[1.02] flex items-center justify-center gap-2"
-                style={{
+              style={{ 
                   backgroundColor: 'rgb(59, 130, 246)',
                   border: '2px solid rgb(37, 99, 235)',
                   borderBottom: '4px solid rgb(29, 78, 216)',

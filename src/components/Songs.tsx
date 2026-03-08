@@ -6,7 +6,7 @@ import { Progress } from './ui/progress';
 import { ActivityModal } from './ActivityModal';
 import { EmptyState } from './EmptyState';
 import { SongPractice } from './SongPractice';
-import { GuitarTutorial, shouldShowTutorial } from './GuitarTutorial';
+import { GuitarTutorial } from './GuitarTutorial';
 import { Dialog, DialogContent } from './ui/dialog';
 import { 
   Play, 
@@ -51,7 +51,6 @@ export function Songs() {
   const [removeConfirmOpen, setRemoveConfirmOpen] = useState(false);
   const [songToRemove, setSongToRemove] = useState<{ id: string; title: string } | null>(null);
   const [tutorialOpen, setTutorialOpen] = useState(false);
-  const [tutorialChecked, setTutorialChecked] = useState(false);
 
   const refreshData = () => {
     if (user) {
@@ -66,17 +65,6 @@ export function Songs() {
   useEffect(() => {
     refreshData();
   }, [user]);
-
-  // Check if tutorial should show for novice users
-  useEffect(() => {
-    if (user && !tutorialChecked) {
-      setTutorialChecked(true);
-      if (shouldShowTutorial(user.id, user.level)) {
-        // Small delay to let the page render first
-        setTimeout(() => setTutorialOpen(true), 500);
-      }
-    }
-  }, [user, tutorialChecked]);
 
   // Refresh when practice modal closes
   useEffect(() => {
@@ -455,9 +443,9 @@ export function Songs() {
               onClick={() => setTutorialOpen(true)}
               className="flex items-center gap-2 px-6 py-3 rounded-xl font-medium text-white transition-all hover:scale-105"
               style={{ 
-                backgroundColor: 'rgb(217, 119, 6)',
-                border: '2px solid rgb(180, 83, 9)',
-                borderBottom: '4px solid rgb(180, 83, 9)'
+                background: 'linear-gradient(135deg, #8B5CF6, #6366F1)',
+                border: '2px solid #7C3AED',
+                borderBottom: '4px solid #5B21B6'
               }}
             >
               <GraduationCap className="w-5 h-5" />

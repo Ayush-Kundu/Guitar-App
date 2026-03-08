@@ -1,858 +1,698 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useUser } from '../contexts/UserContext';
-import { Dialog, DialogContent } from './ui/dialog';
+import { Dialog, DialogContent, DialogTitle } from './ui/dialog';
 import { 
-  Play, 
-  Pause, 
-  Square, 
   CheckCircle2, 
-  Timer,
-  Volume2,
-  RotateCcw,
   X,
   BookOpen,
   Zap,
-  Music
+  Trophy,
+  XCircle,
+  ChevronRight,
+  Hand,
+  Star,
+  RotateCcw,
+  Clock,
+  Target
 } from 'lucide-react';
-import { createSession, createActivity, recordPoints, updateSongProgress, updateTechniqueProgress, updateTheoryProgress, getSessions } from '../utils/api';
+import { recordPoints } from '../utils/api';
+import { 
+  getContentByTitle, 
+  createFallbackContent, 
+  ensureMinQuizItems,
+  LessonContent, 
+  QuizItem,
+  MultipleChoiceItem,
+  FillBlankItem
+} from '../data/lesson-content';
 
 interface ActivityModalProps {
   isOpen: boolean;
   onClose: () => void;
+  /** Called when user gets 100% and clicks Continue – use to mark lesson complete */
+  onComplete?: () => void;
+  /** If set, after 100% Done we call this and close so parent can open chord practice (e.g. SongPractice) */
+  practiceChords?: string[];
+  onStartPractice?: (lessonName: string, chords: string[]) => void;
   activityType: 'practice' | 'study' | 'quiz' | 'metronome' | 'tuner' | 'history';
   activityData?: any;
 }
 
-export function ActivityModal({ isOpen, onClose, activityType, activityData }: ActivityModalProps) {
+type Phase = 'intro' | 'quiz' | 'results';
+
+export function ActivityModal({ isOpen, onClose, onComplete, activityType, activityData, practiceChords, onStartPractice }: ActivityModalProps) {
   const { user, updateUser, syncProfileToSupabase } = useUser();
-  const [isActive, setIsActive] = useState(false);
-  const [timeElapsed, setTimeElapsed] = useState(0);
-  const [progress, setProgress] = useState(0);
+  
+  const [phase, setPhase] = useState<Phase>('intro');
+  const [currentItemIndex, setCurrentItemIndex] = useState(0);
+  const [selectedAnswer, setSelectedAnswer] = useState<number | null>(null);
+  const [showResult, setShowResult] = useState(false);
+  const [correctAnswers, setCorrectAnswers] = useState(0);
+  const [streak, setStreak] = useState(0);
+  const [bestStreak, setBestStreak] = useState(0);
+  const [showCorrectAnimation, setShowCorrectAnimation] = useState(false);
+  const [showWrongAnimation, setShowWrongAnimation] = useState(false);
+  const optionsRef = useRef<HTMLDivElement>(null);
 
-  React.useEffect(() => {
-    let interval: NodeJS.Timeout;
-    if (isActive) {
-      interval = setInterval(() => {
-        setTimeElapsed(prev => prev + 1);
-        setProgress(prev => Math.min(prev + 1, 100));
-      }, 1000);
+  const getLessonContent = (): LessonContent => {
+    const name = activityData?.name || activityData?.data?.name || '';
+    const description = activityData?.description || activityData?.data?.description || '';
+    let content: LessonContent | null = getContentByTitle(name);
+    if (content?.items?.length) {
+      return ensureMinQuizItems(content);
     }
-    return () => clearInterval(interval);
-  }, [isActive]);
-
-  const formatTime = (seconds: number) => {
-    const mins = Math.floor(seconds / 60);
-    const secs = seconds % 60;
-    return `${mins}:${secs.toString().padStart(2, '0')}`;
+    if (content?.quiz?.length) {
+      const withItems: LessonContent = {
+        ...content,
+        items: content.quiz.map(q => ({
+          type: 'multiple_choice' as const,
+          question: q.question,
+          options: q.options,
+          correctAnswer: q.correctAnswer,
+          explanation: undefined
+        }))
+      };
+      return ensureMinQuizItems(withItems);
+    }
+    return createFallbackContent(name, description || 'This topic covers essential guitar concepts.');
   };
 
-  // Get colors based on activity type - matching technique/theory page colors
-  const getActivityColors = () => {
-    switch (activityType) {
-      case 'practice':
-        return {
-          primary: 'rgb(239, 68, 68)', // Red - matching Technique Chords tab
-          primaryLight: 'rgb(254, 226, 226)',
-          primaryBorder: 'rgb(220, 38, 38)',
-          gradient: 'linear-gradient(135deg, rgb(254, 242, 242) 0%, rgb(254, 226, 226) 100%)',
-          text: 'rgb(185, 28, 28)',
-          icon: 'rgb(220, 38, 38)',
-          tabColor: 'rgb(249, 115, 22)' // Orange secondary
-        };
-      case 'study':
-        return {
-          primary: 'rgb(59, 130, 246)', // Blue - matching Theory Basics tab
-          primaryLight: 'rgb(219, 234, 254)',
-          primaryBorder: 'rgb(37, 99, 235)',
-          gradient: 'linear-gradient(135deg, rgb(239, 246, 255) 0%, rgb(219, 234, 254) 100%)',
-          text: 'rgb(29, 78, 216)',
-          icon: 'rgb(37, 99, 235)',
-          tabColor: 'rgb(16, 185, 129)' // Green secondary
-        };
-      case 'quiz':
-        return {
-          primary: 'rgb(168, 85, 247)', // Purple - matching Theory Scales tab
-          primaryLight: 'rgb(243, 232, 255)',
-          primaryBorder: 'rgb(147, 51, 234)',
-          gradient: 'linear-gradient(135deg, rgb(250, 245, 255) 0%, rgb(243, 232, 255) 100%)',
-          text: 'rgb(107, 33, 168)',
-          icon: 'rgb(147, 51, 234)',
-          tabColor: 'rgb(99, 102, 241)'
-        };
-      case 'metronome':
-        return {
-          primary: 'rgb(234, 179, 8)', // Yellow - matching Technique Plucks tab
-          primaryLight: 'rgb(254, 249, 195)',
-          primaryBorder: 'rgb(202, 138, 4)',
-          gradient: 'linear-gradient(135deg, rgb(254, 252, 232) 0%, rgb(254, 249, 195) 100%)',
-          text: 'rgb(161, 98, 7)',
-          icon: 'rgb(202, 138, 4)',
-          tabColor: 'rgb(249, 115, 22)'
-        };
-      case 'tuner':
-        return {
-          primary: 'rgb(16, 185, 129)', // Green - matching Theory Chords tab
-          primaryLight: 'rgb(209, 250, 229)',
-          primaryBorder: 'rgb(5, 150, 105)',
-          gradient: 'linear-gradient(135deg, rgb(236, 253, 245) 0%, rgb(209, 250, 229) 100%)',
-          text: 'rgb(4, 120, 87)',
-          icon: 'rgb(5, 150, 105)',
-          tabColor: 'rgb(59, 130, 246)'
-        };
-      case 'history':
-        return {
-          primary: 'rgb(249, 115, 22)', // Orange - matching Technique Strums tab
-          primaryLight: 'rgb(255, 237, 213)',
-          primaryBorder: 'rgb(234, 88, 12)',
-          gradient: 'linear-gradient(135deg, rgb(255, 247, 237) 0%, rgb(255, 237, 213) 100%)',
-          text: 'rgb(194, 65, 12)',
-          icon: 'rgb(234, 88, 12)',
-          tabColor: 'rgb(239, 68, 68)'
-        };
-      default:
-        return {
-          primary: 'rgb(249, 115, 22)',
-          primaryLight: 'rgb(255, 237, 213)',
-          primaryBorder: 'rgb(234, 88, 12)',
-          gradient: 'linear-gradient(135deg, rgb(255, 247, 237) 0%, rgb(255, 237, 213) 100%)',
-          text: 'rgb(194, 65, 12)',
-          icon: 'rgb(234, 88, 12)',
-          tabColor: 'rgb(239, 68, 68)'
-        };
+  const lessonContent = getLessonContent();
+  const items = lessonContent.items || [];
+  const hasItems = items.length > 0;
+  const currentItem = items[currentItemIndex] as QuizItem | undefined;
+
+  useEffect(() => {
+    if (isOpen) {
+      setPhase('intro');
+      setCurrentItemIndex(0);
+      setSelectedAnswer(null);
+      setShowResult(false);
+      setCorrectAnswers(0);
+      setStreak(0);
+      setBestStreak(0);
+      setShowCorrectAnimation(false);
+      setShowWrongAnimation(false);
     }
-  };
+  }, [isOpen]);
 
-  const colors = getActivityColors();
+  const isTechnique = activityType === 'practice';
+  const themeColor = isTechnique ? 'rgb(249, 115, 22)' : 'rgb(59, 130, 246)';
+  const themeBorder = isTechnique ? 'rgb(234, 88, 12)' : 'rgb(37, 99, 235)';
+  const themeBg = isTechnique ? 'rgb(255, 237, 213)' : 'rgb(219, 234, 254)';
+  const themeBorderLight = isTechnique ? 'rgb(253, 186, 116)' : 'rgb(147, 197, 253)';
+  const themeLight = isTechnique ? 'rgba(249, 115, 22, 0.08)' : 'rgba(59, 130, 246, 0.08)';
+  const themeLighter = isTechnique ? 'rgba(249, 115, 22, 0.06)' : 'rgba(59, 130, 246, 0.06)';
+  const gradientClass = isTechnique ? 'from-orange-100 via-red-50 to-pink-100' : 'from-blue-100 via-indigo-50 to-purple-50';
+  const font = '"Nunito", "Segoe UI", system-ui, sans-serif';
+  const cardStyle = { backgroundColor: 'rgba(255, 255, 255, 0.58)', border: '2.5px solid rgb(237, 237, 237)' as const };
 
-  const handleComplete = async () => {
+  const handleComplete = async (markLessonDone?: boolean) => {
     if (!user) return;
-
+    if (markLessonDone) onComplete?.();
     try {
-      const durationMinutes = timeElapsed / 60;
-      
-      // Determine activity type for session
-      let sessionActivityType: 'practice' | 'song' | 'technique' | 'theory' | 'study' = 'practice';
-      if (activityType === 'study') {
-        sessionActivityType = 'theory';
-      } else if (activityData?.type === 'song') {
-        sessionActivityType = 'song';
-      } else if (activityData?.type === 'technique') {
-        sessionActivityType = 'technique';
-      }
-
-      // Save practice session to backend
-      await createSession({
-        userId: user.id,
-        activityType: sessionActivityType,
-        activityName: activityData?.name || 'Practice Session',
-        duration: durationMinutes,
-        difficulty: activityData?.data?.difficulty || activityData?.difficulty || 1,
-        progress: Math.min(100, Math.round((timeElapsed / 60) * 2)),
-        notes: activityData?.description || ''
-      });
-
-      // Create timeline activity
-      await createActivity({
-        userId: user.id,
-        type: activityType === 'practice' ? 'practice' : 'lesson',
-        title: activityData?.name || `${activityType === 'practice' ? 'Practice' : 'Study'} Session`,
-        description: `Completed ${Math.round(durationMinutes)} minute session`,
-        icon: activityType === 'practice' ? '🎸' : '📚',
-        color: activityType === 'practice' ? 'bg-orange-100' : 'bg-purple-100'
-      });
-
-      // Calculate and record points
-      const basePoints = durationMinutes * 2;
-      const difficultyMultiplier = (activityData?.data?.difficulty || activityData?.difficulty || 1) * 0.5;
-      const pointsEarned = Math.round(basePoints * (1 + difficultyMultiplier));
-
-      await recordPoints({
-        userId: user.id,
-        type: activityType === 'practice' ? 'practice' : 'theory_completed',
-        points: pointsEarned,
-        description: `Completed ${activityData?.name || 'session'} - ${Math.round(durationMinutes)} minutes`,
-        difficulty: activityData?.data?.difficulty || activityData?.difficulty || 1
-      });
-
-      // Update specific progress if applicable
-      if (activityData?.type === 'song' && activityData?.data) {
-        const song = activityData.data;
-        const currentProgress = song.progress || 0;
-        const newProgress = Math.min(100, currentProgress + Math.round(durationMinutes * 0.5));
-        
-        await updateSongProgress({
+      // Technique Theory: points are awarded per unit (1) and per branch (5) in TechniqueTheory.tsx
+      const isTechniqueTheoryFlow = (activityType === 'practice' || activityType === 'study') && markLessonDone;
+      const pointsEarned = isTechniqueTheoryFlow ? 0 : (hasItems ? correctAnswers * 10 + bestStreak * 5 : 5);
+      if (pointsEarned > 0) {
+        await recordPoints({
           userId: user.id,
-          songId: song.title || song.id || 'unknown',
-          songTitle: song.title,
-          artist: song.artist || '',
-          progress: newProgress,
-          status: newProgress >= 100 ? 'mastered' : 'in-progress'
+          type: isTechnique ? 'practice' : 'theory_completed',
+          points: pointsEarned,
+          description: `Completed ${activityData?.name || 'lesson'}`,
+          difficulty: activityData?.data?.difficulty || 1
         });
-      } else if (activityData?.type === 'technique' && activityData?.data) {
-        const technique = activityData.data;
-        const currentProgress = technique.progress || 0;
-        const newProgress = Math.min(100, currentProgress + Math.round(durationMinutes * 0.3));
-        
-        await updateTechniqueProgress({
-          userId: user.id,
-          techniqueId: technique.name || technique.id || 'unknown',
-          techniqueName: technique.name,
-          category: technique.category || '',
-          progress: newProgress,
-          status: newProgress >= 100 ? 'mastered' : 'in-progress'
+        updateUser({
+          totalPoints: (user.totalPoints || 0) + pointsEarned,
+          weeklyPoints: (user.weeklyPoints || 0) + pointsEarned
         });
-      } else if (activityType === 'study' && activityData?.data) {
-        const theory = activityData.data;
-        const currentProgress = theory.progress || 0;
-        const newProgress = Math.min(100, currentProgress + Math.round(durationMinutes * 0.4));
-        
-        await updateTheoryProgress({
-          userId: user.id,
-          theoryId: theory.name || theory.id || 'unknown',
-          theoryName: theory.name,
-          category: theory.category || '',
-          progress: newProgress,
-          status: newProgress >= 100 ? 'completed' : 'in-progress'
-        });
+        syncProfileToSupabase();
       }
-
-      // Update user progress locally
-      const updates: any = {};
-      
-      if (activityType === 'practice') {
-        updates.practiceStreak = user.practiceStreak + 1;
-        updates.hoursThisWeek = Math.round((Number(user.hoursThisWeek) + (durationMinutes / 60)) * 10) / 10;
-        updates.totalPoints = (user.totalPoints || 0) + pointsEarned;
-        updates.weeklyPoints = (user.weeklyPoints || 0) + pointsEarned;
-      } else if (activityType === 'study') {
-        updates.hoursThisWeek = Math.round((Number(user.hoursThisWeek) + (durationMinutes / 60)) * 10) / 10;
-        updates.totalPoints = (user.totalPoints || 0) + pointsEarned;
-        updates.weeklyPoints = (user.weeklyPoints || 0) + pointsEarned;
-      }
-      
-      updateUser(updates);
     } catch (error) {
       console.error('Error saving session:', error);
-      // Still update locally even if backend fails
-      const updates: any = {};
-      if (activityType === 'practice') {
-        updates.practiceStreak = user.practiceStreak + 1;
-        updates.hoursThisWeek = Math.round((Number(user.hoursThisWeek) + (timeElapsed / 3600)) * 10) / 10;
-      } else if (activityType === 'study') {
-        updates.hoursThisWeek = Math.round((Number(user.hoursThisWeek) + (timeElapsed / 3600)) * 10) / 10;
-      }
-      updateUser(updates);
     }
-    
-    setIsActive(false);
-    setTimeElapsed(0);
-    setProgress(0);
-    
-    // Sync updated points, compete level, and streak to Supabase
-    syncProfileToSupabase();
-    
     onClose();
   };
 
-  const getActivityIcon = () => {
-    switch (activityType) {
-      case 'practice': return <Play className="w-5 h-5" style={{ color: colors.icon }} />;
-      case 'study': return <BookOpen className="w-5 h-5" style={{ color: colors.icon }} />;
-      case 'quiz': return <Zap className="w-5 h-5" style={{ color: colors.icon }} />;
-      case 'metronome': return <Timer className="w-5 h-5" style={{ color: colors.icon }} />;
-      case 'tuner': return <Volume2 className="w-5 h-5" style={{ color: colors.icon }} />;
-      case 'history': return <RotateCcw className="w-5 h-5" style={{ color: colors.icon }} />;
-      default: return <Music className="w-5 h-5" style={{ color: colors.icon }} />;
+  const handleAnswer = (answerIndex: number) => {
+    if (showResult || !currentItem) return;
+    setSelectedAnswer(answerIndex);
+    setShowResult(true);
+    const isCorrect = currentItem.type === 'multiple_choice' 
+      ? answerIndex === (currentItem as MultipleChoiceItem).correctAnswer
+      : answerIndex === (currentItem as FillBlankItem).correctAnswer;
+    if (isCorrect) {
+      setCorrectAnswers(prev => prev + 1);
+      const newStreak = streak + 1;
+      setStreak(newStreak);
+      if (newStreak > bestStreak) setBestStreak(newStreak);
+      setShowCorrectAnimation(true);
+      setTimeout(() => setShowCorrectAnimation(false), 800);
+    } else {
+      setStreak(0);
+      setShowWrongAnimation(true);
+      setTimeout(() => setShowWrongAnimation(false), 600);
     }
   };
 
-  const renderContent = () => {
-    switch (activityType) {
-      case 'practice':
-        return (
-          <div className="space-y-4">
-            {/* Activity Info Card */}
-            <div 
-              className="p-4 bg-white/70 backdrop-blur-sm rounded-xl"
-              style={{ border: '2.5px solid rgb(237, 237, 237)' }}
-            >
-              <h3 className="text-lg font-semibold text-gray-900 mb-1">
-                {activityData?.name || 'Practice Session'}
-              </h3>
-              <p className="text-sm text-gray-600">
-                {activityData?.description || 'Focus on your technique and timing'}
-              </p>
-            </div>
-
-            {/* Timer Card */}
-            <div 
-              className="p-5 bg-white/70 backdrop-blur-sm rounded-xl text-center"
-              style={{ border: '2.5px solid rgb(237, 237, 237)' }}
-            >
-              <div 
-                className="text-5xl font-bold mb-2"
-                style={{ color: colors.primary }}
-              >
-                {formatTime(timeElapsed)}
-              </div>
-              <div className="text-sm text-gray-600 mb-4">Session Time</div>
-              
-              {/* Progress Bar */}
-              <div className="w-full h-3 rounded-full bg-gray-200 overflow-hidden mb-5">
-                <div 
-                  className="h-full rounded-full transition-all duration-300"
-                  style={{ width: `${progress}%`, backgroundColor: colors.primary }}
-                />
-              </div>
-              
-              {/* Control Buttons */}
-              <div className="flex justify-center gap-3">
-                <button
-                  onClick={() => setIsActive(!isActive)}
-                  className="flex items-center justify-center px-5 py-2.5 rounded-lg font-medium text-white transition-all hover:opacity-90 active:scale-95 shadow-md"
-                  style={{ backgroundColor: colors.primary }}
-                >
-                  {isActive ? <Pause className="w-4 h-4 mr-2" /> : <Play className="w-4 h-4 mr-2" />}
-                  {isActive ? 'Pause' : 'Start'}
-                </button>
-                
-                <button
-                  onClick={() => {
-                    setIsActive(false);
-                    setTimeElapsed(0);
-                    setProgress(0);
-                  }}
-                  className="flex items-center justify-center px-5 py-2.5 rounded-lg font-medium transition-all hover:opacity-90 active:scale-95"
-                  style={{ 
-                    backgroundColor: 'rgb(243, 244, 246)',
-                    color: 'rgb(107, 114, 128)'
-                  }}
-                >
-                  <Square className="w-4 h-4 mr-2" />
-                  Reset
-                </button>
-              </div>
-            </div>
-
-            {/* Action Buttons */}
-            <div className="flex justify-between gap-3">
-              <button
-                onClick={onClose}
-                className="flex-1 py-2.5 px-4 rounded-lg font-medium transition-all hover:opacity-90 active:scale-95"
-                style={{ 
-                  backgroundColor: 'rgb(243, 244, 246)',
-                  color: 'rgb(107, 114, 128)'
-                }}
-              >
-                Cancel
-              </button>
-              <button 
-                onClick={handleComplete}
-                disabled={timeElapsed < 30}
-                className="flex-1 flex items-center justify-center py-2.5 px-4 rounded-lg font-medium text-white transition-all hover:opacity-90 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed shadow-md"
-                style={{ backgroundColor: 'rgb(34, 197, 94)' }}
-              >
-                <CheckCircle2 className="w-4 h-4 mr-2" />
-                Complete
-              </button>
-            </div>
-          </div>
-        );
-
-      case 'study':
-        return (
-          <div className="space-y-4">
-            {/* Activity Info Card */}
-            <div 
-              className="p-4 bg-white/70 backdrop-blur-sm rounded-xl"
-              style={{ border: '2.5px solid rgb(237, 237, 237)' }}
-            >
-              <h3 className="text-lg font-semibold text-gray-900 mb-1">
-                {activityData?.name || 'Study Session'}
-              </h3>
-              <p className="text-sm text-gray-600">
-                Learn and understand music theory concepts
-              </p>
-            </div>
-
-            {/* Timer Card */}
-            <div 
-              className="p-5 bg-white/70 backdrop-blur-sm rounded-xl text-center"
-              style={{ border: '2.5px solid rgb(237, 237, 237)' }}
-            >
-              <div 
-                className="text-5xl font-bold mb-2"
-                style={{ color: colors.primary }}
-              >
-                {formatTime(timeElapsed)}
-              </div>
-              <div className="text-sm text-gray-600 mb-4">Study Time</div>
-              
-              {/* Progress Bar */}
-              <div className="w-full h-3 rounded-full bg-gray-200 overflow-hidden mb-5">
-                <div 
-                  className="h-full rounded-full transition-all duration-300"
-                  style={{ width: `${progress}%`, backgroundColor: colors.primary }}
-                />
-              </div>
-              
-              {/* Control Button */}
-              <button
-                onClick={() => setIsActive(!isActive)}
-                className="flex items-center justify-center px-6 py-2.5 rounded-lg font-medium text-white transition-all hover:opacity-90 active:scale-95 mx-auto shadow-md"
-                style={{ backgroundColor: colors.primary }}
-              >
-                {isActive ? <Pause className="w-4 h-4 mr-2" /> : <Play className="w-4 h-4 mr-2" />}
-                {isActive ? 'Pause' : 'Start'}
-              </button>
-            </div>
-
-            {/* Tips Cards */}
-            <div className="grid grid-cols-2 gap-3">
-              <div 
-                className="p-3 bg-blue-50/70 backdrop-blur-sm rounded-xl"
-                style={{ border: '2.5px solid rgb(191, 219, 254)' }}
-              >
-                <h4 className="font-semibold text-blue-800 mb-2 text-sm">Key Concepts</h4>
-                <ul className="text-xs text-blue-700 space-y-1">
-                  <li>• Scale patterns</li>
-                  <li>• Chord progressions</li>
-                  <li>• Interval relationships</li>
-                </ul>
-              </div>
-              <div 
-                className="p-3 bg-green-50/70 backdrop-blur-sm rounded-xl"
-                style={{ border: '2.5px solid rgb(187, 247, 208)' }}
-              >
-                <h4 className="font-semibold text-green-800 mb-2 text-sm">Practice Tips</h4>
-                <ul className="text-xs text-green-700 space-y-1">
-                  <li>• Start slowly</li>
-                  <li>• Use a metronome</li>
-                  <li>• Focus on accuracy</li>
-                </ul>
-              </div>
-            </div>
-
-            {/* Action Buttons */}
-            <div className="flex justify-between gap-3">
-              <button
-                onClick={onClose}
-                className="flex-1 py-2.5 px-4 rounded-lg font-medium transition-all hover:opacity-90 active:scale-95"
-                style={{ 
-                  backgroundColor: 'rgb(243, 244, 246)',
-                  color: 'rgb(107, 114, 128)'
-                }}
-              >
-                Cancel
-              </button>
-              <button 
-                onClick={handleComplete}
-                disabled={timeElapsed < 15}
-                className="flex-1 flex items-center justify-center py-2.5 px-4 rounded-lg font-medium text-white transition-all hover:opacity-90 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed shadow-md"
-                style={{ backgroundColor: 'rgb(34, 197, 94)' }}
-              >
-                <CheckCircle2 className="w-4 h-4 mr-2" />
-                Complete
-              </button>
-            </div>
-          </div>
-        );
-
-      case 'quiz':
-        return (
-          <div className="space-y-4">
-            {/* Quiz Header */}
-            <div 
-              className="p-4 bg-white/70 backdrop-blur-sm rounded-xl"
-              style={{ border: '2.5px solid rgb(237, 237, 237)' }}
-            >
-              <h3 className="text-lg font-semibold text-gray-900 mb-1">Theory Quiz</h3>
-              <p className="text-sm text-gray-600">Test your knowledge</p>
-            </div>
-
-            {/* Quiz Content */}
-            <div 
-              className="p-4 bg-white/70 backdrop-blur-sm rounded-xl"
-              style={{ border: '2.5px solid rgb(237, 237, 237)' }}
-            >
-              <div className="flex items-center justify-between mb-4">
-                <span className="font-medium text-gray-700">Question 1 of 5</span>
-                <div className="flex gap-1">
-                  {[1,2,3,4,5].map(i => (
-                    <div 
-                      key={i} 
-                      className="w-2 h-2 rounded-full"
-                      style={{ backgroundColor: i === 1 ? colors.primary : 'rgb(209, 213, 219)' }}
-                    />
-                  ))}
-                </div>
-              </div>
-              <p className="mb-4 font-medium text-gray-800">What are the notes in a C major scale?</p>
-              
-              <div className="space-y-2">
-                {['C-D-E-F-G-A-B', 'C-D-E#-F-G-A-B', 'C-D-E-F#-G-A-B', 'C-D#-E-F-G-A-B'].map((option, i) => (
-                  <button 
-                    key={i} 
-                    className="w-full text-left p-3 rounded-lg font-medium transition-all hover:scale-[1.01] active:scale-[0.99] bg-gray-50"
-                    style={{ border: '2px solid rgb(229, 231, 235)' }}
-                  >
-                    {option}
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            {/* Action Buttons */}
-            <div className="flex justify-between gap-3">
-              <button
-                onClick={onClose}
-                className="flex-1 py-2.5 px-4 rounded-lg font-medium transition-all hover:opacity-90 active:scale-95"
-                style={{ 
-                  backgroundColor: 'rgb(243, 244, 246)',
-                  color: 'rgb(107, 114, 128)'
-                }}
-              >
-                Cancel
-              </button>
-              <button 
-                className="flex-1 py-2.5 px-4 rounded-lg font-medium text-white transition-all hover:opacity-90 active:scale-95 shadow-md"
-                style={{ backgroundColor: colors.primary }}
-              >
-                Next Question
-              </button>
-            </div>
-          </div>
-        );
-
-      case 'metronome':
-        return (
-          <div className="space-y-4">
-            {/* Metronome Display */}
-            <div 
-              className="p-5 bg-white/70 backdrop-blur-sm rounded-xl text-center"
-              style={{ border: '2.5px solid rgb(237, 237, 237)' }}
-            >
-              {/* BPM Display */}
-              <div className="mb-5">
-              <div 
-                className="text-5xl font-bold mb-1"
-                style={{ color: colors.primary }}
-              >
-                120
-              </div>
-                <div className="text-sm font-medium text-gray-500 tracking-wide uppercase">BPM</div>
-              </div>
-              
-              {/* Visual Beat Indicator */}
-              <div className="flex justify-center gap-2.5 mb-5">
-                {[1, 2, 3, 4].map((beat) => (
-                  <div 
-                    key={beat}
-                    className="w-4 h-4 rounded-full transition-all duration-100"
-                    style={{ 
-                      backgroundColor: beat === 1 ? colors.primary : 'rgb(229, 231, 235)',
-                      transform: beat === 1 && isActive ? 'scale(1.3)' : 'scale(1)'
-                    }}
-                  />
-                ))}
-              </div>
-              
-              {/* BPM Controls */}
-              <div className="flex justify-center gap-4 mb-8">
-                {['-10', '-1', '+1', '+10'].map((val) => (
-                  <button
-                    key={val}
-                    className="w-12 h-10 rounded-lg font-bold text-sm transition-all hover:opacity-90 active:scale-95 bg-gray-100"
-                    style={{ 
-                      border: '2px solid rgb(229, 231, 235)',
-                      color: 'rgb(75, 85, 99)'
-                    }}
-                  >
-                    {val}
-                  </button>
-                ))}
-              </div>
-              
-              {/* Play Button */}
-              <button
-                onClick={() => setIsActive(!isActive)}
-                className="flex items-center justify-center w-36 h-12 rounded-xl font-semibold text-base text-white transition-all hover:opacity-90 active:scale-95 mx-auto shadow-lg"
-                style={{ backgroundColor: colors.primary }}
-              >
-                {isActive ? <Pause className="w-5 h-5 mr-2" /> : <Play className="w-5 h-5 mr-2" />}
-                {isActive ? 'Stop' : 'Start'}
-              </button>
-            </div>
-
-            {/* Close Button */}
-            <div className="flex justify-center mt-2">
-              <button
-                onClick={onClose}
-                className="py-2.5 px-6 rounded-lg font-medium transition-all hover:opacity-90 active:scale-95"
-                style={{ 
-                  backgroundColor: 'rgb(243, 244, 246)',
-                  color: 'rgb(107, 114, 128)'
-                }}
-              >
-                Close
-              </button>
-            </div>
-          </div>
-        );
-
-      case 'tuner':
-        return (
-          <div className="space-y-4">
-            {/* Tuner Display */}
-            <div 
-              className="p-5 bg-white/70 backdrop-blur-sm rounded-xl"
-              style={{ border: '2.5px solid rgb(237, 237, 237)' }}
-            >
-              {/* Current Note Display */}
-              <div className="text-center mb-5">
-                <div 
-                  className="text-5xl font-bold mb-1"
-                  style={{ color: colors.primary }}
-                >
-                  E
-                </div>
-                <div className="text-sm font-medium text-gray-500 tracking-wide uppercase">Current String</div>
-              </div>
-              
-              {/* Tuning Indicator with labels */}
-              <div className="mb-5">
-                <div className="flex justify-between text-xs text-gray-400 mb-2 px-1">
-                  <span>♭ Flat</span>
-                  <span className="font-semibold text-green-500">In Tune</span>
-                  <span>Sharp ♯</span>
-                </div>
-                <div className="relative w-full h-4 rounded-full bg-gray-200 overflow-hidden">
-                  {/* Center marker */}
-                  <div className="absolute left-1/2 top-0 w-0.5 h-full bg-gray-400 transform -translate-x-1/2 z-10" />
-                  {/* Tuning indicator */}
-                <div 
-                    className="absolute top-0 h-full w-6 rounded-full transition-all duration-200"
-                    style={{ 
-                      left: 'calc(50% - 12px)',
-                      backgroundColor: 'rgb(34, 197, 94)'
-                    }}
-                />
-                </div>
-              </div>
-              
-              {/* String Buttons */}
-              <div className="grid grid-cols-6 gap-2 mb-2">
-                {['E', 'A', 'D', 'G', 'B', 'e'].map((string, i) => (
-                  <button 
-                    key={i} 
-                    className="h-11 flex items-center justify-center rounded-lg font-bold text-base transition-all hover:opacity-90 active:scale-95"
-                    style={{ 
-                      backgroundColor: i === 0 ? colors.primary : 'rgb(243, 244, 246)',
-                      color: i === 0 ? 'white' : 'rgb(75, 85, 99)',
-                      border: '2px solid rgb(229, 231, 235)'
-                    }}
-                  >
-                    {string}
-                  </button>
-                ))}
-              </div>
-              
-              {/* String labels */}
-              <div className="grid grid-cols-6 gap-2 text-center mb-4">
-                {['6th', '5th', '4th', '3rd', '2nd', '1st'].map((label, i) => (
-                  <span key={i} className="text-[10px] text-gray-400">{label}</span>
-                ))}
-              </div>
-              
-              <div className="text-center text-sm text-gray-500 font-medium">
-                🎸 Play a string to tune
-              </div>
-            </div>
-
-            {/* Close Button */}
-            <div className="flex justify-center mt-2">
-              <button
-                onClick={onClose}
-                className="py-2.5 px-6 rounded-lg font-medium transition-all hover:opacity-90 active:scale-95"
-                style={{ 
-                  backgroundColor: 'rgb(243, 244, 246)',
-                  color: 'rgb(107, 114, 128)'
-                }}
-              >
-                Close
-              </button>
-            </div>
-          </div>
-        );
-
-      case 'history':
-        return (
-          <HistoryContent userId={user?.id || ''} onClose={onClose} colors={colors} />
-        );
-
-      default:
-        return null;
+  const handleNextItem = () => {
+    if (currentItemIndex < items.length - 1) {
+      setCurrentItemIndex(prev => prev + 1);
+      setSelectedAnswer(null);
+      setShowResult(false);
+    } else {
+      setPhase('results');
     }
   };
+
+  const handleRetry = () => {
+    setPhase('quiz');
+    setCurrentItemIndex(0);
+    setSelectedAnswer(null);
+    setShowResult(false);
+    setCorrectAnswers(0);
+    setStreak(0);
+    setBestStreak(0);
+  };
+
+  const getActivityIcon = () => isTechnique 
+    ? <Hand className="w-4 h-4" style={{ color: 'inherit' }} /> 
+    : <BookOpen className="w-4 h-4" style={{ color: 'inherit' }} />;
+
+  const getActivityTitle = () => {
+    return activityData?.name || activityData?.data?.name || 
+           (isTechnique ? 'Technique Lesson' : 'Theory Lesson');
+  };
+
+  const getDescription = () => {
+    return activityData?.description || activityData?.data?.description || '';
+  };
+
+  /** Build the intro paragraph from quiz items so it teaches the answers, then the quiz tests them. */
+  const getIntroParagraph = (): string => {
+    if (!items.length) {
+      const desc = getDescription();
+      return desc || `This lesson covers the fundamentals of ${getActivityTitle().toLowerCase()}. Read through the material, then test your knowledge with the quiz.`;
+    }
+    const sentences: string[] = [];
+    const desc = getDescription().trim();
+    if (desc) {
+      sentences.push(desc);
+      sentences.push('Here\'s what you need to know for the quiz:');
+    }
+    for (const item of items) {
+      if (item.type === 'fill_blank') {
+        const fill = item as FillBlankItem;
+        const answer = fill.options[fill.correctAnswer];
+        const sentence = fill.sentence.replace(/_{3,}/g, answer).trim();
+        sentences.push(sentence.endsWith('.') ? sentence : sentence + '.');
+      } else {
+        const mc = item as MultipleChoiceItem;
+        const answer = mc.options[mc.correctAnswer];
+        const q = mc.question.trim();
+        const endsWithQ = q.endsWith('?');
+        sentences.push(endsWithQ ? `${q} ${answer}.` : `${q}: ${answer}.`);
+      }
+    }
+    return sentences.join(' ');
+  };
+
+  // ─── INTRO SCREEN ─────────────────────────────────────────────────────
+  const renderIntro = () => {
+    const estimatedTime = activityData?.estimatedTime || activityData?.data?.estimatedTime || '';
+    const paragraph = getIntroParagraph();
+    return (
+      <div className="flex-1 flex flex-col overflow-hidden min-h-0">
+        {/* Title header */}
+        <div className="flex-shrink-0 pt-2 pb-4">
+          <h2 
+            className="text-base font-bold text-gray-800 mb-2"
+            style={{ fontFamily: font }}
+          >
+            {getActivityTitle()}
+          </h2>
+          <div className="flex items-center gap-2">
+            {estimatedTime && (
+              <span className="flex items-center gap-1.5 text-xs font-medium text-gray-500">
+                <Clock className="w-3 h-3" />
+                {estimatedTime}
+              </span>
+            )}
+            <span 
+              className="flex items-center gap-1.5 px-2 py-0.5 rounded-md text-xs font-medium"
+              style={{ backgroundColor: themeLight, color: themeColor }}
+            >
+              <Target className="w-3 h-3" />
+              {items.length} questions
+            </span>
+          </div>
+        </div>
+
+        {/* Scrollable reading content - TechniqueTheory card style */}
+        <div className="flex-1 overflow-y-auto min-h-0 mb-4">
+          <div 
+            className="backdrop-blur-sm rounded-xl px-4 py-4 shadow-sm"
+            style={cardStyle}
+          >
+            <p 
+              className="text-[13px] text-gray-700 leading-[1.75]"
+              style={{ fontFamily: font }}
+            >
+              {paragraph}
+            </p>
+          </div>
+        </div>
+
+        {/* Start quiz button - TechniqueTheory button style */}
+        <div className="flex-shrink-0 pt-2">
+          <div
+            onClick={() => setPhase('quiz')}
+            className="flex items-center justify-center gap-2 w-full py-3 rounded-xl text-sm font-bold cursor-pointer transition-transform hover:scale-[1.01] active:scale-[0.99]"
+            style={{ 
+              backgroundColor: themeBg, 
+              borderBottom: `2px solid ${themeBorderLight}`,
+              color: themeColor,
+              fontFamily: font,
+            }}
+          >
+            Start Quiz
+            <ChevronRight className="w-4 h-4" />
+          </div>
+        </div>
+      </div>
+    );
+  };
+
+  // ─── RESULTS SCREEN (matches Technique Theory card/badge/button style) ───
+  const renderResults = () => {
+    const percentage = Math.round((correctAnswers / items.length) * 100);
+    const isPassing = correctAnswers === items.length;
+    const stars = percentage >= 100 ? 3 : percentage >= 80 ? 2 : percentage >= 60 ? 1 : 0;
+    const hasMistakes = correctAnswers < items.length;
+
+    return (
+      <div className="flex flex-col pt-2">
+        {/* Single card container - same as Technique Theory lesson list card */}
+        <div 
+          className="backdrop-blur-sm rounded-xl px-4 py-4 shadow-sm flex flex-col gap-4"
+          style={cardStyle}
+        >
+          {/* Top row: icon badge + title + score (like UnitCard row) */}
+          <div className="flex items-center gap-3">
+            <div 
+              className="flex-shrink-0 w-10 h-10 rounded-xl flex items-center justify-center"
+              style={{ 
+                backgroundColor: isPassing ? 'rgb(134, 239, 172)' : themeBg,
+                borderBottom: `3px solid ${isPassing ? 'rgb(74, 222, 128)' : themeBorderLight}`
+              }}
+            >
+              {isPassing ? (
+                <Trophy className="w-5 h-5 text-green-600" />
+              ) : (
+                <XCircle className="w-5 h-5" style={{ color: themeColor }} />
+              )}
+            </div>
+            <div className="flex-1 min-w-0">
+              <h3 className="font-bold text-gray-800 text-sm">
+                {isPassing ? 'Lesson complete' : 'Keep practicing'}
+              </h3>
+              <p className="text-xs text-gray-500">
+                {correctAnswers} of {items.length} correct ({percentage}%)
+              </p>
+            </div>
+            {/* Stars inline */}
+            <div className="flex items-center gap-1 flex-shrink-0">
+              {[1, 2, 3].map(s => (
+                <Star
+                  key={s}
+                  className={`w-6 h-6 transition-all ${s <= stars ? 'text-yellow-400 fill-yellow-400' : 'text-gray-300'}`}
+                />
+              ))}
+            </div>
+          </div>
+
+          {/* Review your mistakes - inner block like Technique Theory progress row */}
+          {hasMistakes && (
+            <div 
+              className="py-2.5 px-3 rounded-lg"
+              style={{ backgroundColor: 'rgba(239, 68, 68, 0.06)', border: '1px solid rgba(239, 68, 68, 0.15)' }}
+            >
+              <p className="text-xs font-semibold text-gray-800 mb-0.5">
+                Review your mistakes
+              </p>
+              <p className="text-[11px] text-gray-600 leading-relaxed">
+                Get all {items.length} correct to mark this lesson done. Tap Retry to try again, or Finish to exit.
+              </p>
+            </div>
+          )}
+
+          {/* Stats row - same pill style as Technique Theory (Target/Zap row) */}
+          <div className="flex items-center gap-2 flex-wrap">
+            <div 
+              className="flex items-center gap-1.5 px-2 py-0.5 rounded-md"
+              style={{ backgroundColor: themeLight }}
+            >
+              <Zap className="w-3 h-3" style={{ color: themeColor }} />
+              <span className="text-xs font-medium text-gray-600">+{correctAnswers * 10 + bestStreak * 5} XP</span>
+            </div>
+            {bestStreak > 1 && (
+              <div 
+                className="flex items-center gap-1.5 px-2 py-0.5 rounded-md"
+                style={{ backgroundColor: 'rgba(250, 204, 21, 0.12)' }}
+              >
+                <Zap className="w-3 h-3 text-yellow-500" />
+                <span className="text-xs font-medium text-gray-600">{bestStreak} streak</span>
+              </div>
+            )}
+          </div>
+
+          {/* Buttons - same as Technique Theory back button / Done pill */}
+          <div className="flex items-center gap-3 pt-1">
+            {hasMistakes && (
+              <button
+                type="button"
+                onClick={handleRetry}
+                className="flex-1 flex items-center justify-center gap-2 rounded-lg text-sm font-semibold transition-all hover:scale-[1.01] active:scale-[0.99]"
+                style={{ 
+                  backgroundColor: themeBg, 
+                  borderBottom: `2px solid ${themeBorderLight}`,
+                  color: themeColor,
+                  fontFamily: font,
+                  minHeight: 52,
+                  paddingTop: 14,
+                  paddingBottom: 14
+                }}
+              >
+                <RotateCcw className="w-4 h-4" />
+                Retry
+              </button>
+            )}
+            <button
+              type="button"
+              onClick={() => {
+                if (isPassing && practiceChords?.length && onStartPractice) {
+                  onStartPractice(getActivityTitle(), practiceChords);
+                  onClose();
+                } else if (isPassing) {
+                  handleComplete(true);
+                } else {
+                  handleComplete();
+                }
+              }}
+              className="flex-1 flex items-center justify-center gap-2 rounded-lg text-sm font-bold transition-all hover:scale-[1.01] active:scale-[0.99]"
+              style={{ 
+                backgroundColor: isPassing 
+                  ? 'rgba(34, 197, 94, 0.15)' 
+                  : themeBg,
+                borderBottom: isPassing 
+                  ? '2px solid rgb(74, 222, 128)' 
+                  : `2px solid ${themeBorderLight}`,
+                color: isPassing ? 'rgb(22, 101, 52)' : themeColor,
+                fontFamily: font,
+                minHeight: 52,
+                paddingTop: 14,
+                paddingBottom: 14
+              }}
+            >
+              {isPassing ? (
+                <>
+                  <Trophy className="w-4 h-4 text-green-600 fill-green-600" />
+                  Done
+                </>
+              ) : (
+                'Finish'
+              )}
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  };
+
+  // ─── QUIZ SCREEN ───────────────────────────────────────────────────────
+  const renderQuiz = () => {
+    if (!hasItems) {
+      return (
+        <div className="flex-1 flex flex-col items-center justify-center py-8">
+          <p className="text-gray-500 text-center mb-6 text-sm leading-relaxed" style={{ fontFamily: font }}>No content for this lesson yet.</p>
+          <div 
+            onClick={handleComplete}
+            className="px-6 py-3 rounded-xl text-sm font-bold cursor-pointer text-center transition-transform hover:scale-[1.02] active:scale-[0.98]"
+            style={{ backgroundColor: themeBg, borderBottom: `2px solid ${themeBorderLight}`, color: themeColor, fontFamily: font }}
+          >
+            Complete
+          </div>
+        </div>
+      );
+    }
+
+    const isFillBlank = currentItem?.type === 'fill_blank';
+    const options = isFillBlank 
+      ? (currentItem as FillBlankItem).options 
+      : (currentItem as MultipleChoiceItem).options;
+    const correctAnswer = isFillBlank 
+      ? (currentItem as FillBlankItem).correctAnswer 
+      : (currentItem as MultipleChoiceItem).correctAnswer;
+    const labels = ['A', 'B', 'C', 'D', 'E', 'F'];
+    const blankRegex = /_{3,}/;
+    const sentenceParts = isFillBlank ? (currentItem as FillBlankItem).sentence.split(blankRegex) : [];
+
+    return (
+      <div className="flex-1 flex flex-col min-h-0 overflow-hidden pt-1 pb-4">
+        {/* Streak - TechniqueTheory pill style */}
+        {streak > 1 && (
+          <div className="flex justify-center mb-3">
+            <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-[10px] font-bold" style={{ backgroundColor: 'rgba(250, 204, 21, 0.15)', color: 'rgb(180, 120, 0)' }}>
+              <Zap className="w-3 h-3 fill-yellow-500 text-yellow-500" />
+              {streak} in a row!
+            </div>
+          </div>
+        )}
+
+        {/* Question card - TechniqueTheory card style */}
+        <div 
+          className={`backdrop-blur-sm rounded-xl px-4 py-4 mb-4 shadow-sm transition-all duration-300 ${
+            showCorrectAnimation ? 'ring-2 ring-emerald-400/60 ring-offset-1' : 
+            showWrongAnimation ? 'ring-2 ring-red-400/60 ring-offset-1' : ''
+          }`}
+          style={cardStyle}
+        >
+          <div className="flex items-center gap-2 mb-3">
+            <span 
+              className="px-2 py-0.5 rounded-md text-[10px] font-bold uppercase tracking-wider"
+              style={{ backgroundColor: themeLight, color: themeColor }}
+            >
+              {isFillBlank ? 'Fill in the blank' : 'Choose one'}
+            </span>
+            <span className="text-xs text-gray-500 font-medium ml-auto">
+              {currentItemIndex + 1} / {items.length}
+            </span>
+          </div>
+
+          <p className="text-sm font-semibold text-gray-800 leading-[1.65]" style={{ fontFamily: font }}>
+            {isFillBlank 
+              ? sentenceParts.map((part, i, arr) => (
+                  <span key={i}>
+                    {part}
+                    {i < arr.length - 1 && (
+                      <span 
+                        className="inline-block min-w-[55px] mx-0.5 px-1.5 py-[1px] rounded-md text-center font-bold text-[13px]"
+                        style={
+                          showResult 
+                            ? selectedAnswer === correctAnswer
+                              ? { backgroundColor: 'rgba(34, 197, 94, 0.2)', color: 'rgb(22, 163, 74)', borderBottom: '2px solid rgb(34, 197, 94)' }
+                              : { backgroundColor: 'rgba(239, 68, 68, 0.2)', color: 'rgb(220, 38, 38)', borderBottom: '2px solid rgb(239, 68, 68)', textDecoration: 'line-through' }
+                            : { backgroundColor: themeLight, color: themeColor, borderBottom: `2px solid ${themeColor}` }
+                        }
+                      >
+                        {showResult 
+                          ? (selectedAnswer === correctAnswer ? options[selectedAnswer!] : options[correctAnswer]) 
+                          : selectedAnswer !== null ? options[selectedAnswer] : '?'
+                        }
+                      </span>
+                    )}
+                  </span>
+                ))
+              : (currentItem as MultipleChoiceItem).question
+            }
+          </p>
+        </div>
+
+        {/* Options */}
+        <div ref={optionsRef} className="flex-1 overflow-y-auto min-h-0" style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+          {options?.map((option, idx) => {
+            const isSelected = selectedAnswer === idx;
+            const isCorrectOpt = idx === correctAnswer;
+            const showCorrect = showResult && isCorrectOpt;
+            const showWrong = showResult && isSelected && !isCorrectOpt;
+
+            return (
+              <div
+                key={idx}
+                onClick={() => !showResult && handleAnswer(idx)}
+                style={{ 
+                  display: 'flex', alignItems: 'center', gap: '12px',
+                  padding: '12px 14px', borderRadius: '12px', cursor: showResult ? 'default' : 'pointer',
+                  backgroundColor: showCorrect ? 'rgba(34, 197, 94, 0.1)' : 
+                               showWrong ? 'rgba(239, 68, 68, 0.1)' :
+                               isSelected && !showResult ? themeLight :
+                               'rgba(255, 255, 255, 0.58)',
+                  border: showCorrect ? '2.5px solid rgb(34, 197, 94)' : 
+                          showWrong ? '2.5px solid rgb(239, 68, 68)' : 
+                          isSelected && !showResult ? `2.5px solid ${themeBorderLight}` :
+                          '2.5px solid rgb(237, 237, 237)',
+                  transition: 'all 0.15s ease',
+                  transform: (!showResult && isSelected) ? 'scale(1.01)' : 'scale(1)',
+                  boxShadow: '0 1px 3px rgba(0,0,0,0.04)'
+                }}
+              >
+                {/* Letter badge */}
+                <div style={{
+                  flexShrink: 0, width: '28px', height: '28px', borderRadius: '8px',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  fontSize: '11px', fontWeight: 800,
+                  backgroundColor: showCorrect ? 'rgb(34, 197, 94)' : 
+                                   showWrong ? 'rgb(239, 68, 68)' : 
+                                   isSelected && !showResult ? themeBg :
+                                   'rgba(156, 163, 175, 0.12)',
+                  color: showCorrect || showWrong ? 'white' : (isSelected && !showResult ? themeColor : 'rgb(107, 114, 128)'),
+                  borderBottom: (showCorrect || showWrong || (isSelected && !showResult)) 
+                    ? `2px solid ${showCorrect ? 'rgb(5, 150, 105)' : showWrong ? 'rgb(185, 28, 28)' : themeBorderLight}` 
+                    : '2px solid rgba(156, 163, 175, 0.2)',
+                  transition: 'all 0.15s ease'
+                }}>
+                  {showCorrect ? <CheckCircle2 className="w-3.5 h-3.5" /> : 
+                   showWrong ? <XCircle className="w-3.5 h-3.5" /> : 
+                   labels[idx]}
+                </div>
+                <span className="text-sm font-medium text-gray-800" style={{
+                  color: showCorrect ? 'rgb(22, 163, 74)' : showWrong ? 'rgb(220, 38, 38)' : undefined,
+                  fontFamily: font,
+                  lineHeight: 1.4
+                }}>
+                  {option}
+                </span>
+              </div>
+            );
+          })}
+        </div>
+
+        {/* Bottom: explanation + continue - TechniqueTheory style */}
+        {showResult && (
+          <div className="flex-shrink-0 mt-4 flex flex-col gap-3">
+            {currentItem?.explanation && (
+              <div 
+                className="backdrop-blur-sm rounded-xl px-4 py-3 shadow-sm"
+                style={{ 
+                  backgroundColor: selectedAnswer === correctAnswer ? 'rgba(34, 197, 94, 0.08)' : 'rgba(239, 68, 68, 0.08)',
+                  border: `2.5px solid ${selectedAnswer === correctAnswer ? 'rgba(34, 197, 94, 0.25)' : 'rgba(239, 68, 68, 0.25)'}`
+                }}
+              >
+                <p className="text-xs text-gray-600 leading-relaxed" style={{ fontFamily: font }}>
+                  <span className="font-bold" style={{ color: selectedAnswer === correctAnswer ? 'rgb(22, 163, 74)' : 'rgb(220, 38, 38)' }}>
+                    {selectedAnswer === correctAnswer ? 'Correct! ' : 'Not quite. '}
+                  </span>
+                  {currentItem.explanation}
+                </p>
+              </div>
+            )}
+
+            <div 
+              onClick={handleNextItem}
+              className="flex items-center justify-center gap-2 w-full py-3 rounded-xl text-sm font-bold cursor-pointer transition-transform hover:scale-[1.01] active:scale-[0.99]"
+              style={{ backgroundColor: themeBg, borderBottom: `2px solid ${themeBorderLight}`, color: themeColor, fontFamily: font }}
+            >
+              {currentItemIndex < items.length - 1 ? 'Continue' : 'See Results'}
+              <ChevronRight className="w-4 h-4" />
+            </div>
+          </div>
+        )}
+      </div>
+    );
+  };
+
+  if (!user) return null;
+
+  const showHeader = phase !== 'intro';
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent 
-        className={`p-0 overflow-hidden [&>button:last-of-type]:hidden ${activityType === 'tuner' || activityType === 'metronome' ? 'max-w-sm' : 'max-w-md'}`}
+        className={`!w-[min(95vw,640px)] !max-w-[640px] p-0 overflow-hidden [&>button:last-of-type]:hidden flex flex-col bg-gradient-to-br ${gradientClass}`}
         style={{ 
-          background: 'linear-gradient(135deg, rgb(255, 251, 235) 0%, rgb(254, 243, 199) 100%)',
+          borderRadius: '16px',
           border: '2.5px solid rgb(237, 237, 237)',
-          borderRadius: '20px'
+          boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 25px 50px -12px rgba(0, 0, 0, 0.1)',
+          height: phase === 'intro' || phase === 'results' ? 'auto' : '85vh',
+          maxHeight: phase === 'intro' ? '88vh' : phase === 'results' ? '90vh' : '680px',
         }}
+        aria-describedby={undefined}
       >
-        {/* Custom Close Button */}
-        <button
-          onClick={onClose}
-          className="absolute top-3 right-3 w-8 h-8 flex items-center justify-center rounded-lg transition-all hover:opacity-90 active:scale-95 z-10 bg-white/70 backdrop-blur-sm"
-          style={{ border: '2px solid rgb(229, 231, 235)' }}
-        >
-          <X className="w-4 h-4 text-gray-600" />
-        </button>
+        <DialogTitle className="sr-only">{getActivityTitle()}</DialogTitle>
 
-        <div className="p-5">
-          {/* Header */}
-          <div className="flex items-center gap-3 mb-4">
-            <div 
-              className="w-10 h-10 rounded-lg flex items-center justify-center"
-              style={{ backgroundColor: colors.primaryLight }}
-            >
-              {getActivityIcon()}
-            </div>
-            <div>
-              <h2 className="text-lg font-semibold text-gray-900">
-                {activityType.charAt(0).toUpperCase() + activityType.slice(1)}
-              </h2>
-              <p className="text-sm text-gray-600">
-                {activityType === 'practice' && 'Technique Practice'}
-                {activityType === 'study' && 'Theory Study'}
-                {activityType === 'quiz' && 'Knowledge Test'}
-                {activityType === 'metronome' && 'Timing Tool'}
-                {activityType === 'tuner' && 'Tuning Tool'}
-                {activityType === 'history' && 'Past Sessions'}
-              </p>
+        {/* Inner wrapper: padding; when results, don't grow so dialog stays content-sized */}
+        <div className={`flex flex-col px-4 py-4 ${phase === 'results' ? '' : 'flex-1 min-h-0 overflow-hidden'}`}>
+        
+        {/* Header - only during quiz/results (TechniqueTheory card style, X on right) */}
+        {showHeader && (
+          <div 
+            className="flex-shrink-0 backdrop-blur-sm rounded-xl px-3 py-3 mb-3 shadow-sm"
+            style={cardStyle}
+          >
+            <div className="flex items-center gap-3">
+              <div 
+                className="flex-shrink-0 w-10 h-10 rounded-xl flex items-center justify-center"
+                style={{ backgroundColor: themeBg, borderBottom: `2px solid ${themeBorderLight}` }}
+              >
+                <span style={{ color: themeColor }}>{getActivityIcon()}</span>
+              </div>
+              <div className="flex-1 min-w-0">
+                <h2 className="text-sm font-bold text-gray-800 truncate" style={{ fontFamily: font }}>
+                  {getActivityTitle()}
+                </h2>
+                <div className="flex items-center gap-2 text-xs text-gray-500 mt-0.5">
+                  {phase === 'quiz' && <span>{currentItemIndex + 1} of {items.length}</span>}
+                  {streak > 0 && phase === 'quiz' && (
+                    <span className="flex items-center gap-1 text-yellow-600 font-semibold">
+                      <Zap className="w-3 h-3 fill-yellow-500 text-yellow-500" />
+                      {streak}
+                    </span>
+                  )}
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={onClose}
+                className="flex-shrink-0 w-8 h-8 rounded-lg flex items-center justify-center cursor-pointer transition-colors hover:bg-gray-100"
+                style={{ backgroundColor: 'rgba(0,0,0,0.04)' }}
+                aria-label="Close"
+              >
+                <X className="w-4 h-4 text-gray-500" />
+              </button>
             </div>
           </div>
+        )}
 
-          {/* Content */}
-          {renderContent()}
+        {/* Intro: close button on top-right, same padding as wrapper */}
+        {!showHeader && (
+          <div className="absolute top-4 right-4 z-10 flex justify-end">
+            <button
+              type="button"
+              onClick={onClose}
+              className="flex-shrink-0 w-8 h-8 rounded-lg flex items-center justify-center cursor-pointer transition-colors hover:bg-gray-100"
+              style={{ backgroundColor: 'rgba(255,255,255,0.58)', border: '2.5px solid rgb(237, 237, 237)' }}
+              aria-label="Close"
+            >
+              <X className="w-4 h-4 text-gray-500" />
+            </button>
+          </div>
+        )}
+
+        {phase === 'intro' && renderIntro()}
+        {phase === 'quiz' && renderQuiz()}
+        {phase === 'results' && renderResults()}
         </div>
       </DialogContent>
     </Dialog>
-  );
-}
-
-// History Content Component
-function HistoryContent({ userId, onClose, colors }: { userId: string; onClose: () => void; colors: any }) {
-  const [sessions, setSessions] = React.useState<any[]>([]);
-  const [loading, setLoading] = React.useState(true);
-
-  React.useEffect(() => {
-    const loadSessions = async () => {
-      try {
-        const data = await getSessions(userId, { limit: 10 });
-        setSessions(data);
-      } catch (error) {
-        console.error('Error loading sessions:', error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    if (userId) {
-      loadSessions();
-    }
-  }, [userId]);
-
-  const formatDate = (timestamp: string) => {
-    const date = new Date(timestamp);
-    const now = new Date();
-    const diffTime = Math.abs(now.getTime() - date.getTime());
-    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-
-    if (diffDays === 0) return 'Today';
-    if (diffDays === 1) return 'Yesterday';
-    if (diffDays < 7) return `${diffDays} days ago`;
-    return date.toLocaleDateString();
-  };
-
-  if (loading) {
-    return (
-      <div className="text-center py-8">
-        <div 
-          className="w-8 h-8 border-3 border-t-transparent rounded-full animate-spin mx-auto mb-3"
-          style={{ borderColor: `${colors.primary} transparent ${colors.primary} ${colors.primary}` }}
-        />
-        <p className="text-gray-600 text-sm">Loading history...</p>
-      </div>
-    );
-  }
-
-  return (
-    <div className="space-y-4">
-      {/* Info Card */}
-      <div 
-        className="p-4 bg-white/70 backdrop-blur-sm rounded-xl"
-        style={{ border: '2.5px solid rgb(237, 237, 237)' }}
-      >
-        <h3 className="text-lg font-semibold text-gray-900 mb-1">Practice History</h3>
-        <p className="text-sm text-gray-600">Your recent sessions</p>
-      </div>
-
-      {/* Sessions List */}
-      <div 
-        className="rounded-xl overflow-hidden bg-white/70 backdrop-blur-sm"
-        style={{ border: '2.5px solid rgb(237, 237, 237)' }}
-      >
-        <div className="max-h-56 overflow-y-auto p-3 space-y-2">
-          {sessions.length === 0 ? (
-            <div className="text-center py-6 text-gray-500">
-              <p className="font-medium text-sm">No practice sessions yet.</p>
-              <p className="text-xs mt-1">Start practicing to see your history here!</p>
-            </div>
-          ) : (
-            sessions.map((session, index) => (
-              <div 
-                key={session.id} 
-                className="p-3 rounded-lg flex justify-between items-center"
-                style={{ 
-                  backgroundColor: index % 2 === 0 ? 'rgb(249, 250, 251)' : 'white',
-                  border: '1px solid rgb(229, 231, 235)'
-                }}
-              >
-                <div>
-                  <div className="font-medium text-gray-800 text-sm">{session.activityName}</div>
-                  <div className="text-xs text-gray-500">{formatDate(session.timestamp)}</div>
-                </div>
-                <div className="text-right">
-                  <div className="font-bold text-sm" style={{ color: colors.primary }}>{Math.round(session.duration)} min</div>
-                  <div className="text-xs text-green-600 font-medium">
-                    {session.progress ? `+${Math.round(session.progress)}%` : ''}
-                  </div>
-                </div>
-              </div>
-            ))
-          )}
-        </div>
-      </div>
-
-      {/* Close Button */}
-      <div className="flex justify-center">
-        <button
-          onClick={onClose}
-          className="py-2.5 px-6 rounded-lg font-medium transition-all hover:opacity-90 active:scale-95"
-          style={{ 
-            backgroundColor: 'rgb(243, 244, 246)',
-            color: 'rgb(107, 114, 128)'
-          }}
-        >
-          Close
-        </button>
-      </div>
-    </div>
   );
 }

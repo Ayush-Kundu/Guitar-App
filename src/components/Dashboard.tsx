@@ -7,6 +7,7 @@ import { CircularProgress } from "./ui/circular-progress";
 import { useUser } from "../contexts/UserContext";
 import charactersHoldingHands from '../assets/20251022_2045_Colorful Cartoon Friends_remix_01k87jmr2yfzesxbt7pcwpqy24.png';
 import guitarContent from '../data/guitar-content.json';
+import { techniquePath, theoryPath } from '../data/learning-journey';
 import {
   loadProgress,
   getPracticeStreak,
@@ -225,69 +226,17 @@ export function Dashboard({ onSectionChange }: DashboardProps) {
 
   const streakStatus = getStreakStatus();
 
-  // Calculate overall progress for circular progress bars based on ALL available cards for the level
+  // Technique Theory progress: % of units completed (learning-journey paths)
   const calculateTechniqueProgress = () => {
-    if (!user) return 0;
-    
-    // Get all technique cards for the user's level from guitar content
-    const levelTechniques = (guitarContent.techniques as any)[user.level];
-    if (!levelTechniques) return 0;
-    
-    // Combine all technique cards from all subcategories (chords, strums, plucks, scales)
-    const allCards: { name: string }[] = [];
-    const subcategories = ['chords', 'strums', 'plucks', 'scales'];
-    subcategories.forEach(subcat => {
-      if (levelTechniques[subcat]) {
-        allCards.push(...levelTechniques[subcat]);
-      }
-    });
-    
-    if (allCards.length === 0) return 0;
-    
-    // For each card, get the stored progress (or 0 if not started)
-    let totalProgress = 0;
-    allCards.forEach(card => {
-      // Create a consistent ID for matching with stored progress
-      const cardId = card.name.toLowerCase().replace(/\s+/g, '_');
-      const storedProgress = progressData?.techniques?.[cardId];
-      totalProgress += storedProgress?.progress || 0;
-    });
-    
-    // Calculate percentage of total possible progress (all cards at 100%)
-    const maxPossible = allCards.length * 100;
-    return Math.round((totalProgress / maxPossible) * 100);
+    if (!user || !techniquePath.length) return 0;
+    const completed = (progressData?.completedUnits as string[] | undefined)?.length ?? 0;
+    return Math.round((completed / techniquePath.length) * 100);
   };
 
   const calculateTheoryProgress = () => {
-    if (!user) return 0;
-    
-    // Get all theory cards for the user's level from guitar content
-    const levelTheory = (guitarContent.theory as any)[user.level];
-    if (!levelTheory) return 0;
-    
-    // Combine all theory cards from all subcategories (basics, chords, scales, rhythm)
-    const allCards: { name: string }[] = [];
-    const subcategories = ['basics', 'chords', 'scales', 'rhythm'];
-    subcategories.forEach(subcat => {
-      if (levelTheory[subcat]) {
-        allCards.push(...levelTheory[subcat]);
-      }
-    });
-    
-    if (allCards.length === 0) return 0;
-    
-    // For each card, get the stored progress (or 0 if not started)
-    let totalProgress = 0;
-    allCards.forEach(card => {
-      // Create a consistent ID for matching with stored progress
-      const cardId = card.name.toLowerCase().replace(/\s+/g, '_');
-      const storedProgress = progressData?.theory?.[cardId];
-      totalProgress += storedProgress?.progress || 0;
-    });
-    
-    // Calculate percentage of total possible progress (all cards at 100%)
-    const maxPossible = allCards.length * 100;
-    return Math.round((totalProgress / maxPossible) * 100);
+    if (!user || !theoryPath.length) return 0;
+    const completed = (progressData?.completedTheoryUnits as string[] | undefined)?.length ?? 0;
+    return Math.round((completed / theoryPath.length) * 100);
   };
 
   return (

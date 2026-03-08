@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import guitarContent from '../data/guitar-content';
+import { techniquePath, theoryPath } from '../data/learning-journey';
 import { websocketService, WebSocketMessage } from '../utils/websocket';
 import { createLocalPost } from '../api/local-posts';
 import { createClient } from '@supabase/supabase-js';
@@ -1496,11 +1497,11 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
   const updateProfileInSupabase = async (userId: string, points: number, streak: number) => {
     try {
       const competeLevel = getCompeteLevel(points);
-
+      
       const updateData: any = {
-        points: points,
-        compete_level: competeLevel,
-        streak: streak
+          points: points,
+          compete_level: competeLevel,
+          streak: streak
       };
 
       // Also sync username if available
@@ -1680,7 +1681,7 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
 
       if (profile.password_hash !== passwordHash) {
         throw new Error('Incorrect email or password.');
-      }
+        }
 
         // Set user in local state
       const userData: User = {
@@ -1824,35 +1825,15 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
       });
       const songProgress = Math.min((completedSongs / totalSelectedSongs), 1) * 40;
       
-      // Technique: 25% - Based on technique cards completed
-      const completedTechniques = Object.values(progress.techniques || {}).filter(t => t.completed).length;
-      // Get total technique cards for current level
-      const levelTechniques = guitarContent.techniques?.[user.level as keyof typeof guitarContent.techniques];
-      let totalTechniqueCards = 0;
-      if (levelTechniques) {
-        Object.values(levelTechniques).forEach((categoryItems: any) => {
-          if (Array.isArray(categoryItems)) {
-            totalTechniqueCards += categoryItems.length;
-          }
-        });
-      }
-      totalTechniqueCards = totalTechniqueCards || 1; // Avoid division by zero
-      const techniqueProgress = Math.min((completedTechniques / totalTechniqueCards), 1) * 25;
+      // Technique: 25% - Based on technique path units completed (Technique Theory page)
+      const completedTechniqueUnits = (progress as any).completedUnits?.length ?? 0;
+      const totalTechniqueUnits = techniquePath?.length ?? 1;
+      const techniqueProgress = Math.min((completedTechniqueUnits / totalTechniqueUnits), 1) * 25;
       
-      // Theory: 25% - Based on theory cards completed
-      const completedTheory = Object.values(progress.theory || {}).filter(t => t.completed).length;
-      // Get total theory cards for current level
-      const levelTheory = guitarContent.theory?.[user.level as keyof typeof guitarContent.theory];
-      let totalTheoryCards = 0;
-      if (levelTheory) {
-        Object.values(levelTheory).forEach((categoryItems: any) => {
-          if (Array.isArray(categoryItems)) {
-            totalTheoryCards += categoryItems.length;
-          }
-        });
-      }
-      totalTheoryCards = totalTheoryCards || 1; // Avoid division by zero
-      const theoryProgress = Math.min((completedTheory / totalTheoryCards), 1) * 25;
+      // Theory: 25% - Based on theory path units completed (Technique Theory page)
+      const completedTheoryUnits = (progress as any).completedTheoryUnits?.length ?? 0;
+      const totalTheoryUnits = theoryPath?.length ?? 1;
+      const theoryProgress = Math.min((completedTheoryUnits / totalTheoryUnits), 1) * 25;
       
       // Points: 10% - 200 points per level increment
       const levelIndex = LEVEL_ORDER.indexOf(user.level);

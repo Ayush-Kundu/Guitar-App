@@ -267,18 +267,9 @@ export function PracticeSession({
 
   const getCategoryColor = () => {
     if (type === 'technique') {
-      const lowerCategory = item.category.toLowerCase();
-      if (lowerCategory.includes('chord') || lowerCategory.includes('foundation')) {
-        return 'from-red-400 to-red-600';
-      } else if (lowerCategory.includes('rhythm') || lowerCategory.includes('strum')) {
-        return 'from-orange-400 to-orange-600';
-      } else if (lowerCategory.includes('fingerpicking') || lowerCategory.includes('pluck') || lowerCategory.includes('picking')) {
-        return 'from-yellow-400 to-yellow-600';
-      } else {
-        return 'from-amber-400 to-amber-600';
-      }
+      return 'bg-orange-500';
     } else {
-      return 'from-blue-400 to-blue-600';
+      return 'bg-blue-500';
     }
   };
 
@@ -345,7 +336,7 @@ export function PracticeSession({
                 className="h-full transition-all duration-300"
                 style={{ 
                   width: `${Math.min(100, ((goalProgress.completed + Math.ceil(elapsedSeconds / 60)) / goalProgress.goal) * 100)}%`,
-                  backgroundColor: type === 'technique' ? 'rgb(239, 68, 68)' : 'rgb(59, 130, 246)'
+                  backgroundColor: type === 'technique' ? 'rgb(249, 115, 22)' : 'rgb(59, 130, 246)'
                 }}
               />
             </div>
