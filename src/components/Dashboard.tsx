@@ -322,10 +322,11 @@ export function Dashboard({ onSectionChange }: DashboardProps) {
                 </div>
                 <span className="text-xs font-bold" style={{ color: 'rgb(59, 130, 246)' }}>+1</span>
               </div>
-              {/* Technique Tasks Goal - check if at least 5 min of technique practiced today */}
+              {/* Technique Tasks Goal - one technique lesson completed OR 5 min today */}
               <div className="flex items-center justify-between py-1.5 px-2 rounded-lg" style={{ backgroundColor: 'rgba(168, 85, 247, 0.08)' }}>
                 <div className="flex items-center gap-2">
-                  {(progressData?.dailyProgress?.[new Date().toISOString().split('T')[0]]?.techniqueMinutes || 0) >= 5 ? (
+                  {(progressData?.dailyProgress?.[new Date().toISOString().split('T')[0]]?.techniqueMinutes || 0) >= 5 ||
+                   (progressData?.dailyProgress?.[new Date().toISOString().split('T')[0]]?.goalsCompleted || []).includes('technique_lesson_today') ? (
                     <CheckCircle2 className="w-3.5 h-3.5" style={{ color: 'rgb(34, 197, 94)' }} />
                   ) : (
                     <div className="w-3.5 h-3.5 border-2 rounded-full" style={{ borderColor: 'rgb(168, 85, 247)' }}></div>
@@ -334,10 +335,11 @@ export function Dashboard({ onSectionChange }: DashboardProps) {
                 </div>
                 <span className="text-xs font-bold" style={{ color: 'rgb(168, 85, 247)' }}>+1</span>
               </div>
-              {/* Theory Tasks Goal - check if at least 5 min of theory practiced today */}
+              {/* Theory Tasks Goal - one theory lesson completed OR 5 min today */}
               <div className="flex items-center justify-between py-1.5 px-2 rounded-lg" style={{ backgroundColor: 'rgba(236, 72, 153, 0.08)' }}>
                 <div className="flex items-center gap-2">
-                  {(progressData?.dailyProgress?.[new Date().toISOString().split('T')[0]]?.theoryMinutes || 0) >= 5 ? (
+                  {(progressData?.dailyProgress?.[new Date().toISOString().split('T')[0]]?.theoryMinutes || 0) >= 5 ||
+                   (progressData?.dailyProgress?.[new Date().toISOString().split('T')[0]]?.goalsCompleted || []).includes('theory_lesson_today') ? (
                     <CheckCircle2 className="w-3.5 h-3.5" style={{ color: 'rgb(34, 197, 94)' }} />
                   ) : (
                     <div className="w-3.5 h-3.5 border-2 rounded-full" style={{ borderColor: 'rgb(236, 72, 153)' }}></div>

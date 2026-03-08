@@ -1865,7 +1865,12 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
 
       if (contentType === 'songs' || contentType === 'techniques' || contentType === 'theory') {
         if (contentType === 'songs') {
-          user.musicPreferences.forEach(theme => {
+          // Use preferred genres from Settings (localStorage) when available so add-song popup reflects current genre selection
+          const preferredGenres = (typeof window !== 'undefined' && localStorage.getItem('guitarApp_preferredGenres'))
+            ? JSON.parse(localStorage.getItem('guitarApp_preferredGenres')!)
+            : user.musicPreferences;
+          const genresToUse = Array.isArray(preferredGenres) && preferredGenres.length > 0 ? preferredGenres : user.musicPreferences;
+          genresToUse.forEach((theme: string) => {
             const themeContent = levelContent[theme as keyof typeof levelContent];
             if (themeContent) {
               filteredContent = [...filteredContent, ...themeContent];

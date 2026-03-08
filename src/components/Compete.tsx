@@ -1245,7 +1245,7 @@ export function Compete() {
         {/* Blue Challenge Button */}
         <div 
           onClick={() => setChallengeOpen(true)}
-          className="text-white px-6 py-4 cursor-pointer transition-all duration-300 hover:scale-105 flex items-center gap-3 relative overflow-hidden"
+          className="text-white px-6 py-4 cursor-pointer transition-all duration-300 hover:scale-105 flex items-center justify-center gap-3 relative overflow-hidden"
           style={{ 
             minWidth: '120px', 
             borderRadius: '10px', 
@@ -1263,7 +1263,6 @@ export function Compete() {
               zIndex: 1
             }}
           />
-          <Trophy className="w-6 h-6 relative z-10" />
           <span className="font-semibold text-lg relative z-10">Challenge</span>
         </div>
       </div>
@@ -1410,16 +1409,10 @@ export function Compete() {
                             <span className={`text-xs px-2 py-0.5 rounded-full ${diffColors.bg} ${diffColors.text}`}>
                               {challenge.difficulty}
                             </span>
-                            <div className="flex items-center gap-1">
-                              <Coins className="w-4 h-4 text-yellow-500" />
-                              <span className="text-sm font-bold text-yellow-600">{challenge.points} pts</span>
-                            </div>
+                            <span className="text-sm font-bold text-yellow-600">{challenge.points} pts</span>
                           </div>
                         </div>
                         
-                        {!isCompleted && (
-                          <ChevronRight className="w-5 h-5 text-gray-400 flex-shrink-0" />
-                        )}
                         {isCompleted && (
                           <div className="px-3 py-1 bg-green-500 rounded-full">
                             <span className="text-xs font-bold text-white">DONE</span>
@@ -1450,10 +1443,7 @@ export function Compete() {
                     <span className={`text-xs px-2 py-0.5 rounded-full ${getDifficultyColor(selectedChallenge.difficulty).bg} ${getDifficultyColor(selectedChallenge.difficulty).text}`}>
                       {selectedChallenge.difficulty}
                     </span>
-                    <div className="flex items-center gap-1">
-                      <Coins className="w-4 h-4 text-yellow-500" />
-                      <span className="text-sm font-bold text-yellow-600">+{selectedChallenge.points}</span>
-                    </div>
+                    <span className="text-sm font-bold text-yellow-600">+{selectedChallenge.points} pts</span>
                   </div>
                 </div>
 
@@ -1464,10 +1454,7 @@ export function Compete() {
                 {/* Requirement info */}
                 {selectedChallenge.requirement && (
                   <div className="p-4 bg-blue-50 rounded-xl border border-blue-200 mb-3">
-                    <div className="flex items-center gap-2 text-blue-700">
-                      <Target className="w-5 h-5" />
-                      <span className="font-medium">Goal: {selectedChallenge.requirement.count} {selectedChallenge.requirement.type.replace(/_/g, ' ')}</span>
-                    </div>
+                    <span className="font-medium text-blue-700">Goal: {selectedChallenge.requirement.count} {selectedChallenge.requirement.type.replace(/_/g, ' ')}</span>
                   </div>
                 )}
 

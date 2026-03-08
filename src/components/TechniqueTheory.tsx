@@ -11,7 +11,7 @@ import {
   isUnitUnlocked,
   isUnitComplete
 } from '../data/learning-journey';
-import { loadProgress, saveProgress, addPoints } from '../utils/progressStorage';
+import { loadProgress, saveProgress, addPoints, addLearningJourneyMinutes, markLearningJourneyLessonCompleted } from '../utils/progressStorage';
 import { recordPoints } from '../utils/api';
 import { getPracticeChordsForLesson } from '../data/lesson-content';
 import { TechniqueTheoryPractice } from './TechniqueTheoryPractice';
@@ -388,6 +388,7 @@ export function TechniqueTheory({ onSectionChange, initialTab = 'technique' }: T
     const unit = path.find(u => u.id === unitId);
     const unitsBefore = getCompletedUnits(user.id, type);
     markLessonComplete(user.id, lessonId, unitId, type);
+    markLearningJourneyLessonCompleted(user.id, type);
     refreshProgress();
     const unitsAfter = getCompletedUnits(user.id, type);
     const unitJustCompleted = unitsAfter.size > unitsBefore.size;
@@ -684,8 +685,12 @@ export function TechniqueTheory({ onSectionChange, initialTab = 'technique' }: T
           setModalOpen(false);
           setSelectedLesson(null);
         }}
-        onComplete={async () => {
+        onComplete={async (opts) => {
           if (!selectedLesson || !selectedUnit || !user) return;
+          const minutesSpent = opts?.minutesSpent;
+          if (minutesSpent != null && minutesSpent > 0) {
+            addLearningJourneyMinutes(user.id, mainTab, minutesSpent);
+          }
           await completeLessonAndAwardPoints(selectedLesson.id, selectedUnit.id, mainTab, selectedUnit.title);
         }}
         practiceChords={selectedLesson ? (getPracticeChordsForLesson(selectedLesson.title) ?? undefined) : undefined}

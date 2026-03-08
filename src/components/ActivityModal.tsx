@@ -19,7 +19,6 @@ import { recordPoints } from '../utils/api';
 import { 
   getContentByTitle, 
   createFallbackContent, 
-  ensureMinQuizItems,
   LessonContent, 
   QuizItem,
   MultipleChoiceItem,
@@ -29,8 +28,8 @@ import {
 interface ActivityModalProps {
   isOpen: boolean;
   onClose: () => void;
-  /** Called when user gets 100% and clicks Continue – use to mark lesson complete */
-  onComplete?: () => void;
+  /** Called when user gets 100% and clicks Continue – use to mark lesson complete. Receives minutes spent in quiz for technique/theory tally. */
+  onComplete?: (opts?: { minutesSpent?: number }) => void;
   /** If set, after 100% Done we call this and close so parent can open chord practice (e.g. SongPractice) */
   practiceChords?: string[];
   onStartPractice?: (lessonName: string, chords: string[]) => void;
@@ -53,16 +52,17 @@ export function ActivityModal({ isOpen, onClose, onComplete, activityType, activ
   const [showCorrectAnimation, setShowCorrectAnimation] = useState(false);
   const [showWrongAnimation, setShowWrongAnimation] = useState(false);
   const optionsRef = useRef<HTMLDivElement>(null);
+  const quizStartTimeRef = useRef<number>(0);
 
   const getLessonContent = (): LessonContent => {
     const name = activityData?.name || activityData?.data?.name || '';
     const description = activityData?.description || activityData?.data?.description || '';
     let content: LessonContent | null = getContentByTitle(name);
     if (content?.items?.length) {
-      return ensureMinQuizItems(content);
+      return content;
     }
     if (content?.quiz?.length) {
-      const withItems: LessonContent = {
+      return {
         ...content,
         items: content.quiz.map(q => ({
           type: 'multiple_choice' as const,
@@ -72,7 +72,6 @@ export function ActivityModal({ isOpen, onClose, onComplete, activityType, activ
           explanation: undefined
         }))
       };
-      return ensureMinQuizItems(withItems);
     }
     return createFallbackContent(name, description || 'This topic covers essential guitar concepts.');
   };
@@ -109,7 +108,10 @@ export function ActivityModal({ isOpen, onClose, onComplete, activityType, activ
 
   const handleComplete = async (markLessonDone?: boolean) => {
     if (!user) return;
-    if (markLessonDone) onComplete?.();
+    const minutesSpent = quizStartTimeRef.current
+      ? Math.max(1, Math.ceil((Date.now() - quizStartTimeRef.current) / 60000))
+      : undefined;
+    if (markLessonDone) onComplete?.({ minutesSpent });
     try {
       // Technique Theory: points are awarded per unit (1) and per branch (5) in TechniqueTheory.tsx
       const isTechniqueTheoryFlow = (activityType === 'practice' || activityType === 'study') && markLessonDone;
@@ -165,7 +167,8 @@ export function ActivityModal({ isOpen, onClose, onComplete, activityType, activ
     }
   };
 
-  const handleRetry = () => {
+  const startQuiz = () => {
+    quizStartTimeRef.current = Date.now();
     setPhase('quiz');
     setCurrentItemIndex(0);
     setSelectedAnswer(null);
@@ -173,6 +176,10 @@ export function ActivityModal({ isOpen, onClose, onComplete, activityType, activ
     setCorrectAnswers(0);
     setStreak(0);
     setBestStreak(0);
+  };
+
+  const handleRetry = () => {
+    startQuiz();
   };
 
   const getActivityIcon = () => isTechnique 
@@ -266,7 +273,7 @@ export function ActivityModal({ isOpen, onClose, onComplete, activityType, activ
         {/* Start quiz button - TechniqueTheory button style */}
         <div className="flex-shrink-0 pt-2">
           <div
-            onClick={() => setPhase('quiz')}
+            onClick={startQuiz}
             className="flex items-center justify-center gap-2 w-full py-3 rounded-xl text-sm font-bold cursor-pointer transition-transform hover:scale-[1.01] active:scale-[0.99]"
             style={{ 
               backgroundColor: themeBg, 
@@ -331,40 +338,16 @@ export function ActivityModal({ isOpen, onClose, onComplete, activityType, activ
             </div>
           </div>
 
-          {/* Review your mistakes - inner block like Technique Theory progress row */}
-          {hasMistakes && (
-            <div 
-              className="py-2.5 px-3 rounded-lg"
-              style={{ backgroundColor: 'rgba(239, 68, 68, 0.06)', border: '1px solid rgba(239, 68, 68, 0.15)' }}
-            >
-              <p className="text-xs font-semibold text-gray-800 mb-0.5">
-                Review your mistakes
-              </p>
-              <p className="text-[11px] text-gray-600 leading-relaxed">
-                Get all {items.length} correct to mark this lesson done. Tap Retry to try again, or Finish to exit.
-              </p>
-            </div>
-          )}
-
-          {/* Stats row - same pill style as Technique Theory (Target/Zap row) */}
-          <div className="flex items-center gap-2 flex-wrap">
+          {/* Stats row - streak only (no XP shown on results) */}
+          {bestStreak > 1 && (
             <div 
               className="flex items-center gap-1.5 px-2 py-0.5 rounded-md"
-              style={{ backgroundColor: themeLight }}
+              style={{ backgroundColor: 'rgba(250, 204, 21, 0.12)' }}
             >
-              <Zap className="w-3 h-3" style={{ color: themeColor }} />
-              <span className="text-xs font-medium text-gray-600">+{correctAnswers * 10 + bestStreak * 5} XP</span>
+              <Zap className="w-3 h-3 text-yellow-500" />
+              <span className="text-xs font-medium text-gray-600">{bestStreak} streak</span>
             </div>
-            {bestStreak > 1 && (
-              <div 
-                className="flex items-center gap-1.5 px-2 py-0.5 rounded-md"
-                style={{ backgroundColor: 'rgba(250, 204, 21, 0.12)' }}
-              >
-                <Zap className="w-3 h-3 text-yellow-500" />
-                <span className="text-xs font-medium text-gray-600">{bestStreak} streak</span>
-              </div>
-            )}
-          </div>
+          )}
 
           {/* Buttons - same as Technique Theory back button / Done pill */}
           <div className="flex items-center gap-3 pt-1">

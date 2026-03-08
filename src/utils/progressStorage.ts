@@ -1520,6 +1520,125 @@ export const addPoints = (userId: string, points: number): number => {
   return progress.totalPoints;
 };
 
+/** Add minutes spent on technique/theory learning journey quizzes. Updates daily + weekly tallies and awards today's goal point once when threshold (5 min) is reached. */
+export const addLearningJourneyMinutes = (userId: string, type: 'technique' | 'theory', minutes: number): void => {
+  if (minutes <= 0) return;
+  const progress = loadProgress(userId);
+  const today = getToday();
+  const weekStart = getWeekStart();
+
+  if (!progress.dailyProgress[today]) {
+    progress.dailyProgress[today] = {
+      date: today,
+      totalMinutes: 0,
+      songsMinutes: 0,
+      techniqueMinutes: 0,
+      theoryMinutes: 0,
+      chordsMinutes: 0,
+      strumsMinutes: 0,
+      plucksMinutes: 0,
+      scalesMinutes: 0,
+      basicsMinutes: 0,
+      rhythmMinutes: 0,
+      goalsCompleted: [],
+    };
+  }
+
+  const dp = progress.dailyProgress[today];
+  if (type === 'technique') {
+    dp.techniqueMinutes = (dp.techniqueMinutes || 0) + minutes;
+  } else {
+    dp.theoryMinutes = (dp.theoryMinutes || 0) + minutes;
+  }
+  dp.totalMinutes = (dp.totalMinutes || 0) + minutes;
+
+  if (!progress.weeklyGoals[weekStart]) {
+    progress.weeklyGoals[weekStart] = {
+      weekStart,
+      songGoalMinutes: 140,
+      songCompletedMinutes: 0,
+      techniqueGoalMinutes: 20,
+      techniqueCompletedMinutes: 0,
+      theoryGoalMinutes: 20,
+      theoryCompletedMinutes: 0,
+      basicsGoalMinutes: THEORY_GOALS.basics,
+      basicsCompletedMinutes: 0,
+      chordsGoalMinutes: THEORY_GOALS.chords,
+      chordsCompletedMinutes: 0,
+      scalesGoalMinutes: THEORY_GOALS.scales,
+      scalesCompletedMinutes: 0,
+      rhythmGoalMinutes: THEORY_GOALS.rhythm,
+      rhythmCompletedMinutes: 0,
+    };
+  }
+  const wg = progress.weeklyGoals[weekStart];
+  if (type === 'technique') {
+    wg.techniqueCompletedMinutes = (wg.techniqueCompletedMinutes || 0) + minutes;
+  } else {
+    wg.theoryCompletedMinutes = (wg.theoryCompletedMinutes || 0) + minutes;
+  }
+
+  progress.totalPracticeMinutes = (progress.totalPracticeMinutes || 0) + minutes;
+
+  const techniqueGoalKey = 'technique_goal_5';
+  const theoryGoalKey = 'theory_goal_5';
+  if (type === 'technique' && (dp.techniqueMinutes || 0) >= 5 && !(dp.goalsCompleted || []).includes(techniqueGoalKey)) {
+    dp.goalsCompleted = dp.goalsCompleted || [];
+    dp.goalsCompleted.push(techniqueGoalKey);
+    progress.totalPoints = (progress.totalPoints || 0) + POINTS.MINUTE_GOAL_TECHNIQUE;
+    console.log(`[Points] +${POINTS.MINUTE_GOAL_TECHNIQUE} pt for today's technique goal (5 min)`);
+  }
+  if (type === 'theory' && (dp.theoryMinutes || 0) >= 5 && !(dp.goalsCompleted || []).includes(theoryGoalKey)) {
+    dp.goalsCompleted = dp.goalsCompleted || [];
+    dp.goalsCompleted.push(theoryGoalKey);
+    progress.totalPoints = (progress.totalPoints || 0) + POINTS.MINUTE_GOAL_THEORY;
+    console.log(`[Points] +${POINTS.MINUTE_GOAL_THEORY} pt for today's theory goal (5 min)`);
+  }
+
+  updateStreak(progress);
+  saveProgress(progress);
+  syncToSupabase(userId, progress.totalPoints, progress.streak);
+};
+
+/** Mark that the user completed one technique or theory lesson today and award today's goal point if not already awarded. Call when one quiz/category is completed. */
+export const markLearningJourneyLessonCompleted = (userId: string, type: 'technique' | 'theory'): void => {
+  const progress = loadProgress(userId);
+  const today = getToday();
+  if (!progress.dailyProgress[today]) {
+    progress.dailyProgress[today] = {
+      date: today,
+      totalMinutes: 0,
+      songsMinutes: 0,
+      techniqueMinutes: 0,
+      theoryMinutes: 0,
+      chordsMinutes: 0,
+      strumsMinutes: 0,
+      plucksMinutes: 0,
+      scalesMinutes: 0,
+      basicsMinutes: 0,
+      rhythmMinutes: 0,
+      goalsCompleted: [],
+    };
+  }
+  const dp = progress.dailyProgress[today];
+  const techniqueLessonKey = 'technique_lesson_today';
+  const theoryLessonKey = 'theory_lesson_today';
+  if (type === 'technique' && !(dp.goalsCompleted || []).includes(techniqueLessonKey)) {
+    dp.goalsCompleted = dp.goalsCompleted || [];
+    dp.goalsCompleted.push(techniqueLessonKey);
+    progress.totalPoints = (progress.totalPoints || 0) + POINTS.MINUTE_GOAL_TECHNIQUE;
+    console.log(`[Points] +${POINTS.MINUTE_GOAL_TECHNIQUE} pt for today's technique goal (1 lesson completed)`);
+  }
+  if (type === 'theory' && !(dp.goalsCompleted || []).includes(theoryLessonKey)) {
+    dp.goalsCompleted = dp.goalsCompleted || [];
+    dp.goalsCompleted.push(theoryLessonKey);
+    progress.totalPoints = (progress.totalPoints || 0) + POINTS.MINUTE_GOAL_THEORY;
+    console.log(`[Points] +${POINTS.MINUTE_GOAL_THEORY} pt for today's theory goal (1 lesson completed)`);
+  }
+  saveProgress(progress);
+  syncToSupabase(userId, progress.totalPoints, progress.streak);
+};
+
 // Calculate comprehensive points breakdown
 export interface PointsBreakdown {
   dailyGoals: number;           // 1 pt each daily goal

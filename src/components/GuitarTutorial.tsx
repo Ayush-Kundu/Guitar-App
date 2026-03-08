@@ -975,11 +975,13 @@ export function GuitarTutorial({ isOpen, onClose, onComplete, userId, userLevel 
 
             <button
               onClick={allComplete ? handleFinish : goToNext}
-              className="h-10 px-12 rounded-xl text-sm font-medium text-white transition-all hover:scale-105 flex items-center gap-2"
+              className="h-10 min-w-[100px] px-8 py-2 rounded-xl text-sm font-medium text-white transition-all hover:scale-105 flex items-center justify-center gap-2"
               style={{
                 backgroundColor: allComplete ? '#22C55E' : '#3B82F6',
                 border: `2px solid ${allComplete ? '#16A34A' : '#2563EB'}`,
-                borderBottomWidth: 3
+                borderBottomWidth: 3,
+                paddingLeft: '28px',
+                paddingRight: '28px'
               }}
             >
               <CheckCircle2 className="w-4 h-4" />
