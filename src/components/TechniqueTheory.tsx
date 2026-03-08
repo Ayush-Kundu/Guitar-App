@@ -544,7 +544,10 @@ export function TechniqueTheory({ onSectionChange, initialTab = 'technique' }: T
         </div>
 
         {/* Header */}
-        <div className="text-center mb-1">
+        <div 
+          className="text-center"
+          style={{ marginBottom: mainTab === 'technique' ? '-24px' : '0.25rem' }}
+        >
           <h1 
             className="text-2xl font-bold"
             style={{
@@ -574,8 +577,8 @@ export function TechniqueTheory({ onSectionChange, initialTab = 'technique' }: T
             alt={mainTab === 'technique' ? 'Piano Character' : 'Pensive Guitar Character'}
             className="object-contain w-full drop-shadow-lg"
             style={{ 
-              maxHeight: '300px',
-              maxWidth: '280px'
+              maxHeight: mainTab === 'technique' ? '300px' : '460px',
+              maxWidth: mainTab === 'technique' ? '280px' : '400px'
             }}
           />
         </div>
