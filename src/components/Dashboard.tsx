@@ -7,7 +7,7 @@ import { CircularProgress } from "./ui/circular-progress";
 import { useUser } from "../contexts/UserContext";
 import charactersHoldingHands from '../assets/20251022_2045_Colorful Cartoon Friends_remix_01k87jmr2yfzesxbt7pcwpqy24.png';
 import guitarContent from '../data/guitar-content.json';
-import { techniquePath, theoryPath } from '../data/learning-journey';
+import { getTechniquePath, getTheoryPath } from '../data/learning-journey';
 import {
   loadProgress,
   getPracticeStreak,
@@ -226,17 +226,27 @@ export function Dashboard({ onSectionChange }: DashboardProps) {
 
   const streakStatus = getStreakStatus();
 
-  // Technique Theory progress: % of units completed (learning-journey paths)
+  // Technique Theory progress: % of units completed for current level's path
   const calculateTechniqueProgress = () => {
-    if (!user || !techniquePath.length) return 0;
-    const completed = (progressData?.completedUnits as string[] | undefined)?.length ?? 0;
-    return Math.round((completed / techniquePath.length) * 100);
+    if (!user) return 0;
+    const level = user.level || 'novice';
+    const path = getTechniquePath(level);
+    if (!path.length) return 0;
+    const completedUnits = (progressData?.completedUnits as string[] | undefined) ?? [];
+    const pathUnitIds = new Set(path.map(u => u.id));
+    const completedInPath = completedUnits.filter(id => pathUnitIds.has(id)).length;
+    return Math.round((completedInPath / path.length) * 100);
   };
 
   const calculateTheoryProgress = () => {
-    if (!user || !theoryPath.length) return 0;
-    const completed = (progressData?.completedTheoryUnits as string[] | undefined)?.length ?? 0;
-    return Math.round((completed / theoryPath.length) * 100);
+    if (!user) return 0;
+    const level = user.level || 'novice';
+    const path = getTheoryPath(level);
+    if (!path.length) return 0;
+    const completedUnits = (progressData?.completedTheoryUnits as string[] | undefined) ?? [];
+    const pathUnitIds = new Set(path.map(u => u.id));
+    const completedInPath = completedUnits.filter(id => pathUnitIds.has(id)).length;
+    return Math.round((completedInPath / path.length) * 100);
   };
 
   return (

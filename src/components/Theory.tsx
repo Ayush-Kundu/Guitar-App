@@ -4,12 +4,13 @@ import { Card, CardContent } from './ui/card';
 import { Button } from './ui/button';
 import { ActivityModal } from './ActivityModal';
 import { 
-  theoryPath, 
+  getTheoryPath,
   Unit, 
   Lesson,
   getUnitProgress,
   isUnitUnlocked,
-  isUnitComplete
+  isUnitComplete,
+  type GuitarLevel
 } from '../data/learning-journey';
 import { loadProgress, saveProgress } from '../utils/progressStorage';
 import { 
@@ -44,7 +45,7 @@ function getCompletedTheoryUnits(userId: string): Set<string> {
   return new Set(progress?.completedTheoryUnits || []);
 }
 
-function markTheoryLessonComplete(userId: string, lessonId: string, unitId: string) {
+function markTheoryLessonComplete(userId: string, lessonId: string, unitId: string, level: GuitarLevel) {
   const progress = loadProgress(userId);
   const existingLessons = (progress as any).completedTheoryLessons || [];
   const existingUnits = (progress as any).completedTheoryUnits || [];
@@ -54,8 +55,8 @@ function markTheoryLessonComplete(userId: string, lessonId: string, unitId: stri
   
   completedLessons.add(lessonId);
   
-  // Check if unit is now complete
-  const unit = theoryPath.find(u => u.id === unitId);
+  const path = getTheoryPath(level);
+  const unit = path.find(u => u.id === unitId);
   if (unit && unit.lessons.every(l => completedLessons.has(l.id))) {
     completedUnits.add(unitId);
   }
@@ -324,29 +325,30 @@ export function Theory({ onSectionChange }: TheoryProps) {
 
   if (!user) return null;
 
-  // Calculate overall progress
-  const totalLessons = theoryPath.reduce((sum, unit) => sum + unit.lessons.length, 0);
-  const completedCount = completedLessons.size;
-  const overallProgress = Math.round((completedCount / totalLessons) * 100);
+  const level = (user.level || 'novice') as GuitarLevel;
+  const theoryPathCurrent = getTheoryPath(level);
 
-  // Helper to get theory-specific unit progress
+  // Progress within current level's path only
+  const totalLessons = theoryPathCurrent.reduce((sum, unit) => sum + unit.lessons.length, 0);
+  const completedInPath = theoryPathCurrent.flatMap(u => u.lessons).filter(l => completedLessons.has(l.id)).length;
+  const overallProgress = totalLessons ? Math.round((completedInPath / totalLessons) * 100) : 0;
+  const completedUnitsInPath = theoryPathCurrent.filter(u => u.lessons.every(l => completedLessons.has(l.id))).length;
+
   const getTheoryUnitProgress = (unitId: string): number => {
-    const unit = theoryPath.find(u => u.id === unitId);
+    const unit = theoryPathCurrent.find(u => u.id === unitId);
     if (!unit) return 0;
     const completed = unit.lessons.filter(l => completedLessons.has(l.id)).length;
     return Math.round((completed / unit.lessons.length) * 100);
   };
 
-  // Helper to check if theory unit is unlocked
   const isTheoryUnitUnlocked = (unitId: string): boolean => {
-    const unit = theoryPath.find(u => u.id === unitId);
+    const unit = theoryPathCurrent.find(u => u.id === unitId);
     if (!unit) return false;
     return unit.prerequisiteUnits.every(prereq => completedUnits.has(prereq));
   };
 
-  // Helper to check if theory unit is complete
   const isTheoryUnitComplete = (unitId: string): boolean => {
-    const unit = theoryPath.find(u => u.id === unitId);
+    const unit = theoryPathCurrent.find(u => u.id === unitId);
     if (!unit) return false;
     return unit.lessons.every(l => completedLessons.has(l.id));
   };
@@ -376,7 +378,7 @@ export function Theory({ onSectionChange }: TheoryProps) {
                 Your Progress
               </span>
               <span className="text-sm font-bold text-blue-600">
-                {completedCount} / {totalLessons} lessons
+                {completedInPath} / {totalLessons} lessons
               </span>
             </div>
             <div className="h-3 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
@@ -386,7 +388,7 @@ export function Theory({ onSectionChange }: TheoryProps) {
               />
             </div>
             <div className="mt-2 text-xs text-gray-500 dark:text-gray-400">
-              {completedUnits.size} of {theoryPath.length} units completed
+              {completedUnitsInPath} of {theoryPathCurrent.length} units completed
             </div>
           </div>
         </div>
@@ -401,7 +403,7 @@ export function Theory({ onSectionChange }: TheoryProps) {
           />
         ) : (
           <div className="space-y-4">
-            {theoryPath.map((unit, index) => {
+            {theoryPathCurrent.map((unit, index) => {
               const isUnlocked = isTheoryUnitUnlocked(unit.id) || index === 0;
               const isComplete = isTheoryUnitComplete(unit.id);
               const progress = getTheoryUnitProgress(unit.id);
@@ -428,7 +430,7 @@ export function Theory({ onSectionChange }: TheoryProps) {
         onClose={() => {
           // Mark lesson complete when modal closes
           if (selectedLesson && selectedUnit && user) {
-            markTheoryLessonComplete(user.id, selectedLesson.id, selectedUnit.id);
+            markTheoryLessonComplete(user.id, selectedLesson.id, selectedUnit.id, (user.level || 'novice') as GuitarLevel);
             refreshProgress();
           }
           setModalOpen(false);

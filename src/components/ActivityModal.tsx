@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { useUser } from '../contexts/UserContext';
 import { Dialog, DialogContent, DialogTitle } from './ui/dialog';
 import { 
@@ -17,8 +17,9 @@ import {
 } from 'lucide-react';
 import { recordPoints } from '../utils/api';
 import { 
-  getContentByTitle, 
-  createFallbackContent, 
+  getContentByTitle,
+  createFallbackContent,
+  shuffleQuizItemOptions,
   LessonContent, 
   QuizItem,
   MultipleChoiceItem,
@@ -76,8 +77,11 @@ export function ActivityModal({ isOpen, onClose, onComplete, activityType, activ
     return createFallbackContent(name, description || 'This topic covers essential guitar concepts.');
   };
 
-  const lessonContent = getLessonContent();
-  const items = lessonContent.items || [];
+  const items = useMemo(() => {
+    if (!isOpen && !activityData) return [];
+    const content = getLessonContent();
+    return (content.items || []).map(shuffleQuizItemOptions);
+  }, [isOpen, activityData?.name, activityData?.description]);
   const hasItems = items.length > 0;
   const currentItem = items[currentItemIndex] as QuizItem | undefined;
 
@@ -472,7 +476,7 @@ export function ActivityModal({ isOpen, onClose, onComplete, activityType, activ
             </span>
           </div>
 
-          <p className="text-sm font-semibold text-gray-800 leading-[1.65]" style={{ fontFamily: font }}>
+          <p className="text-sm font-semibold text-gray-800 leading-[1.65] break-words" style={{ fontFamily: font }}>
             {isFillBlank 
               ? sentenceParts.map((part, i, arr) => (
                   <span key={i}>
@@ -548,7 +552,7 @@ export function ActivityModal({ isOpen, onClose, onComplete, activityType, activ
                    showWrong ? <XCircle className="w-3.5 h-3.5" /> : 
                    labels[idx]}
                 </div>
-                <span className="text-sm font-medium text-gray-800" style={{
+                <span className="text-sm font-medium text-gray-800 break-words" style={{
                   color: showCorrect ? 'rgb(22, 163, 74)' : showWrong ? 'rgb(220, 38, 38)' : undefined,
                   fontFamily: font,
                   lineHeight: 1.4
@@ -571,7 +575,7 @@ export function ActivityModal({ isOpen, onClose, onComplete, activityType, activ
                   border: `2.5px solid ${selectedAnswer === correctAnswer ? 'rgba(34, 197, 94, 0.25)' : 'rgba(239, 68, 68, 0.25)'}`
                 }}
               >
-                <p className="text-xs text-gray-600 leading-relaxed" style={{ fontFamily: font }}>
+                <p className="text-xs text-gray-600 leading-relaxed break-words" style={{ fontFamily: font }}>
                   <span className="font-bold" style={{ color: selectedAnswer === correctAnswer ? 'rgb(22, 163, 74)' : 'rgb(220, 38, 38)' }}>
                     {selectedAnswer === correctAnswer ? 'Correct! ' : 'Not quite. '}
                   </span>
@@ -601,8 +605,8 @@ export function ActivityModal({ isOpen, onClose, onComplete, activityType, activ
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent 
-        className={`w-[calc(100%-1rem)] max-w-[640px] p-0 overflow-hidden [&>button:last-of-type]:hidden flex flex-col bg-gradient-to-br ${gradientClass}`}
-        style={{ 
+        className={`p-0 overflow-hidden [&>button:last-of-type]:hidden flex flex-col bg-gradient-to-br ${gradientClass}`}
+        style={{ width: 'calc(100% - 1rem)', maxWidth: '640px',
           borderRadius: '16px',
           border: '2.5px solid rgb(237, 237, 237)',
           boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 25px 50px -12px rgba(0, 0, 0, 0.1)',

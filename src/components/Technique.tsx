@@ -4,12 +4,13 @@ import { Card, CardContent } from './ui/card';
 import { Button } from './ui/button';
 import { ActivityModal } from './ActivityModal';
 import { 
-  techniquePath, 
+  getTechniquePath,
   Unit, 
   Lesson,
   getUnitProgress,
   isUnitUnlocked,
-  isUnitComplete
+  isUnitComplete,
+  type GuitarLevel
 } from '../data/learning-journey';
 import { loadProgress, saveProgress } from '../utils/progressStorage';
 import { 
@@ -42,7 +43,7 @@ function getCompletedUnits(userId: string): Set<string> {
   return new Set(progress?.completedUnits || []);
 }
 
-function markLessonComplete(userId: string, lessonId: string, unitId: string) {
+function markLessonComplete(userId: string, lessonId: string, unitId: string, level: GuitarLevel) {
   const progress = loadProgress(userId);
   const existingLessons = (progress as any).completedLessons || [];
   const existingUnits = (progress as any).completedUnits || [];
@@ -52,13 +53,12 @@ function markLessonComplete(userId: string, lessonId: string, unitId: string) {
   
   completedLessons.add(lessonId);
   
-  // Check if unit is now complete
-  const unit = techniquePath.find(u => u.id === unitId);
+  const path = getTechniquePath(level);
+  const unit = path.find(u => u.id === unitId);
   if (unit && unit.lessons.every(l => completedLessons.has(l.id))) {
     completedUnits.add(unitId);
   }
   
-  // Update progress and save
   (progress as any).completedLessons = Array.from(completedLessons);
   (progress as any).completedUnits = Array.from(completedUnits);
   saveProgress(progress);
@@ -322,10 +322,12 @@ export function Technique({ onSectionChange }: TechniqueProps) {
 
   if (!user) return null;
 
-  // Calculate overall progress
-  const totalLessons = techniquePath.reduce((sum, unit) => sum + unit.lessons.length, 0);
-  const completedCount = completedLessons.size;
-  const overallProgress = Math.round((completedCount / totalLessons) * 100);
+  const level = (user.level || 'novice') as GuitarLevel;
+  const techniquePathCurrent = getTechniquePath(level);
+  const totalLessons = techniquePathCurrent.reduce((sum, unit) => sum + unit.lessons.length, 0);
+  const completedInPath = techniquePathCurrent.flatMap(u => u.lessons).filter(l => completedLessons.has(l.id)).length;
+  const overallProgress = totalLessons ? Math.round((completedInPath / totalLessons) * 100) : 0;
+  const completedUnitsInPath = techniquePathCurrent.filter(u => u.lessons.every(l => completedLessons.has(l.id))).length;
 
   const handleLessonSelect = (lesson: Lesson) => {
     setSelectedLesson(lesson);
@@ -352,7 +354,7 @@ export function Technique({ onSectionChange }: TechniqueProps) {
                 Your Progress
               </span>
               <span className="text-sm font-bold text-orange-600">
-                {completedCount} / {totalLessons} lessons
+                {completedInPath} / {totalLessons} lessons
               </span>
             </div>
             <div className="h-3 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
@@ -362,7 +364,7 @@ export function Technique({ onSectionChange }: TechniqueProps) {
               />
             </div>
             <div className="mt-2 text-xs text-gray-500 dark:text-gray-400">
-              {completedUnits.size} of {techniquePath.length} units completed
+              {completedUnitsInPath} of {techniquePathCurrent.length} units completed
             </div>
           </div>
         </div>
@@ -377,7 +379,7 @@ export function Technique({ onSectionChange }: TechniqueProps) {
           />
         ) : (
           <div className="space-y-4">
-            {techniquePath.map((unit, index) => {
+            {techniquePathCurrent.map((unit, index) => {
               const isUnlocked = isUnitUnlocked(unit.id, completedUnits) || index === 0;
               const isComplete = isUnitComplete(unit.id, completedLessons);
               const progress = getUnitProgress(unit.id, completedLessons);
@@ -404,7 +406,7 @@ export function Technique({ onSectionChange }: TechniqueProps) {
         onClose={() => {
           // Mark lesson complete when modal closes (after practicing)
           if (selectedLesson && selectedUnit && user) {
-            markLessonComplete(user.id, selectedLesson.id, selectedUnit.id);
+            markLessonComplete(user.id, selectedLesson.id, selectedUnit.id, level);
             refreshProgress();
           }
           setModalOpen(false);

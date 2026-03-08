@@ -1,11 +1,11 @@
 /**
  * Chord practice popup for the Technique Theory page.
  * Uses the chord recognizer; shows fretboard (like SongPractice / practice basics).
- * Single chord = one chord diagram. Sequence = timeline with vertical bar.
+ * Single chord = one chord diagram. Multiple chords = step-by-step (one chord at a time, no order).
  */
 import React, { useState, useEffect, useRef } from 'react';
 import { Dialog, DialogContent, DialogTitle } from './ui/dialog';
-import { X, Hand, BookOpen, CheckCircle2, Play, Pause } from 'lucide-react';
+import { X, Hand, BookOpen, CheckCircle2 } from 'lucide-react';
 import { ChordDetectionService, ChordDetectionResult } from '../utils/chordDetection';
 
 const font = '"Nunito", "Segoe UI", system-ui, sans-serif';
@@ -73,9 +73,6 @@ const cardStyle = {
   border: '2.5px solid rgb(237, 237, 237)' as const,
 };
 
-const CHORD_DURATION = 2;
-const PIXELS_PER_SECOND = 80;
-const BAR_POSITION_RATIO = 0.22;
 const FRETBOARD_MIN_HEIGHT = 200;
 
 /** Same getStringY as SongPractice: string 6 (low E) at top, string 1 (high e) at bottom. */
@@ -194,29 +191,25 @@ export function TechniqueTheoryPractice({
   onComplete,
   userLevel,
 }: TechniqueTheoryPracticeProps) {
+  const safeChords = Array.isArray(chords) && chords.length > 0 ? chords : ['Em'];
   const [connected, setConnected] = useState(false);
   const [connectionStatus, setConnectionStatus] = useState<'connecting' | 'connected' | 'error'>('connecting');
   const [connectionMessage, setConnectionMessage] = useState('');
   const [hasPlayedCorrect, setHasPlayedCorrect] = useState(false);
   const [detectedChord, setDetectedChord] = useState<string | null>(null);
   const [confidence, setConfidence] = useState(0);
-  const [isPlaying, setIsPlaying] = useState(false);
-  const [currentTime, setCurrentTime] = useState(0);
+  const [currentStepIndex, setCurrentStepIndex] = useState(0);
+  const [completedSteps, setCompletedSteps] = useState<boolean[]>(() => safeChords.map(() => false));
   const chordRef = useRef<ChordDetectionService | null>(null);
   const hasPlayedCorrectRef = useRef(false);
-  const animationRef = useRef<number>();
-  const startTimeRef = useRef<number | null>(null);
 
   const colors = theme[type];
-  const isSequence = chords.length > 1;
-  const chordEvents = chords.map((c, i) => ({ chord: c, time: i * CHORD_DURATION }));
-  const totalDuration = chords.length * CHORD_DURATION;
-  const currentChordIndex = Math.min(
-    Math.floor(currentTime / CHORD_DURATION),
-    chords.length - 1
-  );
-  const currentChord = chords[currentChordIndex];
-  const currentFingering = getChordFingering(currentChord);
+  const isStepMode = safeChords.length > 1;
+  const currentChord = isStepMode ? safeChords[currentStepIndex] : safeChords[0];
+  const currentFingering = getChordFingering(currentChord || 'Em');
+  const allStepsComplete = isStepMode && currentStepIndex >= safeChords.length;
+  const singleChordDone = !isStepMode && hasPlayedCorrect;
+  const canComplete = singleChordDone || allStepsComplete;
 
   useEffect(() => {
     if (!isOpen) return;
@@ -228,6 +221,8 @@ export function TechniqueTheoryPractice({
     hasPlayedCorrectRef.current = false;
     setDetectedChord(null);
     setConfidence(0);
+    setCurrentStepIndex(0);
+    setCompletedSteps(safeChords.map(() => false));
 
     const service = new ChordDetectionService();
     chordRef.current = service;
@@ -298,45 +293,33 @@ export function TechniqueTheoryPractice({
         chordRef.current.disconnect();
         chordRef.current = null;
       }
-      if (animationRef.current) cancelAnimationFrame(animationRef.current);
       setConnected(false);
       setDetectedChord(null);
       setConfidence(0);
     };
-  }, [isOpen, userLevel]);
-
-  useEffect(() => {
-    if (!isSequence || !isPlaying) return;
-    startTimeRef.current = Date.now();
-    const animate = () => {
-      const elapsed = (Date.now() - (startTimeRef.current ?? 0)) / 1000;
-      if (elapsed >= totalDuration) {
-        setCurrentTime(0);
-        startTimeRef.current = Date.now();
-      } else {
-        setCurrentTime(elapsed);
-      }
-      animationRef.current = requestAnimationFrame(animate);
-    };
-    animationRef.current = requestAnimationFrame(animate);
-    return () => {
-      if (animationRef.current) cancelAnimationFrame(animationRef.current);
-    };
-  }, [isSequence, isPlaying, totalDuration]);
+  }, [isOpen, userLevel, safeChords.length]);
 
   const normalizeForMatch = (s: string) =>
     s.replace(/\s/g, '').toUpperCase().replace(/MINOR|MIN$/gi, 'M').replace(/MAJOR|MAJ$/gi, '').trim();
   const normalizedDetected = detectedChord ? normalizeForMatch(detectedChord) : null;
-  const chordList = chords.map((c) => normalizeForMatch(c));
-  const isMatch = normalizedDetected && chordList.some((c) => normalizedDetected === c || normalizedDetected.startsWith(c) || c.startsWith(normalizedDetected));
-  const isWrong = normalizedDetected && !isMatch;
+  const normalizedCurrent = normalizeForMatch(currentChord);
+  const isCurrentMatch = normalizedDetected && (normalizedDetected === normalizedCurrent || normalizedDetected.startsWith(normalizedCurrent) || normalizedCurrent.startsWith(normalizedDetected));
+  const isWrong = normalizedDetected && !isCurrentMatch;
 
   useEffect(() => {
-    if (isMatch) {
+    if (!isCurrentMatch) return;
+    if (isStepMode) {
+      setCompletedSteps((prev) => {
+        const next = [...prev];
+        next[currentStepIndex] = true;
+        return next;
+      });
+      setCurrentStepIndex((prev) => Math.min(prev + 1, safeChords.length));
+    } else {
       setHasPlayedCorrect(true);
       hasPlayedCorrectRef.current = true;
     }
-  }, [isMatch]);
+  }, [isCurrentMatch, isStepMode, currentStepIndex, safeChords.length]);
 
   const handleDone = () => {
     if (chordRef.current) {
@@ -344,26 +327,18 @@ export function TechniqueTheoryPractice({
       chordRef.current.disconnect();
       chordRef.current = null;
     }
-    if (animationRef.current) cancelAnimationFrame(animationRef.current);
     onComplete();
     onClose();
   };
 
-  const fretboardFeedback: FretboardFeedback = hasPlayedCorrect ? 'correct' : isWrong ? 'wrong' : null;
-  const canHitDone = hasPlayedCorrect || !isWrong;
-
-  const timelineWidth = 320;
-  const barX = timelineWidth * BAR_POSITION_RATIO;
-  const getNoteX = (time: number, noteWidth: number) => {
-    const offset = (time - currentTime) * PIXELS_PER_SECOND;
-    return barX + offset - noteWidth / 2;
-  };
+  const fretboardFeedback: FretboardFeedback = isCurrentMatch ? 'correct' : isWrong ? 'wrong' : null;
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent
-        className="w-[calc(100%-1rem)] max-w-[420px] p-0 overflow-hidden [&>button:last-of-type]:hidden flex flex-col rounded-2xl max-h-[90vh] overflow-y-auto"
+        className="p-0 overflow-hidden [&>button:last-of-type]:hidden flex flex-col rounded-2xl max-h-[90vh] overflow-y-auto"
         style={{
+          width: 'calc(100% - 1rem)', maxWidth: '420px',
           border: '2.5px solid rgb(237, 237, 237)',
           boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 25px 50px -12px rgba(0, 0, 0, 0.1)',
           background: type === 'technique' ? 'linear-gradient(to bottom right, #fff7ed, #fef2f2, #fdf2f8)' : 'linear-gradient(to bottom right, #eff6ff, #eef2ff, #f5f3ff)',
@@ -404,95 +379,44 @@ export function TechniqueTheoryPractice({
             </div>
           </div>
 
-          {/* Fretboard - one chord (current) like practice basics */}
+          {/* Step indicator when multiple chords: Step 1 of 3, Step 2 of 3, ... */}
+          {isStepMode && (
+            <div className="backdrop-blur-sm rounded-xl px-3 py-2 shadow-sm flex items-center gap-2 flex-wrap" style={cardStyle}>
+              <span className="text-xs font-medium text-gray-600" style={{ fontFamily: font }}>
+                Practice each chord one at a time
+              </span>
+              <div className="flex items-center gap-1.5 flex-wrap">
+                {safeChords.map((c, i) => (
+                  <span
+                    key={i}
+                    className="inline-flex items-center gap-1 px-2 py-1 rounded-lg text-xs font-semibold"
+                    style={{
+                      backgroundColor: completedSteps[i] ? 'rgba(34, 197, 94, 0.15)' : i === currentStepIndex ? colors.light : 'rgba(156, 163, 175, 0.15)',
+                      border: `2px solid ${completedSteps[i] ? '#22C55E' : i === currentStepIndex ? colors.border : 'rgba(156, 163, 175, 0.4)'}`,
+                      color: completedSteps[i] ? '#16A34A' : i === currentStepIndex ? colors.fill : '#6B7280',
+                      fontFamily: font,
+                    }}
+                  >
+                    {completedSteps[i] ? '✓ ' : ''}{c}
+                  </span>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Fretboard - current chord only (one at a time in step mode) */}
           <div className="backdrop-blur-sm rounded-xl px-3 py-3 shadow-sm" style={cardStyle}>
             <div className="flex items-center justify-between mb-2">
               <span className="text-xs font-medium text-gray-600" style={{ fontFamily: font }}>
-                {isSequence ? `Play: ${currentChord}` : `Play: ${chords[0]}`}
+                {isStepMode ? `Step ${currentStepIndex + 1} of ${safeChords.length}: Play ${currentChord}` : `Play: ${safeChords[0]}`}
               </span>
-              {isSequence && (
-                <button
-                  type="button"
-                  onClick={() => setIsPlaying((p) => !p)}
-                  className="flex items-center gap-1 px-2 py-1 rounded-lg text-xs font-semibold"
-                  style={{ backgroundColor: colors.light, color: colors.fill, fontFamily: font }}
-                >
-                  {isPlaying ? <Pause className="w-3 h-3" /> : <Play className="w-3 h-3" />}
-                  {isPlaying ? 'Pause' : 'Play'}
-                </button>
-              )}
             </div>
             <FretboardView
-              fingering={isSequence ? currentFingering : getChordFingering(chords[0])}
+              fingering={currentFingering}
               accentColor={colors.fill}
               feedback={fretboardFeedback}
             />
           </div>
-
-          {/* Sequence: timeline with vertical bar */}
-          {isSequence && (
-            <div
-              className="backdrop-blur-sm rounded-xl overflow-hidden shadow-sm relative"
-              style={{ ...cardStyle, minHeight: 72 }}
-            >
-              <div className="px-2 py-2 flex items-center gap-2">
-                <span className="text-xs font-medium text-gray-600" style={{ fontFamily: font }}>
-                  Order
-                </span>
-              </div>
-              <div className="relative overflow-hidden" style={{ height: 48, left: 0, width: timelineWidth, margin: '0 auto' }}>
-                {/* String lines (horizontal) */}
-                {[0, 1, 2, 3, 4, 5].map((i) => (
-                  <div
-                    key={i}
-                    className="absolute left-0 right-0"
-                    style={{
-                      top: `${(i + 0.5) * (100 / 6)}%`,
-                      height: 2,
-                      backgroundColor: '#D1D5DB',
-                      transform: 'translateY(-50%)',
-                    }}
-                  />
-                ))}
-                {/* Chord blocks */}
-                {chordEvents.map((ev, idx) => {
-                  const noteWidth = 44;
-                  const x = getNoteX(ev.time, noteWidth);
-                  if (x + noteWidth < -20 || x > timelineWidth + 20) return null;
-                  const isAtBar = Math.abs(ev.time - currentTime) < 0.3;
-                  return (
-                    <div
-                      key={idx}
-                      className="absolute flex items-center justify-center rounded-lg font-bold text-sm"
-                      style={{
-                        left: x,
-                        top: '50%',
-                        transform: 'translateY(-50%)',
-                        width: noteWidth,
-                        height: NOTE_HEIGHT,
-                        backgroundColor: isAtBar ? colors.bg : 'rgba(156, 163, 175, 0.2)',
-                        border: `2px solid ${isAtBar ? colors.border : 'rgba(156, 163, 175, 0.4)'}`,
-                        color: colors.fill,
-                        zIndex: isAtBar ? 15 : 10,
-                      }}
-                    >
-                      {ev.chord}
-                    </div>
-                  );
-                })}
-                {/* Vertical bar */}
-                <div
-                  className="absolute top-0 bottom-0 z-30 pointer-events-none"
-                  style={{
-                    left: barX - 2,
-                    width: 4,
-                    backgroundColor: colors.fill,
-                    boxShadow: `0 0 10px ${colors.fill}80`,
-                  }}
-                />
-              </div>
-            </div>
-          )}
 
           {/* Heard */}
           <div className="backdrop-blur-sm rounded-xl px-4 py-4 shadow-sm" style={cardStyle}>
@@ -507,8 +431,8 @@ export function TechniqueTheoryPractice({
             <div
               className="rounded-xl py-4 flex flex-col items-center justify-center min-h-[52px] gap-2"
               style={{
-                backgroundColor: isMatch ? 'rgba(34, 197, 94, 0.12)' : isWrong ? 'rgba(239, 68, 68, 0.1)' : colors.light,
-                border: `2px solid ${isMatch ? 'rgb(74, 222, 128)' : isWrong ? 'rgb(239, 68, 68)' : 'transparent'}`,
+                backgroundColor: isCurrentMatch ? 'rgba(34, 197, 94, 0.12)' : isWrong ? 'rgba(239, 68, 68, 0.1)' : colors.light,
+                border: `2px solid ${isCurrentMatch ? 'rgb(74, 222, 128)' : isWrong ? 'rgb(239, 68, 68)' : 'transparent'}`,
               }}
             >
               {connectionStatus === 'error' && (
@@ -520,7 +444,7 @@ export function TechniqueTheoryPractice({
                 <span className="text-sm text-gray-500" style={{ fontFamily: font }}>Connecting…</span>
               )}
               {connectionStatus === 'connected' && (
-                <span className="text-xl font-bold" style={{ fontFamily: font, color: isMatch ? 'rgb(22, 101, 52)' : isWrong ? 'rgb(185, 28, 28)' : colors.fill }}>
+                <span className="text-xl font-bold" style={{ fontFamily: font, color: isCurrentMatch ? 'rgb(22, 101, 52)' : isWrong ? 'rgb(185, 28, 28)' : colors.fill }}>
                   {detectedChord || '—'}
                 </span>
               )}
@@ -537,24 +461,24 @@ export function TechniqueTheoryPractice({
 
           <button
             type="button"
-            onClick={canHitDone ? handleDone : undefined}
-            disabled={!canHitDone}
-            className={`w-full flex items-center justify-center gap-2 rounded-xl text-sm font-bold transition-all ${canHitDone ? 'hover:scale-[1.01] active:scale-[0.99]' : ''}`}
+            onClick={canComplete ? handleDone : undefined}
+            disabled={!canComplete}
+            className={`w-full flex items-center justify-center gap-2 rounded-xl text-sm font-bold transition-all ${canComplete ? 'hover:scale-[1.01] active:scale-[0.99]' : ''}`}
             style={{
               minHeight: 56,
               paddingTop: 16,
               paddingBottom: 16,
-              backgroundColor: canHitDone ? 'rgba(249, 115, 22, 0.2)' : 'rgba(156, 163, 175, 0.25)',
-              borderBottom: canHitDone ? '3px solid rgb(249, 115, 22)' : '3px solid rgb(156, 163, 175)',
-              color: canHitDone ? 'rgb(194, 65, 12)' : 'rgb(107, 114, 128)',
+              backgroundColor: canComplete ? 'rgba(249, 115, 22, 0.2)' : 'rgba(156, 163, 175, 0.25)',
+              borderBottom: canComplete ? '3px solid rgb(249, 115, 22)' : '3px solid rgb(156, 163, 175)',
+              color: canComplete ? 'rgb(194, 65, 12)' : 'rgb(107, 114, 128)',
               fontFamily: font,
-              cursor: canHitDone ? 'pointer' : 'not-allowed',
-              opacity: canHitDone ? 1 : 0.85,
-              ...(canHitDone && { transform: 'translateZ(0)' }),
+              cursor: canComplete ? 'pointer' : 'not-allowed',
+              opacity: canComplete ? 1 : 0.85,
+              ...(canComplete && { transform: 'translateZ(0)' }),
             }}
-            title={!canHitDone ? 'Play the correct chord to enable Done' : undefined}
+            title={!canComplete ? (isStepMode ? `Play each chord correctly to enable Done (${completedSteps.filter(Boolean).length}/${safeChords.length})` : 'Play the correct chord to enable Done') : undefined}
           >
-            <CheckCircle2 className="w-5 h-5" style={{ color: canHitDone ? 'rgb(194, 65, 12)' : 'rgb(107, 114, 128)' }} />
+            <CheckCircle2 className="w-5 h-5" style={{ color: canComplete ? 'rgb(194, 65, 12)' : 'rgb(107, 114, 128)' }} />
             Done
           </button>
         </div>

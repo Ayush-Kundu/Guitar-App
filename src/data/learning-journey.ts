@@ -3,7 +3,23 @@
  * 
  * This file defines the complete learning curriculum organized into
  * Units > Lessons with clear prerequisites and beginner-friendly language.
+ * Each user level (novice through expert) has its own technique and theory path.
  */
+
+import {
+  techniquePathBeginner,
+  theoryPathBeginner,
+  techniquePathElementary,
+  theoryPathElementary,
+  techniquePathIntermediate,
+  theoryPathIntermediate,
+  techniquePathProficient,
+  theoryPathProficient,
+  techniquePathAdvanced,
+  theoryPathAdvanced,
+  techniquePathExpert,
+  theoryPathExpert
+} from './learning-journey-levels';
 
 // =============================================================================
 // TYPES
@@ -38,8 +54,13 @@ export interface LearningPath {
   theory: Unit[];
 }
 
+/** User guitar level; determines which technique/theory curriculum is shown. */
+export type GuitarLevel = 'novice' | 'beginner' | 'elementary' | 'intermediate' | 'proficient' | 'advanced' | 'expert';
+
+export const LEVEL_ORDER: GuitarLevel[] = ['novice', 'beginner', 'elementary', 'intermediate', 'proficient', 'advanced', 'expert'];
+
 // =============================================================================
-// TECHNIQUE LEARNING PATH
+// TECHNIQUE LEARNING PATH (NOVICE — kept as-is; other levels defined below)
 // =============================================================================
 
 export const techniquePath: Unit[] = [
@@ -1015,24 +1036,68 @@ export const theoryPath: Unit[] = [
 ];
 
 // =============================================================================
+// LEVEL-SPECIFIC PATHS (beginner through expert; novice uses techniquePath/theoryPath above)
+// =============================================================================
+
+const techniquePathByLevel: Record<GuitarLevel, Unit[]> = {
+  novice: techniquePath,
+  beginner: techniquePathBeginner,
+  elementary: techniquePathElementary,
+  intermediate: techniquePathIntermediate,
+  proficient: techniquePathProficient,
+  advanced: techniquePathAdvanced,
+  expert: techniquePathExpert
+};
+
+const theoryPathByLevel: Record<GuitarLevel, Unit[]> = {
+  novice: theoryPath,
+  beginner: theoryPathBeginner,
+  elementary: theoryPathElementary,
+  intermediate: theoryPathIntermediate,
+  proficient: theoryPathProficient,
+  advanced: theoryPathAdvanced,
+  expert: theoryPathExpert
+};
+
+/** Get the technique learning path for the given level. Novice uses the default path. */
+export function getTechniquePath(level: GuitarLevel): Unit[] {
+  return techniquePathByLevel[level] ?? techniquePath;
+}
+
+/** Get the theory learning path for the given level. Novice uses the default path. */
+export function getTheoryPath(level: GuitarLevel): Unit[] {
+  return theoryPathByLevel[level] ?? theoryPath;
+}
+
+function getAllTechniqueUnits(): Unit[] {
+  return LEVEL_ORDER.flatMap(l => techniquePathByLevel[l] ?? []);
+}
+function getAllTheoryUnits(): Unit[] {
+  return LEVEL_ORDER.flatMap(l => theoryPathByLevel[l] ?? []);
+}
+
+// =============================================================================
 // HELPER FUNCTIONS
 // =============================================================================
 
 export function getLessonById(lessonId: string): Lesson | undefined {
-  const allLessons = [...techniquePath, ...theoryPath].flatMap(unit => unit.lessons);
+  const allUnits = [...getAllTechniqueUnits(), ...getAllTheoryUnits()];
+  const allLessons = allUnits.flatMap(unit => unit.lessons);
   return allLessons.find(lesson => lesson.id === lessonId);
 }
 
 export function getUnitById(unitId: string): Unit | undefined {
-  return [...techniquePath, ...theoryPath].find(unit => unit.id === unitId);
+  const allUnits = [...getAllTechniqueUnits(), ...getAllTheoryUnits()];
+  return allUnits.find(unit => unit.id === unitId);
 }
 
-export function getNextLesson(currentLessonId: string, type: 'technique' | 'theory'): Lesson | undefined {
-  const path = type === 'technique' ? techniquePath : theoryPath;
+/** Get the next lesson in the path for the given level and type. */
+export function getNextLesson(currentLessonId: string, type: 'technique' | 'theory', level: GuitarLevel): Lesson | undefined {
+  const path = type === 'technique' ? getTechniquePath(level) : getTheoryPath(level);
   const allLessons = path.flatMap(unit => unit.lessons);
   const currentIndex = allLessons.findIndex(l => l.id === currentLessonId);
-  return currentIndex >= 0 && currentIndex < allLessons.length - 1 
-    ? allLessons[currentIndex + 1] 
+  return currentIndex >= 0 && currentIndex < allLessons.length - 1
+    ? allLessons[currentIndex + 1]
     : undefined;
 }
 

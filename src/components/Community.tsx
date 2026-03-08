@@ -1785,8 +1785,9 @@ export function Community() {
       {/* Community Guidelines Warning Dialog */}
       <Dialog open={showCommunityWarning} onOpenChange={() => {}}>
         <DialogContent
-          className="w-[calc(100%-1rem)] max-w-md p-0 overflow-hidden rounded-2xl"
+          className="p-0 overflow-hidden rounded-2xl"
           style={{
+            width: 'calc(100% - 1rem)', maxWidth: '28rem',
             border: '3px solid rgb(239, 68, 68)',
             boxShadow: '0 0 30px rgba(239, 68, 68, 0.3)',
             maxHeight: '90vh',

@@ -3,13 +3,14 @@ import { useUser } from '../contexts/UserContext';
 import { Button } from './ui/button';
 import { ActivityModal } from './ActivityModal';
 import { 
-  techniquePath, 
-  theoryPath, 
+  getTechniquePath,
+  getTheoryPath,
   Unit, 
   Lesson,
   getUnitProgress,
   isUnitUnlocked,
-  isUnitComplete
+  isUnitComplete,
+  type GuitarLevel
 } from '../data/learning-journey';
 import { loadProgress, saveProgress, addPoints, addLearningJourneyMinutes, markLearningJourneyLessonCompleted } from '../utils/progressStorage';
 import { recordPoints } from '../utils/api';
@@ -53,11 +54,11 @@ function getCompletedUnits(userId: string, type: 'technique' | 'theory'): Set<st
   return new Set(progress?.[key] || []);
 }
 
-function markLessonComplete(userId: string, lessonId: string, unitId: string, type: 'technique' | 'theory') {
+function markLessonComplete(userId: string, lessonId: string, unitId: string, type: 'technique' | 'theory', level: GuitarLevel) {
   const progress = loadProgress(userId);
   const lessonsKey = type === 'technique' ? 'completedLessons' : 'completedTheoryLessons';
   const unitsKey = type === 'technique' ? 'completedUnits' : 'completedTheoryUnits';
-  const path = type === 'technique' ? techniquePath : theoryPath;
+  const path = type === 'technique' ? getTechniquePath(level) : getTheoryPath(level);
   
   const existingLessons = (progress as any)[lessonsKey] || [];
   const existingUnits = (progress as any)[unitsKey] || [];
@@ -90,6 +91,7 @@ interface UnitCardProps {
   progress: number;
   onSelect: (unit: Unit) => void;
   type: 'technique' | 'theory';
+  key?: string;
 }
 
 function UnitCard({ unit, isUnlocked, isComplete, progress, onSelect, type }: UnitCardProps) {
@@ -384,10 +386,11 @@ export function TechniqueTheory({ onSectionChange, initialTab = 'technique' }: T
 
   const completeLessonAndAwardPoints = async (lessonId: string, unitId: string, type: 'technique' | 'theory', unitTitle?: string) => {
     if (!user) return;
-    const path = type === 'technique' ? techniquePath : theoryPath;
+    const level = (user.level || 'novice') as GuitarLevel;
+    const path = type === 'technique' ? getTechniquePath(level) : getTheoryPath(level);
     const unit = path.find(u => u.id === unitId);
     const unitsBefore = getCompletedUnits(user.id, type);
-    markLessonComplete(user.id, lessonId, unitId, type);
+    markLessonComplete(user.id, lessonId, unitId, type, level);
     markLearningJourneyLessonCompleted(user.id, type);
     refreshProgress();
     const unitsAfter = getCompletedUnits(user.id, type);
@@ -423,7 +426,8 @@ export function TechniqueTheory({ onSectionChange, initialTab = 'technique' }: T
 
   if (!user) return null;
 
-  const currentPath = mainTab === 'technique' ? techniquePath : theoryPath;
+  const userLevel = (user.level || 'novice') as GuitarLevel;
+  const currentPath = mainTab === 'technique' ? getTechniquePath(userLevel) : getTheoryPath(userLevel);
   const completedLessons = mainTab === 'technique' ? techCompletedLessons : theoryCompletedLessons;
   const completedUnits = mainTab === 'technique' ? techCompletedUnits : theoryCompletedUnits;
 

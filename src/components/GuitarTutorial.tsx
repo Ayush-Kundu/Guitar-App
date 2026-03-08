@@ -664,8 +664,8 @@ export function GuitarTutorial({ isOpen, onClose, onComplete, userId, userLevel 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
       <DialogContent
-        className="w-[calc(100%-0.75rem)] max-w-4xl h-[90vh] max-h-[750px] p-0 overflow-hidden [&>button:last-of-type]:hidden flex flex-col bg-gradient-to-br from-indigo-50 via-purple-50 to-pink-50 dark:from-gray-900 dark:via-slate-800 dark:to-gray-900 border-2 border-gray-200 dark:border-slate-600"
-        style={{ borderRadius: '16px' }}
+        className="h-[90vh] max-h-[750px] p-0 overflow-hidden [&>button:last-of-type]:hidden flex flex-col bg-gradient-to-br from-indigo-50 via-purple-50 to-pink-50 dark:from-gray-900 dark:via-slate-800 dark:to-gray-900 border-2 border-gray-200 dark:border-slate-600"
+        style={{ width: 'calc(100% - 0.75rem)', maxWidth: '56rem', borderRadius: '16px' }}
         aria-describedby={undefined}
       >
         <DialogTitle className="sr-only">Guitar Basics Tutorial</DialogTitle>

@@ -285,30 +285,171 @@ export function ensureMinQuizItems(content: LessonContent): LessonContent {
   return content;
 }
 
-/** Create fallback interactive content from lesson description for topics without specific content. Uses only topic-derived questions, no generic padding. */
-export function createFallbackContent(title: string, description: string): LessonContent {
-  const sentences = description.split(/[.!?]+/).filter(s => s.trim().length > 20);
-  const firstSentence = sentences[0]?.trim() || description.slice(0, 80);
-  const keyWord = title.split(' ').filter(w => w.length > 2)[0]?.toLowerCase() || 'guitar';
-  const items: QuizItem[] = [
-    { type: 'multiple_choice', question: `What is the main focus of "${title}"?`, options: [firstSentence + (firstSentence.endsWith('.') ? '' : '.'), 'Advanced techniques', 'Music history', 'Guitar maintenance'], correctAnswer: 0, explanation: description },
-    { type: 'fill_blank', sentence: `This lesson helps you learn about _____.`, options: [keyWord, 'technique', 'theory', 'practice'], correctAnswer: 0, explanation: description },
-  ];
-  if (sentences.length >= 2) {
-    const second = sentences[1].trim();
-    items.push({ type: 'multiple_choice', question: `According to this lesson, which is true?`, options: [second + (second.endsWith('.') ? '' : '.'), 'It does not apply to guitar.', 'It only matters for experts.', 'It is optional.'], correctAnswer: 0, explanation: description });
-  }
-  // Two extra questions so every quiz has at least 4–5 items (user request: +2 questions for everything)
-  const third = sentences[2]?.trim();
-  if (third) {
-    items.push({ type: 'multiple_choice', question: `Which idea does this lesson emphasize?`, options: [third + (third.endsWith('.') ? '' : '.'), 'Only experts need this.', 'It is not related to guitar.', 'You can skip this topic.'], correctAnswer: 0, explanation: description });
-  }
-  items.push({ type: 'fill_blank', sentence: `Practicing "${title}" will help you become a _____ guitarist.`, options: ['more confident and capable', 'faster', 'louder', 'different'], correctAnswer: 0, explanation: 'Every lesson on the path builds your skills from zero to hero. Taking time to understand and practice each topic strengthens your foundation and makes the next steps easier.' });
-  return { title, items };
+/** Truncate option text for display only if very long (avoid UI cut-off); keep explanations full. */
+function optionText(text: string, maxLen: number = 280): string {
+  const t = text.trim();
+  if (t.length <= maxLen) return t.endsWith('.') || t.endsWith('?') || t.endsWith('!') ? t : t + '.';
+  return t.slice(0, maxLen - 3).trim() + '…';
 }
 
-/** Lesson titles that map to chord practice (SongPractice). Only chord-playing lessons are included. */
+/** Topic phrase from lesson title for use in questions (e.g. "barre chords", "the major scale"). */
+function topicFromTitle(title: string): string {
+  const stop = ['the', 'your', 'and', 'with', 'for', 'from', 'how', 'what', 'when', 'where', 'why'];
+  const words = title.split(/\s+/).filter(w => w.length > 1 && !stop.includes(w.toLowerCase()));
+  if (words.length === 0) return 'this technique';
+  if (words.length === 1) return words[0].toLowerCase();
+  return words.slice(0, 2).join(' ').toLowerCase();
+}
+
+/** Fisher–Yates shuffle. Mutates array and returns it. */
+function shuffleArray<T>(arr: T[]): T[] {
+  for (let i = arr.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [arr[i], arr[j]] = [arr[j], arr[i]];
+  }
+  return arr;
+}
+
+/** Shuffle options and update correctAnswer so the correct answer is in a random position. */
+export function shuffleQuizItemOptions(item: QuizItem): QuizItem {
+  if (item.type === 'multiple_choice') {
+    const correct = item.options[item.correctAnswer];
+    const opts = shuffleArray([...item.options]);
+    const newIndex = opts.indexOf(correct);
+    if (newIndex === -1) return item;
+    return { ...item, options: opts, correctAnswer: newIndex };
+  }
+  const correct = item.options[item.correctAnswer];
+  const opts = shuffleArray([...item.options]);
+  const newIndex = opts.indexOf(correct);
+  if (newIndex === -1) return item;
+  return { ...item, options: opts, correctAnswer: newIndex };
+}
+
+/** Build lesson-specific, in-depth quiz from description. Questions and wrong options are derived from the actual text; no generic one-size-fits-all shortcuts. */
+export function createFallbackContent(title: string, description: string): LessonContent {
+  const rawSentences = description.split(/[.!?]+/).map(s => s.trim()).filter(s => s.length > 15);
+  const sentences = rawSentences.map(s => optionText(s, 220));
+  const topic = topicFromTitle(title);
+  const fullExplanation = description.trim();
+  const lowerDesc = description.toLowerCase();
+  const items: QuizItem[] = [];
+
+  // Build a pool of statements from the description (for use as correct and wrong options)
+  const factPool = sentences.filter((s, i) => s.length >= 22 && sentences.indexOf(s) === i);
+  const usedForCorrect = new Set<number>();
+
+  // Helper: pick wrong options that are not the correct one — use other sentences from this lesson, or topic-specific distractors
+  function wrongOptionsFor(correctOption: string, count: number): string[] {
+    const wrong: string[] = [];
+    const others = factPool.filter(f => f !== correctOption && !f.slice(0, 40).includes(correctOption.slice(0, 30)));
+    for (let i = 0; i < others.length && wrong.length < count; i++) {
+      const c = others[i];
+      if (!wrong.includes(c) && c.length > 18) wrong.push(c);
+    }
+    const distractors = [
+      'This applies only to instruments other than the guitar.',
+      'The lesson recommends skipping this until you are advanced.',
+      'Speed is more important than accuracy here.',
+      'You should avoid using a metronome for this.',
+      'The lesson says to press in the middle between two frets.',
+      'Only the third of the chord matters, not the root or fifth.',
+      'Moving the same shape up the neck does not change the key.',
+      'The lesson suggests practicing for long sessions once a week only.',
+      'Your strumming hand should stay near the bridge for full tone.',
+      'The flat pad of the finger is preferred for clean notes.',
+    ];
+    while (wrong.length < count) {
+      const d = distractors[wrong.length % distractors.length];
+      if (!wrong.includes(d) && d !== correctOption) wrong.push(d);
+      else if (wrong.length < count) wrong.push(`This lesson does not cover that.`);
+      if (wrong.length >= count) break;
+    }
+    return wrong.slice(0, count);
+  }
+
+  // 1) Primary: one question per meaningful sentence — "What does this lesson say or recommend about [topic]?" with THAT sentence as correct
+  const questionStems = [
+    `What does this lesson specifically state or recommend about ${topic}?`,
+    `According to this lesson, which of the following is true or recommended?`,
+    `Which of these does the lesson describe or advise?`,
+  ];
+  for (let i = 0; i < factPool.length && items.length < 8; i++) {
+    const correct = factPool[i];
+    if (usedForCorrect.has(i) || correct.length < 25) continue;
+    const wrong = wrongOptionsFor(correct, 3);
+    const options = [correct, ...wrong];
+    const stem = questionStems[items.length % questionStems.length];
+    items.push({ type: 'multiple_choice', question: stem, options, correctAnswer: 0, explanation: fullExplanation });
+    usedForCorrect.add(i);
+  }
+
+  // 2) Concept questions only when the description explicitly uses that concept — phrased using lesson context
+  if (items.length < 6 && lowerDesc.includes('barre') && (lowerDesc.includes('index') || lowerDesc.includes('across'))) {
+    const opts = ['Index finger', 'Middle finger', 'Ring finger', 'Pinky'];
+    const correctIdx = opts.indexOf('Index finger');
+    if (correctIdx >= 0) items.push({ type: 'multiple_choice', question: `In the context of ${title}, which finger is used to barre across the strings?`, options: opts, correctAnswer: correctIdx, explanation: fullExplanation });
+  }
+  if (items.length < 6 && (lowerDesc.includes('behind the fret') || lowerDesc.includes('right behind'))) {
+    const correct = 'Just behind the fret wire';
+    const opts = [correct, 'In the middle between two frets', 'On top of the fret wire', 'Near the nut'];
+    items.push({ type: 'multiple_choice', question: `Where does this lesson say you should press the string to get a clear note?`, options: opts, correctAnswer: opts.indexOf(correct), explanation: fullExplanation });
+  }
+  if (items.length < 6 && lowerDesc.includes('half step') && lowerDesc.includes('fret')) {
+    const opts = ['half', 'whole', 'octave', 'tone'];
+    items.push({ type: 'fill_blank', sentence: `This lesson refers to moving one fret as one _____ step.`, options: opts, correctAnswer: opts.indexOf('half'), explanation: fullExplanation });
+  }
+  if (items.length < 6 && lowerDesc.includes('root') && (lowerDesc.includes('chord') || lowerDesc.includes('name'))) {
+    const opts = ['The root note', 'The third', 'The fifth', 'The seventh'];
+    items.push({ type: 'multiple_choice', question: `According to this lesson, which note gives the chord its name?`, options: opts, correctAnswer: opts.indexOf('The root note'), explanation: fullExplanation });
+  }
+  if (items.length < 6 && (lowerDesc.includes('metronome') || lowerDesc.includes('count') && lowerDesc.includes('beat'))) {
+    const correct = 'Practice with a metronome and count out loud';
+    const opts = [correct, 'Play as fast as possible', 'Ignore the beat', 'Practice only once a week'];
+    items.push({ type: 'multiple_choice', question: `What does this lesson recommend for improving timing?`, options: opts, correctAnswer: opts.indexOf(correct), explanation: fullExplanation });
+  }
+  if (items.length < 6 && (lowerDesc.includes('move the shape') || lowerDesc.includes('movable')) && lowerDesc.includes('fret')) {
+    const correct = 'The key (pitch) of the chord changes';
+    const opts = [correct, 'The chord becomes minor', 'The number of strings changes', 'Nothing changes'];
+    items.push({ type: 'multiple_choice', question: `When you move the same chord shape to a different fret, what does this lesson say changes?`, options: opts, correctAnswer: opts.indexOf(correct), explanation: fullExplanation });
+  }
+
+  // 3) Fill-blank from a specific sentence (lesson-specific) — use single-word options
+  if (items.length < 6 && factPool.length > 0) {
+    const first = factPool[0];
+    const words = first.split(/\s+/).filter(w => w.length > 2);
+    const fillWord = words.find(w => w.length > 3 && !/^(the|and|for|with|from|this|that|your|when|where|which|should|does|will|have|been|being|practice|lesson)$/i.test(w));
+    if (fillWord && first.length > 40) {
+      const blanked = first.replace(new RegExp(fillWord.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'i'), '_____');
+      const wrongWords = ['whole', 'octave', 'tone', 'finger', 'hand', 'speed', 'beat', 'chord', 'note', 'key'].filter(w => w.toLowerCase() !== fillWord.toLowerCase()).slice(0, 3);
+      const opts = [fillWord, ...wrongWords];
+      const uniq = [...new Set(opts)].slice(0, 4);
+      const correctIdx = uniq.indexOf(fillWord);
+      if (correctIdx >= 0 && blanked.includes('_____')) items.push({ type: 'fill_blank', sentence: blanked, options: uniq, correctAnswer: correctIdx, explanation: fullExplanation });
+    }
+  }
+
+  // 4) Fallback if we still have too few items
+  if (items.length < 4 && factPool.length > 0) {
+    for (let i = 0; i < factPool.length && items.length < 6; i++) {
+      if (usedForCorrect.has(i)) continue;
+      const correct = factPool[i];
+      const wrong = wrongOptionsFor(correct, 3);
+      items.push({ type: 'multiple_choice', question: `Which of these does the lesson "${title}" state or recommend?`, options: [correct, ...wrong], correctAnswer: 0, explanation: fullExplanation });
+      usedForCorrect.add(i);
+    }
+  }
+  if (items.length === 0) {
+    const first = optionText(description.slice(0, 250));
+    const wrong = wrongOptionsFor(first, 3);
+    items.push({ type: 'multiple_choice', question: `What does the lesson "${title}" emphasize?`, options: [first, ...wrong], correctAnswer: 0, explanation: fullExplanation });
+  }
+  return { title, items: items.slice(0, 8) };
+}
+
+/** Lesson titles that map to chord practice (SongPractice). Includes novice and all level-specific chord lessons so the practice popup applies across levels. */
 export const LESSON_PRACTICE_CHORDS: Record<string, string[]> = {
+  // Novice
   'E Minor - Your First Chord': ['Em'],
   'E minor': ['Em'],
   'A Minor - Your Second Chord': ['Am'],
@@ -325,6 +466,31 @@ export const LESSON_PRACTICE_CHORDS: Record<string, string[]> = {
   'The 4-Chord Song': ['G', 'D', 'Em', 'C'],
   'F Major - The First Barre Chord': ['F'],
   'F major': ['F'],
+  // Beginner (level-specific)
+  'Em, A, D Together': ['Em', 'A', 'D'],
+  'Adding G and C': ['G', 'C'],
+  'Faster Chord Changes': ['Em', 'A', 'D', 'G', 'C'],
+  'A Minor and E Major': ['Am', 'E'],
+  'B7 and Dominant 7ths': ['B7', 'E', 'A'],
+  'Full Open Chord Set': ['G', 'D', 'Em', 'C'],
+  'Learning the Progression': ['G', 'C', 'Em', 'D'],
+  'Playing Through': ['G', 'D', 'Em', 'C'],
+  // Elementary
+  'F Major and F Minor': ['F', 'Fm'],
+  'Moving Barre Shapes': ['F', 'G', 'A', 'B'],
+  'Power Chord Shape': ['E5', 'A5'],
+  'Power Chord Progressions': ['E5', 'A5', 'B5'],
+  'Movable Minor Shape': ['Fm', 'Gm', 'Am'],
+  // Intermediate (comping / rhythm)
+  'Straight Eighth Comping': ['Em', 'A', 'D', 'G'],
+  'Syncopated Chords': ['Dm', 'G7', 'C'],
+  'Dynamic Comping': ['Cmaj7', 'Dm7', 'G7'],
+  // Proficient (jazz / chord melody)
+  'Shell Voicings': ['Dm7', 'G7', 'Cmaj7'],
+  'Comping Rhythm': ['Dm7', 'G7', 'Cmaj7'],
+  'Comping a Standard': ['Am', 'Dm', 'G7', 'C'],
+  'Simple Chord Melody': ['C', 'G', 'Am', 'F'],
+  'Arranging a Tune': ['C', 'G', 'Am', 'F'],
 };
 
 /** Get chords to practice for a lesson title (for chord recognizer / SongPractice). Returns null if not a chord-practice lesson. */

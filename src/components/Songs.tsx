@@ -566,7 +566,8 @@ export function Songs() {
       {/* Add Songs Dialog - Matching Songs Page Style */}
       <Dialog open={catalogOpen} onOpenChange={setCatalogOpen}>
         <DialogContent
-          className="w-[calc(100%-1rem)] max-w-2xl max-h-[85vh] sm:max-h-[500px] overflow-hidden flex flex-col p-0 rounded-2xl [&>button:last-of-type]:hidden border-2 border-gray-200 dark:border-slate-600 bg-white dark:bg-slate-800"
+          className="max-h-[85vh] sm:max-h-[500px] overflow-hidden flex flex-col p-0 rounded-2xl [&>button:last-of-type]:hidden border-2 border-gray-200 dark:border-slate-600 bg-white dark:bg-slate-800"
+          style={{ width: 'calc(100% - 1rem)', maxWidth: '42rem' }}
         >
           {/* Header */}
               <div
@@ -727,7 +728,7 @@ export function Songs() {
 
       {/* Remove Song Confirmation Dialog */}
       <Dialog open={removeConfirmOpen} onOpenChange={setRemoveConfirmOpen}>
-        <DialogContent className="w-[calc(100%-1rem)] max-w-sm p-0 overflow-hidden rounded-2xl">
+        <DialogContent className="p-0 overflow-hidden rounded-2xl" style={{ width: 'calc(100% - 1rem)', maxWidth: '24rem' }}>
           {/* Header */}
           <div className="px-6 pt-6 pb-4" style={{ background: 'linear-gradient(to right, rgba(239, 68, 68, 0.1), rgba(220, 38, 38, 0.05))' }}>
             <div className="flex items-center gap-3">

@@ -459,8 +459,9 @@ export function VideoPopup({
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent 
-        className="w-[calc(100%-1rem)] max-w-xl p-0 overflow-hidden bg-gradient-to-br from-indigo-50 via-purple-50 to-pink-50 dark:from-gray-900 dark:via-slate-800 dark:to-gray-900 [&>button:last-of-type]:hidden"
-        style={{ 
+        className="p-0 overflow-hidden bg-gradient-to-br from-indigo-50 via-purple-50 to-pink-50 dark:from-gray-900 dark:via-slate-800 dark:to-gray-900 [&>button:last-of-type]:hidden"
+        style={{
+          width: 'calc(100% - 1rem)', maxWidth: '36rem',
           border: '2px solid rgb(237, 237, 237)',
           borderRadius: '16px',
           maxHeight: '85vh'

@@ -638,8 +638,9 @@ export function SongPractice({ isOpen, onClose, song, userId, userLevel, onCompl
   return (
     <Dialog open={isOpen} onOpenChange={handleClose}>
       <DialogContent
-        className="w-[calc(100%-0.75rem)] max-w-4xl h-[85vh] max-h-[700px] p-0 overflow-hidden [&>button:last-of-type]:hidden flex flex-col bg-gradient-to-br from-indigo-50 via-purple-50 to-pink-50 dark:from-gray-900 dark:via-slate-800 dark:to-gray-900 border-2 border-gray-200 dark:border-slate-600"
+        className="h-[85vh] max-h-[700px] p-0 overflow-hidden [&>button:last-of-type]:hidden flex flex-col bg-gradient-to-br from-indigo-50 via-purple-50 to-pink-50 dark:from-gray-900 dark:via-slate-800 dark:to-gray-900 border-2 border-gray-200 dark:border-slate-600"
         style={{
+          width: 'calc(100% - 0.75rem)', maxWidth: '56rem',
           borderRadius: '16px',
           transform: slideOut ? 'translateY(120%)' : 'translateY(0)',
           opacity: slideOut ? 0 : 1,

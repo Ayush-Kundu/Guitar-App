@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import guitarContent from '../data/guitar-content';
-import { techniquePath, theoryPath } from '../data/learning-journey';
+import { getTechniquePath, getTheoryPath } from '../data/learning-journey';
 import { websocketService, WebSocketMessage } from '../utils/websocket';
 import { createLocalPost } from '../api/local-posts';
 import { createClient } from '@supabase/supabase-js';
@@ -1974,14 +1974,18 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
       });
       const songProgress = Math.min((completedSongs / totalSelectedSongs), 1) * 40;
       
-      // Technique: 25% - Based on technique path units completed (Technique Theory page)
-      const completedTechniqueUnits = (progress as any).completedUnits?.length ?? 0;
-      const totalTechniqueUnits = techniquePath?.length ?? 1;
+      // Technique: 25% - Based on current level's technique path units completed
+      const techPath = getTechniquePath(user.level as any);
+      const techPathIds = new Set(techPath.map((u: { id: string }) => u.id));
+      const completedTechniqueUnits = ((progress as any).completedUnits ?? []).filter((id: string) => techPathIds.has(id)).length;
+      const totalTechniqueUnits = techPath?.length ?? 1;
       const techniqueProgress = Math.min((completedTechniqueUnits / totalTechniqueUnits), 1) * 25;
       
-      // Theory: 25% - Based on theory path units completed (Technique Theory page)
-      const completedTheoryUnits = (progress as any).completedTheoryUnits?.length ?? 0;
-      const totalTheoryUnits = theoryPath?.length ?? 1;
+      // Theory: 25% - Based on current level's theory path units completed
+      const theoryPathCur = getTheoryPath(user.level as any);
+      const theoryPathIds = new Set(theoryPathCur.map((u: { id: string }) => u.id));
+      const completedTheoryUnits = ((progress as any).completedTheoryUnits ?? []).filter((id: string) => theoryPathIds.has(id)).length;
+      const totalTheoryUnits = theoryPathCur?.length ?? 1;
       const theoryProgress = Math.min((completedTheoryUnits / totalTheoryUnits), 1) * 25;
       
       // Points: 10% - 200 points per level increment
