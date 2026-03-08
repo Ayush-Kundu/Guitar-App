@@ -303,7 +303,7 @@ export function PracticeSession({
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-md bg-white/95 backdrop-blur-sm" style={{ border: '2.5px solid rgb(237, 237, 237)' }}>
+      <DialogContent className="w-[calc(100%-1rem)] max-w-md bg-white/95 backdrop-blur-sm" style={{ border: '2.5px solid rgb(237, 237, 237)' }}>
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2 text-gray-900">
             <Target className="w-5 h-5" />

@@ -1278,7 +1278,7 @@ export function Compete() {
       {/* Arena Dialog */}
       <Dialog open={arenaOpen} onOpenChange={setArenaOpen}>
         <DialogContent 
-          className="max-w-md p-0 overflow-hidden rounded-2xl"
+          className="w-[calc(100%-1rem)] max-w-md p-0 overflow-hidden rounded-2xl"
           style={{ 
             border: '3px solid rgb(239, 68, 68)',
             boxShadow: '0 0 40px rgba(239, 68, 68, 0.3)'
@@ -1329,7 +1329,7 @@ export function Compete() {
       {/* Weekly Challenge Dialog */}
       <Dialog open={challengeOpen} onOpenChange={setChallengeOpen}>
         <DialogContent 
-          className="max-w-2xl p-0 overflow-hidden rounded-2xl"
+          className="w-[calc(100%-1rem)] max-w-2xl p-0 overflow-hidden rounded-2xl"
           style={{ 
             border: '3px solid rgb(59, 130, 246)',
             boxShadow: '0 0 40px rgba(59, 130, 246, 0.3)'

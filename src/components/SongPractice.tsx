@@ -638,7 +638,7 @@ export function SongPractice({ isOpen, onClose, song, userId, userLevel, onCompl
   return (
     <Dialog open={isOpen} onOpenChange={handleClose}>
       <DialogContent
-        className="!w-[98vw] !max-w-[98vw] h-[85vh] max-h-[700px] p-0 overflow-hidden [&>button:last-of-type]:hidden flex flex-col bg-gradient-to-br from-indigo-50 via-purple-50 to-pink-50 dark:from-gray-900 dark:via-slate-800 dark:to-gray-900 border-2 border-gray-200 dark:border-slate-600"
+        className="w-[calc(100%-0.75rem)] max-w-4xl h-[85vh] max-h-[700px] p-0 overflow-hidden [&>button:last-of-type]:hidden flex flex-col bg-gradient-to-br from-indigo-50 via-purple-50 to-pink-50 dark:from-gray-900 dark:via-slate-800 dark:to-gray-900 border-2 border-gray-200 dark:border-slate-600"
         style={{
           borderRadius: '16px',
           transform: slideOut ? 'translateY(120%)' : 'translateY(0)',
@@ -650,7 +650,7 @@ export function SongPractice({ isOpen, onClose, song, userId, userLevel, onCompl
         <DialogTitle className="sr-only">{song.title} - Practice Session</DialogTitle>
 
         {/* Header */}
-        <div className="flex-shrink-0 px-5 py-4 bg-white/90 dark:bg-slate-800">
+        <div className="flex-shrink-0 px-3 sm:px-5 py-3 sm:py-4 bg-white/90 dark:bg-slate-800">
           <div className="flex items-center justify-between">
             <div>
               <h2 className="text-lg font-bold text-gray-800 dark:text-white">{song.title}</h2>
@@ -666,7 +666,7 @@ export function SongPractice({ isOpen, onClose, song, userId, userLevel, onCompl
           </div>
 
         {/* Main Practice Area */}
-        <div className="flex-1 relative overflow-hidden mx-4 rounded-2xl bg-white/95 dark:bg-slate-800/95 border-2 border-gray-200 dark:border-slate-600" style={{ minHeight: '280px' }}>
+        <div className="flex-1 relative overflow-hidden mx-2 sm:mx-4 rounded-2xl bg-white/95 dark:bg-slate-800/95 border-2 border-gray-200 dark:border-slate-600" style={{ minHeight: '280px' }}>
 
           {/* String Labels (left column) */}
           <div
@@ -835,12 +835,12 @@ export function SongPractice({ isOpen, onClose, song, userId, userLevel, onCompl
           </div>
 
         {/* Footer Controls */}
-        <div className="flex-shrink-0 px-5 py-4 bg-white/90 dark:bg-slate-800">
+        <div className="flex-shrink-0 px-3 sm:px-5 py-3 sm:py-4 bg-white/90 dark:bg-slate-800">
 
           {/* Chord Detection Display */}
           <div className="flex items-center justify-center mb-4">
             <div
-              className="px-8 py-4 rounded-2xl text-center"
+              className="px-4 sm:px-8 py-3 sm:py-4 rounded-2xl text-center w-full max-w-xs mx-auto"
               style={{
                 backgroundColor: !chordDetectionConnected
                   ? 'rgba(239, 68, 68, 0.1)'
@@ -860,7 +860,6 @@ export function SongPractice({ isOpen, onClose, song, userId, userLevel, onCompl
                   : detectedChord
                         ? 'rgba(59, 130, 246, 0.3)'
                     : 'rgba(156, 163, 175, 0.2)'}`,
-                minWidth: 280,
                 transition: 'all 0.15s ease-out'
               }}
             >

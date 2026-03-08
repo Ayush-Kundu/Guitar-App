@@ -601,7 +601,7 @@ export function ActivityModal({ isOpen, onClose, onComplete, activityType, activ
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent 
-        className={`!w-[min(95vw,640px)] !max-w-[640px] p-0 overflow-hidden [&>button:last-of-type]:hidden flex flex-col bg-gradient-to-br ${gradientClass}`}
+        className={`w-[calc(100%-1rem)] max-w-[640px] p-0 overflow-hidden [&>button:last-of-type]:hidden flex flex-col bg-gradient-to-br ${gradientClass}`}
         style={{ 
           borderRadius: '16px',
           border: '2.5px solid rgb(237, 237, 237)',

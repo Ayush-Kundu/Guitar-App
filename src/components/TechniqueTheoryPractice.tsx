@@ -362,7 +362,7 @@ export function TechniqueTheoryPractice({
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent
-        className="!w-[min(95vw,420px)] !max-w-[420px] p-0 overflow-hidden [&>button:last-of-type]:hidden flex flex-col rounded-2xl max-h-[90vh] overflow-y-auto"
+        className="w-[calc(100%-1rem)] max-w-[420px] p-0 overflow-hidden [&>button:last-of-type]:hidden flex flex-col rounded-2xl max-h-[90vh] overflow-y-auto"
         style={{
           border: '2.5px solid rgb(237, 237, 237)',
           boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 25px 50px -12px rgba(0, 0, 0, 0.1)',

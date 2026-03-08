@@ -566,11 +566,11 @@ export function Songs() {
       {/* Add Songs Dialog - Matching Songs Page Style */}
       <Dialog open={catalogOpen} onOpenChange={setCatalogOpen}>
         <DialogContent
-          className="w-[92vw] max-w-2xl max-h-[500px] overflow-hidden flex flex-col p-0 rounded-2xl [&>button:last-of-type]:hidden border-2 border-gray-200 dark:border-slate-600 bg-white dark:bg-slate-800"
+          className="w-[calc(100%-1rem)] max-w-2xl max-h-[85vh] sm:max-h-[500px] overflow-hidden flex flex-col p-0 rounded-2xl [&>button:last-of-type]:hidden border-2 border-gray-200 dark:border-slate-600 bg-white dark:bg-slate-800"
         >
           {/* Header */}
-              <div 
-            className="flex-shrink-0 px-5 pt-5 pb-4 bg-white/90 dark:bg-slate-800"
+              <div
+            className="flex-shrink-0 px-4 sm:px-5 pt-4 sm:pt-5 pb-3 sm:pb-4 bg-white/90 dark:bg-slate-800"
               >
             <div className="flex items-center justify-between mb-3">
               <div>
@@ -608,15 +608,15 @@ export function Songs() {
             </div>
           </div>
 
-          {/* Songs List - Scrollable with fixed height */}
-          <div 
-            className="overflow-y-auto bg-gradient-to-b from-blue-50/30 to-white/50 dark:from-slate-800 dark:to-slate-900" 
-            style={{ 
-              height: '200px',
-              maxHeight: '200px'
+          {/* Songs List - Scrollable */}
+          <div
+            className="flex-1 overflow-y-auto bg-gradient-to-b from-blue-50/30 to-white/50 dark:from-slate-800 dark:to-slate-900"
+            style={{
+              minHeight: '180px',
+              maxHeight: '50vh'
             }}
           >
-            <div className="px-5 py-3 space-y-2">
+            <div className="px-4 sm:px-5 py-3 space-y-2">
               {filteredCatalogSongs.length === 0 ? (
                 <div className="text-center py-8">
                   <Music className="w-10 h-10 mx-auto mb-2 text-gray-300 dark:text-gray-500" />
@@ -703,8 +703,8 @@ export function Songs() {
           </div>
 
           {/* Footer with Done Button */}
-          <div 
-            className="flex-shrink-0 px-5 py-3 border-t-2 border-gray-200 dark:border-slate-600 bg-white/90 dark:bg-slate-800"
+          <div
+            className="flex-shrink-0 px-4 sm:px-5 py-3 border-t-2 border-gray-200 dark:border-slate-600 bg-white/90 dark:bg-slate-800"
           >
             <div className="flex items-center justify-between">
             <p className="text-xs text-gray-500 dark:text-gray-400">
@@ -727,7 +727,7 @@ export function Songs() {
 
       {/* Remove Song Confirmation Dialog */}
       <Dialog open={removeConfirmOpen} onOpenChange={setRemoveConfirmOpen}>
-        <DialogContent className="max-w-sm p-0 overflow-hidden">
+        <DialogContent className="w-[calc(100%-1rem)] max-w-sm p-0 overflow-hidden rounded-2xl">
           {/* Header */}
           <div className="px-6 pt-6 pb-4" style={{ background: 'linear-gradient(to right, rgba(239, 68, 68, 0.1), rgba(220, 38, 38, 0.05))' }}>
             <div className="flex items-center gap-3">
