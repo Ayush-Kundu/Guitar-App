@@ -565,12 +565,12 @@ export function Songs() {
 
       {/* Add Songs Dialog - Matching Songs Page Style */}
       <Dialog open={catalogOpen} onOpenChange={setCatalogOpen}>
-        <DialogContent 
-          className="w-[95vw] max-w-2xl max-h-[500px] overflow-hidden flex flex-col p-0 rounded-2xl [&>button:last-of-type]:hidden border-2 border-gray-200 dark:border-slate-600 bg-white dark:bg-slate-800"
+        <DialogContent
+          className="w-[92vw] max-w-2xl max-h-[500px] overflow-hidden flex flex-col p-0 rounded-2xl [&>button:last-of-type]:hidden border-2 border-gray-200 dark:border-slate-600 bg-white dark:bg-slate-800"
         >
           {/* Header */}
               <div 
-            className="flex-shrink-0 p-4 bg-white/90 dark:bg-slate-800"
+            className="flex-shrink-0 px-5 pt-5 pb-4 bg-white/90 dark:bg-slate-800"
               >
             <div className="flex items-center justify-between mb-3">
               <div>
@@ -616,7 +616,7 @@ export function Songs() {
               maxHeight: '200px'
             }}
           >
-            <div className="p-3 space-y-2">
+            <div className="px-5 py-3 space-y-2">
               {filteredCatalogSongs.length === 0 ? (
                 <div className="text-center py-8">
                   <Music className="w-10 h-10 mx-auto mb-2 text-gray-300 dark:text-gray-500" />
@@ -704,7 +704,7 @@ export function Songs() {
 
           {/* Footer with Done Button */}
           <div 
-            className="flex-shrink-0 p-3 border-t-2 border-gray-200 dark:border-slate-600 bg-white/90 dark:bg-slate-800"
+            className="flex-shrink-0 px-5 py-3 border-t-2 border-gray-200 dark:border-slate-600 bg-white/90 dark:bg-slate-800"
           >
             <div className="flex items-center justify-between">
             <p className="text-xs text-gray-500 dark:text-gray-400">

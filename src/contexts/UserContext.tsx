@@ -125,6 +125,7 @@ interface UserContextType {
   // Existing functions
   signUp: (userData: Partial<User> & { password: string }) => Promise<void>;
   signIn: (email: string, password: string) => Promise<void>;
+  signInWithGoogle: () => Promise<void>;
   signOut: () => Promise<void>;
   updateUser: (updates: Partial<User>) => void;
   updateProfile: (updates: Partial<User>) => Promise<void>;
@@ -1733,6 +1734,154 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
+  // Google Sign-In using Supabase Auth OAuth
+  const signInWithGoogle = async () => {
+    setIsLoading(true);
+
+    try {
+      const { data, error } = await supabase.auth.signInWithOAuth({
+        provider: 'google',
+        options: {
+          redirectTo: window.location.origin,
+          skipBrowserRedirect: false,
+        },
+      });
+
+      if (error) {
+        throw new Error(`Google sign-in failed: ${error.message}`);
+      }
+
+      // The OAuth flow will redirect the browser, so we don't need to do anything else here.
+      // The auth state listener below will handle the callback.
+    } catch (error: any) {
+      setIsLoading(false);
+      throw error;
+    }
+  };
+
+  // Listen for Supabase Auth state changes (handles Google OAuth callback)
+  useEffect(() => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+      if (event === 'SIGNED_IN' && session?.user) {
+        const googleUser = session.user;
+        const email = googleUser.email?.toLowerCase();
+        const name = googleUser.user_metadata?.full_name || googleUser.user_metadata?.name || email?.split('@')[0] || 'User';
+
+        if (!email) {
+          setIsLoading(false);
+          return;
+        }
+
+        try {
+          // Check if a profile already exists for this email
+          const { data: existingProfile } = await supabase
+            .from('profiles')
+            .select('*')
+            .eq('email', email)
+            .single();
+
+          if (existingProfile) {
+            // Existing user — sign them in
+            const userData: User = {
+              id: existingProfile.user_id,
+              name: existingProfile.username || name,
+              email: existingProfile.email || email,
+              level: existingProfile.guitar_level || 'beginner',
+              musicPreferences: [
+                existingProfile.style_1 || 'rock',
+                existingProfile.style_2 || 'pop',
+                existingProfile.style_3 || 'blues'
+              ],
+              practiceStreak: existingProfile.streak || 0,
+              songsMastered: 0,
+              chordsLearned: 0,
+              hoursThisWeek: 0,
+              totalPoints: existingProfile.points || 0,
+              weeklyPoints: 0,
+              levelProgress: 0,
+              joinDate: new Date().toISOString(),
+              createdAt: new Date().toISOString(),
+              avatar: '🎸',
+              username: existingProfile.username || name,
+              isOnline: true
+            };
+
+            setUser(userData);
+            if (typeof window !== 'undefined') {
+              localStorage.setItem('guitarAppUser', JSON.stringify(userData));
+              localStorage.setItem('guitarAppSession', JSON.stringify({ userId: existingProfile.user_id, email }));
+            }
+
+            const cloudProgress = await loadProgressFromSupabase(existingProfile.user_id);
+          } else {
+            // New user — create a profile
+            const userId = generateUserId();
+
+            const profileData = {
+              user_id: userId,
+              email: email,
+              password_hash: '', // No password for Google OAuth users
+              username: name,
+              guitar_level: 'beginner',
+              style_1: 'rock',
+              style_2: 'pop',
+              style_3: 'blues',
+              points: 0,
+              compete_level: 'Bronze I',
+              streak: 0,
+              auth_provider: 'google'
+            };
+
+            const { error: insertError } = await supabase
+              .from('profiles')
+              .insert([profileData])
+              .select();
+
+            if (insertError) {
+              console.error('Failed to create Google profile:', insertError);
+              setIsLoading(false);
+              return;
+            }
+
+            const newUser: User = {
+              id: userId,
+              name: name,
+              email: email,
+              level: 'beginner',
+              musicPreferences: ['rock', 'pop', 'blues'],
+              practiceStreak: 0,
+              songsMastered: 0,
+              chordsLearned: 0,
+              hoursThisWeek: 0,
+              totalPoints: 0,
+              weeklyPoints: 0,
+              levelProgress: 0,
+              joinDate: new Date().toISOString(),
+              createdAt: new Date().toISOString(),
+              username: name,
+              avatar: '🎸',
+              isOnline: true
+            };
+
+            setUser(newUser);
+            if (typeof window !== 'undefined') {
+              localStorage.setItem('guitarAppUser', JSON.stringify(newUser));
+              localStorage.setItem('guitarAppSession', JSON.stringify({ userId, email }));
+            }
+          }
+        } catch (err) {
+          console.error('Error handling Google sign-in callback:', err);
+        } finally {
+          setIsLoading(false);
+        }
+      }
+    });
+
+    return () => {
+      subscription.unsubscribe();
+    };
+  }, []);
+
   // Updated signout function
   const signOut = async () => {
     try {
@@ -3016,6 +3165,7 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
     isConnected,
     signUp,
     signIn,
+    signInWithGoogle,
     signOut,
     updateUser,
     updateProfile,
