@@ -161,25 +161,24 @@ export function NoviceIntro({ isOpen, userId, userLevel, onComplete, onGoToBasic
     if (slideIndex > 0) setSlideIndex((i) => i - 1);
   };
 
-  // Static tab diagram: notes on every string, two columns (chord then next chord)
+  // Static tab diagram: string names + two fret columns (no caption text below the staff)
   const renderTabDiagram = () => {
-    const noteHeight = 28;
-    const noteWidth = 36;
-    const colGap = 16;
-    // Column 1: one fret number per string (e.g. open chord); column 2: next chord
-    const column1 = [0, 0, 0, 0, 0, 0]; // open strings
-    const column2 = [3, 2, 0, 0, 0, 0]; // example chord
+    const noteHeight = 22;
+    const noteWidth = 30;
+    const colGap = 12;
+    const column1 = [0, 0, 0, 0, 0, 0];
+    const column2 = [3, 2, 0, 0, 0, 0];
     const left1 = 20;
     const left2 = left1 + noteWidth + colGap;
     return (
-      <div className="my-4 rounded-2xl bg-white/95 dark:bg-slate-800/95 border-2 border-gray-200 dark:border-slate-600 overflow-hidden p-4">
-        <div className="relative" style={{ minHeight: '220px' }}>
+      <div className="my-3 rounded-2xl bg-white/95 dark:bg-slate-800/95 border-2 border-gray-200 dark:border-slate-600 overflow-hidden p-3">
+        <div className="relative" style={{ minHeight: '180px' }}>
           <div
             className="absolute left-0 top-0 bottom-0 z-10 flex flex-col bg-white/95 dark:bg-slate-800 border-r-2 border-gray-200 dark:border-slate-600 rounded-l-lg"
             style={{ width: STRING_LABELS_WIDTH }}
           >
             {STRING_NAMES.map((name, i) => (
-              <div key={i} className="flex-1 flex items-center justify-center text-sm font-bold" style={{ color: STRING_COLORS[i], minHeight: noteHeight + 8 }}>
+              <div key={i} className="flex-1 flex items-center justify-center text-xs font-bold" style={{ color: STRING_COLORS[i], minHeight: noteHeight + 6 }}>
                 {name}
               </div>
             ))}
@@ -224,10 +223,6 @@ export function NoviceIntro({ isOpen, userId, userLevel, onComplete, onGoToBasic
               </React.Fragment>
             ))}
           </div>
-        </div>
-        <div className="mt-3 pt-3 border-t border-gray-100 dark:border-slate-700 space-y-1.5 text-xs text-gray-600 dark:text-gray-400" style={{ fontFamily: font }}>
-          <p><strong className="text-gray-700 dark:text-gray-300">Left column:</strong> One number per string — play these six notes together (a chord). 0 = open string.</p>
-          <p><strong className="text-gray-700 dark:text-gray-300">Right column:</strong> Next chord. You read tab left → right, like reading words.</p>
         </div>
       </div>
     );

@@ -86,12 +86,12 @@ export function BeatsPopup({ section, onDismiss, onNavigate }: BeatsPopupProps) 
       <div className="w-full max-w-md mx-auto rounded-xl p-3 shadow-sm beats-popup" data-beats="popup">
         <div className="flex items-center gap-2">
           <div
-            className="w-9 h-9 rounded-full overflow-hidden flex-shrink-0 flex items-center justify-center beats-avatar"
+            className="w-6 h-6 rounded-full overflow-hidden flex-shrink-0 flex items-center justify-center beats-avatar"
           >
             <img
               src={beatsAvatarProfile}
               alt="Beats"
-              className="w-full h-full object-cover scale-110"
+              className="w-full h-full object-cover"
             />
           </div>
           <div className="flex-1 min-w-0 flex items-start gap-2">
