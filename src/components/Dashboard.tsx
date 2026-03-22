@@ -6,6 +6,8 @@ import { SkillProgressBar } from "./SkillProgressBar";
 import { CircularProgress } from "./ui/circular-progress";
 import { useUser } from "../contexts/UserContext";
 import charactersHoldingHands from '../assets/20251022_2045_Colorful Cartoon Friends_remix_01k87jmr2yfzesxbt7pcwpqy24.png';
+/** Same asset as Settings “Orange Circle” (red Beats) — profile-style, no lineup crop */
+import beatsAvatarProfile from '../assets/20260124_1729_Image Generation_remix_01kfsc93hye3pvncmet7494507-Picsart-CropImage (5).png';
 import guitarContent from '../data/guitar-content.json';
 import { getTechniquePath, getTheoryPath } from '../data/learning-journey';
 import {
@@ -17,10 +19,19 @@ import {
   getDailyRoutine,
   getWeeklyTheoryRoutine,
   getSelectedSongs,
+  getWeeklyGoals,
+  getDailyPracticeGoal,
   SelectedSong,
   calculatePointsBreakdown,
   PointsBreakdown
 } from '../utils/progressStorage';
+import { playTap } from '../utils/soundEffects';
+import {
+  getCurrentBeatsCategory,
+  getBeatsCategoryLabel,
+  getBeatsCategoryInstruction,
+  skipBeatsCategory as persistSkipBeatsCategory,
+} from '../utils/beatsInstructions';
 import {
   Music,
   Plus,
@@ -35,11 +46,153 @@ import {
   Flame,
   Coins,
   Trophy,
-  Timer
+  Timer,
+  ChevronRight,
+  Sparkles,
+  SkipForward,
+  MoreHorizontal
 } from "lucide-react";
 
 interface DashboardProps {
   onSectionChange: (section: string) => void;
+}
+
+function DashboardBeatsSaysBlock({
+  user,
+  progressData,
+  onSectionChange,
+}: {
+  user: ReturnType<typeof useUser>['user'];
+  progressData: any;
+  onSectionChange: (section: string) => void;
+}) {
+  const [beatsSkipTrigger, setBeatsSkipTrigger] = useState(0);
+  const [instructionExpanded, setInstructionExpanded] = useState(false);
+  const today = new Date().toISOString().split('T')[0];
+  const dp = progressData?.dailyProgress?.[today] || {};
+  const totalMin = dp.totalMinutes || 0;
+  const techMin = dp.techniqueMinutes || 0;
+  const theoryMin = dp.theoryMinutes || 0;
+  const goalsDone = dp.goalsCompleted || [];
+  const dailyGoal = user ? getDailyPracticeGoal(user.id) : 30;
+  const practiceDone = totalMin >= dailyGoal;
+  const techniqueDone = techMin >= 5 || goalsDone.includes('technique_lesson_today');
+  const theoryDone = theoryMin >= 5 || goalsDone.includes('theory_lesson_today');
+  const goalsCount = (practiceDone ? 1 : 0) + (techniqueDone ? 1 : 0) + (theoryDone ? 1 : 0);
+  const beatsCategory = getCurrentBeatsCategory(today);
+  const categoryLabel = getBeatsCategoryLabel(beatsCategory);
+  const { instruction, instructionFull, section: primarySection } = getBeatsCategoryInstruction(beatsCategory, {
+    user,
+    progressData,
+    today,
+    goalsCount,
+    practiceDone,
+    techniqueDone,
+    theoryDone,
+    dailyGoal,
+  });
+
+  const showInstructionExpand =
+    instructionFull.trim() !== instruction.trim() && instructionFull.length > instruction.length;
+
+  useEffect(() => {
+    setInstructionExpanded(false);
+  }, [beatsCategory, instruction, beatsSkipTrigger]);
+
+  const handleSkip = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    persistSkipBeatsCategory(beatsCategory, today);
+    setBeatsSkipTrigger(t => t + 1);
+  };
+
+  const openBeatsTarget = () => {
+    try {
+      sessionStorage.setItem('strummy-beats-directed', primarySection);
+      sessionStorage.setItem('strummy-beats-category', beatsCategory);
+      const todayKey = new Date().toISOString().split('T')[0];
+      localStorage.removeItem(`strummy-ignore-beats-popup-${primarySection}-${todayKey}`);
+    } catch (_) {}
+    onSectionChange(primarySection);
+  };
+
+  return (
+    <div className="mb-4 rounded-2xl p-4 shadow-sm beats-card" data-beats="card">
+      <div className="flex items-center justify-between gap-2 mb-3">
+        <div className="flex items-center gap-2 min-w-0">
+          <div className="w-9 h-9 rounded-full overflow-hidden flex-shrink-0 flex items-center justify-center beats-avatar">
+            <img
+              src={beatsAvatarProfile}
+              alt="Beats"
+              className="w-full h-full object-cover scale-110"
+            />
+          </div>
+          <div>
+            <h3 className="font-semibold text-sm beats-card-text">Beats says</h3>
+            <p className="text-xs text-gray-600 dark:text-gray-400">
+              {beatsCategory === 'daily' ? `${goalsCount} of 3 daily goals` : categoryLabel.toLowerCase()}
+            </p>
+          </div>
+        </div>
+        <div className="flex items-center gap-2 flex-shrink-0">
+          <button
+            type="button"
+            onClick={handleSkip}
+            className="flex items-center justify-center p-2 rounded-lg beats-popup-btn border min-w-[32px] min-h-[28px]"
+            title="Skip this section"
+            aria-label="Skip section"
+          >
+            <SkipForward className="w-3.5 h-3.5" />
+          </button>
+          <div className="flex items-center gap-1.5 px-2 py-1 rounded-lg beats-badge">
+            <Sparkles className="w-3.5 h-3.5 beats-card-text" />
+            <span className="text-[10px] font-medium beats-card-text">{categoryLabel}</span>
+          </div>
+        </div>
+      </div>
+      <div
+        role="button"
+        tabIndex={0}
+        onClick={openBeatsTarget}
+        onKeyDown={e => {
+          if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault();
+            openBeatsTarget();
+          }
+        }}
+        className="w-full flex items-end gap-3 text-left py-2.5 px-3 rounded-lg beats-cta cursor-pointer"
+      >
+        <div className="flex-1 min-w-0 min-h-0">
+          {!showInstructionExpand ? (
+            <p className="text-sm font-medium beats-card-text m-0 leading-snug">{instruction}</p>
+          ) : (
+            <div className="flex items-end gap-1 w-full min-w-0">
+              <p
+                className={`text-sm font-medium beats-card-text m-0 leading-snug flex-1 min-w-0 break-words ${
+                  !instructionExpanded ? 'line-clamp-2' : ''
+                }`}
+              >
+                {instructionExpanded ? instructionFull : instruction}
+              </p>
+              <button
+                type="button"
+                onClick={e => {
+                  e.stopPropagation();
+                  setInstructionExpanded(v => !v);
+                }}
+                className="flex-shrink-0 p-0 m-0 border-0 bg-transparent shadow-none rounded-none beats-card-text cursor-pointer pb-px"
+                title={instructionExpanded ? 'Show shorter hint' : 'Show full message'}
+                aria-expanded={instructionExpanded}
+                aria-label={instructionExpanded ? 'Collapse Beats message' : 'Expand Beats message'}
+              >
+                <MoreHorizontal className="w-4 h-4 shrink-0" strokeWidth={2.25} />
+              </button>
+            </div>
+          )}
+        </div>
+        <ChevronRight className="w-5 h-5 flex-shrink-0 beats-card-text mb-0.5" />
+      </div>
+    </div>
+  );
 }
 
 export function Dashboard({ onSectionChange }: DashboardProps) {
@@ -53,6 +206,7 @@ export function Dashboard({ onSectionChange }: DashboardProps) {
   const [dailyRoutine, setDailyRoutine] = useState<any>(null);
   const [theoryRoutine, setTheoryRoutine] = useState<any>(null);
   const [pointsBreakdown, setPointsBreakdown] = useState<PointsBreakdown | null>(null);
+  const [weeklyGoals, setWeeklyGoals] = useState<ReturnType<typeof getWeeklyGoals> | null>(null);
   const LEVEL_ORDER = ['novice', 'beginner', 'elementary', 'intermediate', 'proficient', 'advanced', 'expert'];
 
   // Function to refresh all data
@@ -68,6 +222,7 @@ export function Dashboard({ onSectionChange }: DashboardProps) {
       setDailyRoutine(getDailyRoutine(user.id));
       setTheoryRoutine(getWeeklyTheoryRoutine(user.id));
       setPointsBreakdown(calculatePointsBreakdown(user.id));
+      setWeeklyGoals(getWeeklyGoals(user.id));
     }
   };
 
@@ -226,16 +381,16 @@ export function Dashboard({ onSectionChange }: DashboardProps) {
 
   const streakStatus = getStreakStatus();
 
-  // Technique Theory progress: % of units completed for current level's path
+  // Technique / Theory progress: % of lessons completed (same as mastery on Technique/Theory pages)
   const calculateTechniqueProgress = () => {
     if (!user) return 0;
     const level = user.level || 'novice';
     const path = getTechniquePath(level);
     if (!path.length) return 0;
-    const completedUnits = (progressData?.completedUnits as string[] | undefined) ?? [];
-    const pathUnitIds = new Set(path.map(u => u.id));
-    const completedInPath = completedUnits.filter(id => pathUnitIds.has(id)).length;
-    return Math.round((completedInPath / path.length) * 100);
+    const completedLessons = new Set((progressData as any)?.completedLessons ?? []);
+    const totalLessons = path.reduce((sum, u) => sum + u.lessons.length, 0);
+    const completedInPath = path.flatMap(u => u.lessons).filter(l => completedLessons.has(l.id)).length;
+    return totalLessons ? Math.round((completedInPath / totalLessons) * 100) : 0;
   };
 
   const calculateTheoryProgress = () => {
@@ -243,10 +398,10 @@ export function Dashboard({ onSectionChange }: DashboardProps) {
     const level = user.level || 'novice';
     const path = getTheoryPath(level);
     if (!path.length) return 0;
-    const completedUnits = (progressData?.completedTheoryUnits as string[] | undefined) ?? [];
-    const pathUnitIds = new Set(path.map(u => u.id));
-    const completedInPath = completedUnits.filter(id => pathUnitIds.has(id)).length;
-    return Math.round((completedInPath / path.length) * 100);
+    const completedLessons = new Set((progressData as any)?.completedTheoryLessons ?? []);
+    const totalLessons = path.reduce((sum, u) => sum + u.lessons.length, 0);
+    const completedInPath = path.flatMap(u => u.lessons).filter(l => completedLessons.has(l.id)).length;
+    return totalLessons ? Math.round((completedInPath / totalLessons) * 100) : 0;
   };
 
   return (
@@ -280,7 +435,7 @@ export function Dashboard({ onSectionChange }: DashboardProps) {
         </div>
 
         {/* User Stats */}
-        <div className="flex items-center justify-center gap-2 mb-6">
+        <div className="flex items-center justify-center gap-2 mb-4">
           <div className="flex items-center justify-center px-3 py-1.5 rounded-xl" style={{backgroundColor: 'rgb(255, 191, 73)', borderBottom: '3px solid rgb(255, 171, 46)'}}>
             <Flame className="text-orange-500 fill-orange-500" style={{ marginRight: '6px', width: '18px', height: '18px'}} />
             <span className="text-base font-bold text-orange-600">{displayStreak}</span>
@@ -303,8 +458,11 @@ export function Dashboard({ onSectionChange }: DashboardProps) {
           </div>
         </div>
 
+        {/* Beats branch — Daily, Challenges, Achievements, Friends with Skip */}
+        <DashboardBeatsSaysBlock user={user} progressData={progressData} onSectionChange={onSectionChange} />
+
         {/* Today's Goals and Current Songs Row */}
-        <div className="grid grid-cols-2 gap-4 mb-8">
+        <div className="grid grid-cols-2 gap-4 mb-6">
           {/* Today's Goals */}
           <div
             className="backdrop-blur-sm rounded-2xl p-4 shadow-sm hover:shadow-md transition-all"
@@ -320,18 +478,24 @@ export function Dashboard({ onSectionChange }: DashboardProps) {
               </div>
             </div>
             <div className="space-y-2">
-              {/* Practice 30 Minutes Goal */}
-              <div className="flex items-center justify-between py-1.5 px-2 rounded-lg" style={{ backgroundColor: 'rgba(59, 130, 246, 0.08)' }}>
-                <div className="flex items-center gap-2">
-                  {(progressData?.dailyProgress?.[new Date().toISOString().split('T')[0]]?.totalMinutes || 0) >= 30 ? (
-                    <CheckCircle2 className="w-3.5 h-3.5" style={{ color: 'rgb(34, 197, 94)' }} />
-                  ) : (
-                    <div className="w-3.5 h-3.5 border-2 rounded-full" style={{ borderColor: 'rgb(59, 130, 246)' }}></div>
-                  )}
-                  <span className="text-xs font-medium text-gray-700 dark:text-gray-300">Practice 30 min</span>
-                </div>
-                <span className="text-xs font-bold" style={{ color: 'rgb(59, 130, 246)' }}>+1</span>
-              </div>
+              {/* Practice X Minutes Goal (user-set daily goal) */}
+              {(() => {
+                const dailyGoal = user ? getDailyPracticeGoal(user.id) : 30;
+                const totalMin = progressData?.dailyProgress?.[new Date().toISOString().split('T')[0]]?.totalMinutes || 0;
+                return (
+                  <div className="flex items-center justify-between py-1.5 px-2 rounded-lg" style={{ backgroundColor: 'rgba(59, 130, 246, 0.08)' }}>
+                    <div className="flex items-center gap-2">
+                      {totalMin >= dailyGoal ? (
+                        <CheckCircle2 className="w-3.5 h-3.5" style={{ color: 'rgb(34, 197, 94)' }} />
+                      ) : (
+                        <div className="w-3.5 h-3.5 border-2 rounded-full" style={{ borderColor: 'rgb(59, 130, 246)' }}></div>
+                      )}
+                      <span className="text-xs font-medium text-gray-700 dark:text-gray-300">Practice {dailyGoal} min</span>
+                    </div>
+                    <span className="text-xs font-bold" style={{ color: 'rgb(59, 130, 246)' }}>+1</span>
+                  </div>
+                );
+              })()}
               {/* Technique Tasks Goal - one technique lesson completed OR 5 min today */}
               <div className="flex items-center justify-between py-1.5 px-2 rounded-lg" style={{ backgroundColor: 'rgba(168, 85, 247, 0.08)' }}>
                 <div className="flex items-center gap-2">
@@ -423,18 +587,17 @@ export function Dashboard({ onSectionChange }: DashboardProps) {
           <div className="bg-white/70 dark:bg-gray-800/70 backdrop-blur-sm rounded-xl p-6 shadow-sm" style={{ border: '2px solid rgb(231, 231, 231)' }}>
             <div className="grid grid-cols-2 gap-8">
               {/* Technique Section */}
-              <div 
+              <div
                 onClick={() => onSectionChange('technique')}
                 className="cursor-pointer hover:scale-[1.02] transition-transform duration-200"
               >
                 <div className="flex flex-col items-center">
                   <h2 className="text-lg font-semibold mb-1" style={{ color: '#3b82f6' }}>Technique</h2>
                   <p className="text-lg font-bold mb-4" style={{ color: '#3b82f6' }}>{calculateTechniqueProgress()}%</p>
-                  
                   <div className="relative">
-                    <CircularProgress 
-                      value={calculateTechniqueProgress()} 
-                      size={140} 
+                    <CircularProgress
+                      value={calculateTechniqueProgress()}
+                      size={140}
                       strokeWidth={12}
                       color="#3b82f6"
                       showPercentage={false}
@@ -447,18 +610,17 @@ export function Dashboard({ onSectionChange }: DashboardProps) {
               </div>
 
               {/* Theory Section */}
-              <div 
+              <div
                 onClick={() => onSectionChange('theory')}
                 className="cursor-pointer hover:scale-[1.02] transition-transform duration-200"
               >
                 <div className="flex flex-col items-center">
                   <h2 className="text-lg font-semibold mb-1" style={{ color: '#a855f7' }}>Theory</h2>
                   <p className="text-lg font-bold mb-4" style={{ color: '#a855f7' }}>{calculateTheoryProgress()}%</p>
-                  
                   <div className="relative">
-                    <CircularProgress 
-                      value={calculateTheoryProgress()} 
-                      size={140} 
+                    <CircularProgress
+                      value={calculateTheoryProgress()}
+                      size={140}
                       strokeWidth={12}
                       color="#a855f7"
                       showPercentage={false}

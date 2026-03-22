@@ -9,6 +9,7 @@ import {
   Settings,
   LucideIcon
 } from 'lucide-react';
+import { playTap } from '../utils/soundEffects';
 
 interface NavItemProps {
   icon: LucideIcon;
@@ -21,7 +22,7 @@ interface NavItemProps {
 function NavItem({ icon: Icon, icon2: Icon2, label, isActive, onClick }: NavItemProps) {
   return (
     <button
-      onClick={onClick}
+      onClick={() => { playTap(); onClick(); }}
       className={`flex flex-col items-center justify-center py-2 px-1 sm:px-2 rounded-lg transition-all duration-200 relative ${ 
         isActive 
           ? 'text-orange-600 bg-orange-50 dark:bg-orange-500/20 dark:text-orange-400' 

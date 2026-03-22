@@ -5,6 +5,7 @@
 
 import { createClient } from '@supabase/supabase-js';
 import { sendAchievementNotification, scheduleStreakReminder, cancelStreakReminder } from './notifications';
+import { playAchievementSong } from './soundEffects';
 
 // Initialize Supabase client for syncing
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || '';
@@ -223,6 +224,8 @@ export interface UserProgress {
     musicTheory: { current: number; total: number };
     songRepertoire: { current: number; total: number };
   };
+  /** User-chosen daily practice goal in minutes. Weekly goal = this * 7. Default 30. */
+  dailyPracticeGoalMinutes?: number;
 }
 
 // ========== Helper Functions ==========
@@ -699,8 +702,9 @@ export const updateSongProgress = (
     progress.songsCompleted[songId] = true;
     console.log(`[Points] +${POINTS.SONG_COMPLETE} pts for completing song: ${title}`);
 
-    // Send song completed notification
+    // Send song completed notification and play sound
     sendAchievementNotification('song_completed', { songName: title });
+    playAchievementSong();
 
     // Check for first song completion
     const completedSongsCount = Object.keys(progress.songsCompleted).length;
@@ -1767,6 +1771,20 @@ export const syncTotalPoints = (userId: string): number => {
   return breakdown.total;
 };
 
+// ========== Daily practice goal (user-set minutes per day; weekly = goal * 7) ==========
+const DEFAULT_DAILY_PRACTICE_GOAL = 30;
+
+export const getDailyPracticeGoal = (userId: string): number => {
+  const progress = loadProgress(userId);
+  return progress.dailyPracticeGoalMinutes ?? DEFAULT_DAILY_PRACTICE_GOAL;
+};
+
+export const setDailyPracticeGoal = (userId: string, minutes: number): void => {
+  const progress = loadProgress(userId);
+  progress.dailyPracticeGoalMinutes = Math.max(5, Math.min(120, minutes));
+  saveProgress(progress);
+};
+
 // ========== Weekly Goals ==========
 export const getWeeklyGoals = (userId: string): WeeklyGoals => {
   const progress = loadProgress(userId);
@@ -1963,6 +1981,50 @@ export interface AchievementSet {
   name: string;
   description: string;
   achievements: Achievement[];
+}
+
+/** Human-readable "how to unlock" path for an achievement requirement */
+export function getAchievementPathText(requirement: Achievement['requirement']): string {
+  const v = requirement.value;
+  switch (requirement.type) {
+    case 'totalMinutes':
+      return v >= 60 ? `Practice ${Math.round(v / 60)} hour${v >= 120 ? 's' : ''} total` : `Practice ${v} minute${v !== 1 ? 's' : ''} total`;
+    case 'streak':
+      return `Practice ${v} day${v !== 1 ? 's' : ''} in a row`;
+    case 'totalPoints':
+      return `Earn ${v} point${v !== 1 ? 's' : ''}`;
+    case 'level':
+      return `Reach level ${v}`;
+    case 'selectedSongs':
+      return `Add ${v} song${v !== 1 ? 's' : ''} to learn`;
+    case 'songsStarted':
+      return `Start practicing ${v} song${v !== 1 ? 's' : ''}`;
+    case 'songsCompleted':
+      return `Complete ${v} song${v !== 1 ? 's' : ''} (100%)`;
+    case 'songProgress':
+      return `Reach ${v}% on any song`;
+    case 'theoryCompleted':
+      return `Complete ${v} theory topic${v !== 1 ? 's' : ''}`;
+    case 'techniquesCompleted':
+      if (requirement.category) {
+        const cat = requirement.category.charAt(0).toUpperCase() + requirement.category.slice(1);
+        return `Complete ${v} ${cat} technique${v !== 1 ? 's' : ''}`;
+      }
+      return `Complete ${v} technique${v !== 1 ? 's' : ''}`;
+    case 'dailyGoals':
+      return `Complete ${v} daily goal${v !== 1 ? 's' : ''}`;
+    case 'dailyRoutineComplete':
+    case 'dailyRoutinesCompleted':
+      return `Complete daily routine ${v} time${v !== 1 ? 's' : ''}`;
+    case 'weeklyGoalsCompleted':
+      return `Complete weekly goals ${v} time${v !== 1 ? 's' : ''}`;
+    case 'allCategories':
+      return `Complete ${v} technique${v !== 1 ? 's' : ''} in each category`;
+    case 'skillAreasCompleted':
+      return `Complete ${v} skill area${v !== 1 ? 's' : ''}`;
+    default:
+      return 'Complete the requirement';
+  }
 }
 
 // Get the current achievement set for a user

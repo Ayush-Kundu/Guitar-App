@@ -122,21 +122,142 @@ export const techniqueContent: Record<string, LessonContent> = {
   'What Is a Chord?': {
     title: 'What Is a Chord?',
     items: [
-      { type: 'fill_blank', sentence: 'A chord is _____ or more notes played together.', options: ['3', '2', '4', '5'], correctAnswer: 0, explanation: 'By definition, a chord is at least three different notes sounding at once. Two notes can be a "dyad" or interval, but chords are the building blocks of harmony in songs. Most guitar chords use three to six notes (sometimes with repeats across strings). From zero: think of a chord as a "stack" of notes that create one harmony.' },
-      { type: 'multiple_choice', question: 'What do we call chords that sound bright or happy?', options: ['Minor', 'Major', 'Diminished', 'Seventh'], correctAnswer: 1, explanation: 'Major chords use a specific pattern of intervals (root, major third, perfect fifth) that sounds stable and bright. They are the "happy" or resolved sound in most music. Songs mix major and minor to create emotion and tension.' },
-      { type: 'multiple_choice', question: 'What do we call chords that sound darker or sadder?', options: ['Major', 'Minor', 'Augmented', 'Power'], correctAnswer: 1, explanation: 'Minor chords use a minor third (one half step lower than in major), which gives a darker, more melancholic quality. The difference between major and minor is just one note, but it changes the whole mood—this is the basis of harmony from zero to hero.' },
-      { type: 'fill_blank', sentence: 'Chords are the _____ of songs: they support the melody and define the harmony.', options: ['building blocks', 'speed', 'volume', 'tempo'], correctAnswer: 0, explanation: 'When you strum a chord, you are playing the harmony—the background that supports the tune. Most songs are built from a sequence of chords (a "chord progression"). So learning chords is not optional; it is how you go from single notes to real music.' },
-      { type: 'multiple_choice', question: 'On the guitar, how do we usually play a chord?', options: ['One string at a time', 'By pressing several strings at different frets and strumming or plucking them together', 'Only on the 1st string', 'Without using the fretting hand'], correctAnswer: 1, explanation: 'A chord shape is a pattern of fingers on several strings and frets. When you strum or pluck those strings together (or in a pattern), you hear the chord. So chord "shapes" are the key: learn the shape, and you can play the chord anywhere or in any song that uses it.' }
+      { type: 'fill_blank', sentence: 'A chord is _____ or more notes played together.', options: ['3', '2', '4', '5'], correctAnswer: 0, explanation: 'By definition, a chord is at least three different notes sounding at once. Two notes can be a "dyad" or interval; three or more form a chord.' },
+      { type: 'multiple_choice', question: 'To build any major chord you need the root, the major third, and the fifth. For C major, which note is the major third?', options: ['E', 'C', 'G', 'B'], correctAnswer: 0, explanation: 'C major = C (root), E (major third), G (fifth). The major third is four half steps above the root.' },
+      { type: 'multiple_choice', question: 'What makes a minor chord different from a major chord?', options: ['The third is one half step lower in minor', 'The fifth is different', 'Minor has fewer notes', 'The root changes'], correctAnswer: 0, explanation: 'Minor chords use a minor third (one half step lower than in major), which gives a darker quality. The root and fifth are the same; only the third changes.' },
+      { type: 'fill_blank', sentence: 'Chords are the _____ of songs: they support the melody and define the harmony.', options: ['building blocks', 'speed', 'volume', 'tempo'], correctAnswer: 0, explanation: 'When you strum a chord, you are playing the harmony. Most songs are built from a sequence of chords (a chord progression).' },
+      { type: 'multiple_choice', question: 'On the guitar, how do we usually play a chord?', options: ['By pressing several strings at different frets and strumming or plucking them together', 'One string at a time', 'Only on the 1st string', 'Without using the fretting hand'], correctAnswer: 0, explanation: 'A chord shape is a pattern of fingers on several strings and frets. When you strum those strings together, you hear the chord.' }
+    ]
+  },
+  'Switching Between Chords': {
+    title: 'Switching Between Chords',
+    items: [
+      { type: 'multiple_choice', question: 'When switching from Em to A to D, what is the main skill you are building?', options: ['Changing finger shapes without long pauses and keeping the beat', 'Playing each chord louder', 'Using only one finger', 'Strumming faster'], correctAnswer: 0, explanation: 'The real skill is switching from one chord shape to the next without long pauses or losing the beat. Start slowly; speed and smoothness come with repetition.' },
+      { type: 'fill_blank', sentence: 'Common tips for clean chord changes: look at your hand when you switch, lift fingers _____, and aim for the new shape in one motion.', options: ['together', 'one by one', 'slowly', 'after strumming'], correctAnswer: 0, explanation: 'Lifting fingers together and moving to the new shape in one motion reduces the gap between chords and keeps your timing steady.' },
+      { type: 'multiple_choice', question: 'Which of these is a good practice approach for chord switching?', options: ['Play one chord, then move to the next shape and strum—do not rush', 'Play as fast as possible from the start', 'Only practice one chord per day', 'Skip the metronome'], correctAnswer: 0, explanation: 'Start slowly: play one chord, then move your fingers to the next chord shape and strum. Do not rush. Speed and smoothness come with repetition.' }
+    ]
+  },
+  'Your First Strum Pattern': {
+    title: 'Your First Strum Pattern',
+    items: [
+      { type: 'multiple_choice', question: 'The pattern D-D-U-U-D-U fits a huge number of songs. What do D and U stand for?', options: ['Down strum and Up strum', 'Different chord', 'Duration and Volume', 'Downbeat and Upbeat'], correctAnswer: 0, explanation: 'D = down strum (brush from thick to thin strings), U = up strum (return motion). This pattern repeats and fits many songs in 4/4 time.' },
+      { type: 'fill_blank', sentence: 'Count the D-D-U-U-D-U pattern over four beats: beat 1 = down, beat 2 = down, "and" of 2 = up, beat 3 = up, beat 4 = down, "and" of 4 = _____.', options: ['up', 'down', 'rest', 'chord change'], correctAnswer: 0, explanation: 'The "and" of beat 4 is an up strum. Keeping your hand moving down-up constantly (even when you skip a strum) keeps timing even.' },
+      { type: 'multiple_choice', question: 'Why should your strumming hand keep moving in a constant down-up motion even when you skip a strum?', options: ['So the timing stays even and the pulse is consistent', 'To play louder', 'To change chords faster', 'Only when using a pick'], correctAnswer: 0, explanation: 'Constant motion like a pendulum keeps the pulse. You choose on which beats to hit the strings; the hand motion maintains the rhythm.' }
+    ]
+  },
+  'Muting Strings You Don\'t Want': {
+    title: 'Muting Strings You Don\'t Want',
+    items: [
+      { type: 'multiple_choice', question: 'For D major you use only strings 4, 3, 2, and 1. What should you do with strings 6 and 5?', options: ['Mute them so they do not ring', 'Press them at a fret', 'Strum them anyway', 'Tune them differently'], correctAnswer: 0, explanation: 'Muting means lightly touching a string so it does not ring—with an unused finger, the side of your fretting finger, or your thumb. For D, strings 6 and 5 should stay quiet.' },
+      { type: 'fill_blank', sentence: 'Muting is lightly _____ a string so it does not ring—you do not press it down to a fret.', options: ['touching', 'plucking', 'cutting', 'tuning'], correctAnswer: 0, explanation: 'You damp the string so it stays quiet. Learning to mute the strings you do not want is part of clean playing.' },
+      { type: 'multiple_choice', question: 'How can you mute an unwanted string?', options: ['With an unused finger, the side of your fretting finger, or your thumb', 'Only with a pick', 'By not touching it', 'By pressing it to the fretboard'], correctAnswer: 0, explanation: 'Lightly touch the string with a finger or thumb so it does not vibrate. That keeps wrong notes from ringing and makes your chords sound intentional.' }
+    ]
+  },
+  'Your First Riff: Smoke on the Water': {
+    title: 'Your First Riff: Smoke on the Water',
+    items: [
+      { type: 'multiple_choice', question: 'What is a riff?', options: ['A short, repeating melodic phrase—often the most recognizable part of a song', 'A chord progression', 'A strum pattern', 'A type of pick'], correctAnswer: 0, explanation: 'A riff is a short melodic phrase that repeats. The Smoke on the Water riff uses only a few notes on one or two strings.' },
+      { type: 'multiple_choice', question: 'To play a riff cleanly, what do you need to coordinate?', options: ['Fretting hand holds the correct frets while the picking hand plays the right string at the right time', 'Only the picking hand', 'Only the fretting hand', 'Your foot and your pick'], correctAnswer: 0, explanation: 'Both hands work together: the fretting hand holds the correct frets while the picking hand plays the right string at the right time.' },
+      { type: 'fill_blank', sentence: 'Learning the Smoke on the Water riff ties together single-note picking and _____ so you play real music.', options: ['fretting', 'singing', 'tuning', 'strumming'], correctAnswer: 0, explanation: 'You use the fretting hand for the correct frets and the picking hand for the right string at the right time. That ties single-note picking and fretting into real music.' }
+    ]
+  },
+  'Simple Fingerpicking Pattern': {
+    title: 'Simple Fingerpicking Pattern',
+    items: [
+      { type: 'multiple_choice', question: 'What does the pattern p-i-m-a-m-i mean in fingerpicking?', options: ['Thumb, index, middle, ring, middle, index—which finger plucks in order', 'Play only the bass', 'A chord name', 'A strum direction'], correctAnswer: 0, explanation: 'p = thumb, i = index, m = middle, a = ring. So p-i-m-a-m-i tells you which finger plucks which string in order, creating a flowing arpeggio.' },
+      { type: 'multiple_choice', question: 'When you play p-i-m-a-m-i repeatedly over a chord, what are you playing?', options: ['An arpeggio—the notes of the chord one after another', 'A scale', 'A single note', 'A strum'], correctAnswer: 0, explanation: 'An arpeggio is when you play the notes of a chord one after another instead of all at once. The pattern creates a flowing, harp-like sound.' },
+      { type: 'fill_blank', sentence: 'In the p-i-m-a-m-i pattern, the thumb (p) typically plays the _____ strings (6, 5, 4).', options: ['bass', 'treble', 'middle', 'open'], correctAnswer: 0, explanation: 'Thumb handles the bass strings (6, 5, 4); index, middle, and ring handle the treble strings (3, 2, 1).' }
+    ]
+  },
+  'Vibrato - Making Notes Sing': {
+    title: 'Vibrato - Making Notes Sing',
+    items: [
+      { type: 'multiple_choice', question: 'What is vibrato?', options: ['A slight, rapid wavering of the pitch of a note—makes a held note wobble slightly', 'A type of chord', 'Playing two notes at once', 'A strum pattern'], correctAnswer: 0, explanation: 'Vibrato is a slight wavering of the pitch. It makes the guitar sound vocal and human; without it, sustained notes can sound flat and lifeless.' },
+      { type: 'multiple_choice', question: 'How do you create vibrato on a fretted note?', options: ['Gently shake your finger side-to-side or use small, repeated bends', 'Press harder', 'Move to another fret', 'Strum faster'], correctAnswer: 0, explanation: 'After fretting a note, you create vibrato by gently shaking your finger side-to-side (parallel to the frets) or by using small, repeated bends.' },
+      { type: 'fill_blank', sentence: 'Vibrato makes the guitar sound _____ and human; it is one of the main tools for expression.', options: ['vocal', 'quiet', 'sharp', 'muted'], correctAnswer: 0, explanation: 'Vibrato makes sustained notes sound vocal and expressive. It is one of the main tools for expression from zero to professional playing.' }
+    ]
+  },
+  'Moving Barre Shapes': {
+    title: 'Moving Barre Shapes',
+    items: [
+      { type: 'multiple_choice', question: 'When you move the F major barre shape from fret 1 to fret 3, what chord do you get?', options: ['G major', 'A major', 'F minor', 'Bb major'], correctAnswer: 0, explanation: 'F at fret 1, G at fret 3, A at fret 5, B at fret 7. The root note on the low E string names the chord.' },
+      { type: 'multiple_choice', question: 'What names the chord when you move a barre shape to a new fret?', options: ['The root note—the note under your barre on the low E (or A) string', 'The fret number', 'The shape only', 'The picking hand'], correctAnswer: 0, explanation: 'The root is the note your index finger is barring on the low E string (or the string you use for the root). So the same shape at different frets gives different chords.' },
+      { type: 'fill_blank', sentence: 'The same barre _____ can be moved up and down the neck to play different chords; one shape gives you every major or minor chord in that form.', options: ['shape', 'finger', 'pick', 'string'], correctAnswer: 0, explanation: 'The same finger shape moved to different frets gives different chords. F at fret 1, G at fret 3, A at fret 5, etc. This is why barre chords are essential.' }
     ]
   },
   'E Minor - Your First Chord': {
     title: 'E Minor - Your First Chord',
     items: [
-      { type: 'fill_blank', sentence: 'E minor uses just _____ fingers on the fretboard.', options: ['2', '1', '3', '4'], correctAnswer: 0, explanation: 'E minor (Em) needs only two fingers: middle finger on string 5 fret 2, ring finger on string 4 fret 2. The other strings are either open or not played. That makes Em one of the first chords beginners learn—simple shape, full sound, and it appears in hundreds of songs.' },
-      { type: 'multiple_choice', question: 'Which fingers play E minor?', options: ['Index and middle', 'Middle and ring', 'Ring and pinky', 'Index and pinky'], correctAnswer: 1, explanation: 'Middle finger on string 5 (A string) fret 2, ring finger on string 4 (D string) fret 2. Strings 6, 3, 2, and 1 are played open. Memorizing "middle and ring on 5 and 4 at fret 2" is the first step to playing Em without looking.' },
-      { type: 'fill_blank', sentence: 'E minor has a _____ sound because it is a minor chord.', options: ['darker or sadder', 'happy', 'bright', 'cheerful'], correctAnswer: 0, explanation: 'Minor chords have a lower "third" than major chords, which gives that darker, more melancholic quality. Em is used in ballads, rock, and pop for emotional moments. So from your first chord you are already hearing the difference between major and minor.' },
-      { type: 'multiple_choice', question: 'When you play E minor, which strings do you strum?', options: ['Only string 1', 'All six strings', 'Only the bass strings', 'Only strings 4 and 5'], correctAnswer: 1, explanation: 'For Em you strum all six strings. The open 6th (low E), 3rd (G), 2nd (B), and 1st (high E) strings are part of the chord; your two fingers add the notes on strings 5 and 4. So the full chord uses both open strings and fretted notes.' },
-      { type: 'fill_blank', sentence: 'E minor is often written as _____ on chord charts.', options: ['Em', 'E', 'Emin', 'E-'], correctAnswer: 0, explanation: 'Chord charts use "Em" or "Emin" or "E-" for E minor. The lowercase "m" means minor. So when you see "Em" in a song, you play the two-finger E minor shape. This is the notation you will see everywhere from tabs to sheet music.' }
+      { type: 'multiple_choice', question: 'Build E minor from its components. Which three notes form an Em chord?', options: ['E, G, B', 'E, G#, B', 'E, F#, B', 'E, A, B'], correctAnswer: 0, explanation: 'E minor is built from the root (E), minor third (G), and fifth (B). So Em = E, G, B. The minor third is one half step lower than in E major, which gives Em its darker sound.' },
+      { type: 'multiple_choice', question: 'In E minor, which note is the minor third (the note that makes it minor)?', options: ['E', 'G', 'B', 'D'], correctAnswer: 1, explanation: 'The minor third of Em is G. In E major the third would be G#; lowering it to G makes the chord minor. So the third is the note that defines the chord quality.' },
+      { type: 'fill_blank', sentence: 'E minor uses just _____ fingers on the fretboard.', options: ['2', '1', '3', '4'], correctAnswer: 0, explanation: 'E minor (Em) needs only two fingers: middle finger on string 5 fret 2, ring finger on string 4 fret 2. The other strings are open. That makes Em one of the first chords beginners learn.' },
+      { type: 'multiple_choice', question: 'Which fingers play E minor?', options: ['Index and middle', 'Middle and ring', 'Ring and pinky', 'Index and pinky'], correctAnswer: 1, explanation: 'Middle finger on string 5 (A string) fret 2, ring finger on string 4 (D string) fret 2. Strings 6, 3, 2, and 1 are played open.' },
+      { type: 'fill_blank', sentence: 'E minor is often written as _____ on chord charts.', options: ['Em', 'E', 'Emin', 'E-'], correctAnswer: 0, explanation: 'Chord charts use "Em" or "Emin" or "E-" for E minor. The lowercase "m" means minor.' }
+    ]
+  },
+  'A Minor - The Sad Sister': {
+    title: 'A Minor - The Sad Sister',
+    items: [
+      { type: 'multiple_choice', question: 'Build A minor from its components. Which three notes form an Am chord?', options: ['A, C, E', 'A, C#, E', 'A, B, E', 'A, D, E'], correctAnswer: 0, explanation: 'A minor is built from the root (A), minor third (C), and fifth (E). So Am = A, C, E. The minor third C is one half step lower than C#, which would be in A major.' },
+      { type: 'multiple_choice', question: 'In A minor, which note is the root (the note the chord is named after)?', options: ['C', 'E', 'A', 'G'], correctAnswer: 2, explanation: 'The root of Am is A. Every chord is named after its root note. The root is the foundation of the chord.' },
+      { type: 'multiple_choice', question: 'In A minor, which note is the fifth?', options: ['A', 'C', 'E', 'G'], correctAnswer: 2, explanation: 'The fifth of Am is E. A basic triad has root, third, and fifth. In Am: root = A, minor third = C, fifth = E.' },
+      { type: 'fill_blank', sentence: 'Am and C major share two notes (C and E); the difference is that Am has _____ as the root and a darker sound.', options: ['A', 'C', 'E', 'G'], correctAnswer: 0, explanation: 'Am has A as the root; C major has C as the root. They share C and E, which is why the finger shapes are similar and switching between them is easier.' }
+    ]
+  },
+  'A Major - The Happy Sound': {
+    title: 'A Major - The Happy Sound',
+    items: [
+      { type: 'multiple_choice', question: 'Build A major from its components. Which three notes form an A major chord?', options: ['A, C#, E', 'A, C, E', 'A, B, E', 'A, D, E'], correctAnswer: 0, explanation: 'A major is built from the root (A), major third (C#), and fifth (E). So A = A, C#, E. The major third is four half steps above the root.' },
+      { type: 'multiple_choice', question: 'In A major, which note is the major third?', options: ['A', 'C#', 'E', 'G#'], correctAnswer: 1, explanation: 'The major third of A major is C#. That raised third (compared to C in Am) is what gives A major its bright, happy quality.' },
+      { type: 'fill_blank', sentence: 'For A major you place index, middle, and ring fingers on strings 4, 3, and 2, all at fret _____.', options: ['2', '1', '3', '4'], correctAnswer: 0, explanation: 'All three fingers go at fret 2. Strum strings 5 through 1; do not play the low E string.' }
+    ]
+  },
+  'D Major - The Classic': {
+    title: 'D Major - The Classic',
+    items: [
+      { type: 'multiple_choice', question: 'Build D major from its components. Which three notes form a D major chord?', options: ['D, F#, A', 'D, F, A', 'D, G, A', 'D, E, A'], correctAnswer: 0, explanation: 'D major is built from the root (D), major third (F#), and fifth (A). So D = D, F#, A.' },
+      { type: 'multiple_choice', question: 'In D major, which note is the fifth?', options: ['D', 'F#', 'A', 'C#'], correctAnswer: 2, explanation: 'The fifth of D major is A. The triad is root (D), major third (F#), fifth (A).' },
+      { type: 'fill_blank', sentence: 'D major uses only the _____ thinnest strings (4, 3, 2, 1)—do not strum the two thickest.', options: ['four', 'three', 'five', 'six'], correctAnswer: 0, explanation: 'D major is played on strings 4, 3, 2, and 1 only. The low E and A strings are not played in the standard D shape.' }
+    ]
+  },
+  'G Major - The Big Stretch': {
+    title: 'G Major - The Big Stretch',
+    items: [
+      { type: 'multiple_choice', question: 'Build G major from its components. Which three notes form a G major chord?', options: ['G, B, D', 'G, A#, D', 'G, A, D', 'G, C, D'], correctAnswer: 0, explanation: 'G major is built from the root (G), major third (B), and fifth (D). So G = G, B, D.' },
+      { type: 'multiple_choice', question: 'In G major, which note is the major third?', options: ['G', 'B', 'D', 'F#'], correctAnswer: 1, explanation: 'The major third of G major is B. That gives G its bright, full sound.' },
+      { type: 'fill_blank', sentence: 'G major uses all four fretting fingers, including the _____, and you strum all six strings.', options: ['pinky', 'index', 'middle', 'ring'], correctAnswer: 0, explanation: 'G often uses the pinky on string 1 fret 3. Strum all six strings for the full chord.' }
+    ]
+  },
+  'C Major - The Most Popular': {
+    title: 'C Major - The Most Popular',
+    items: [
+      { type: 'multiple_choice', question: 'Build C major from its components. Which three notes form a C major chord?', options: ['C, E, G', 'C, D#, G', 'C, D, G', 'C, F, G'], correctAnswer: 0, explanation: 'C major is built from the root (C), major third (E), and fifth (G). So C = C, E, G.' },
+      { type: 'multiple_choice', question: 'In C major, which note is the root?', options: ['E', 'G', 'C', 'A'], correctAnswer: 2, explanation: 'The root of C major is C. The chord is named after its root note.' },
+      { type: 'fill_blank', sentence: 'For C major you strum from string _____ down to string 1; do not play the thickest string (low E).', options: ['5', '6', '4', '3'], correctAnswer: 0, explanation: 'Strum strings 5, 4, 3, 2, and 1. The low E (string 6) is not played in the standard C shape.' }
+    ]
+  },
+  'E Major - Power and Brightness': {
+    title: 'E Major - Power and Brightness',
+    items: [
+      { type: 'multiple_choice', question: 'Build E major from its components. Which three notes form an E major chord?', options: ['E, G#, B', 'E, G, B', 'E, A, B', 'E, F#, B'], correctAnswer: 0, explanation: 'E major is built from the root (E), major third (G#), and fifth (B). So E = E, G#, B. Compared to Em, the third is G# instead of G.' },
+      { type: 'multiple_choice', question: 'To turn E minor into E major, which note do you add or change?', options: ['Add G# (major third) on string 3 fret 1', 'Add B on string 2', 'Add E on string 6', 'Add A on string 5'], correctAnswer: 0, explanation: 'Em has E, G, B. E major has E, G#, B. So you add the index finger on string 3 (G string) fret 1 to play G#, which raises the third and makes the chord major.' }
+    ]
+  },
+  'F Major - The First Barre Chord': {
+    title: 'F Major - The First Barre Chord',
+    items: [
+      { type: 'multiple_choice', question: 'Build F major from its components. Which three notes form an F major chord?', options: ['F, A, C', 'F, G#, C', 'F, G, C', 'F, Bb, C'], correctAnswer: 0, explanation: 'F major is built from the root (F), major third (A), and fifth (C). So F = F, A, C.' },
+      { type: 'multiple_choice', question: 'In F major, which note is the fifth?', options: ['F', 'A', 'C', 'E'], correctAnswer: 2, explanation: 'The fifth of F major is C. The triad is root (F), major third (A), fifth (C).' },
+      { type: 'fill_blank', sentence: 'For F major you barre all six strings at fret 1 with your index finger, then form an _____ major shape with the other fingers.', options: ['E', 'A', 'D', 'G'], correctAnswer: 0, explanation: 'F is the E major shape moved up one fret, with the index finger barring fret 1 and acting as the nut. So you use the "E shape" with a barre.' }
+    ]
+  },
+  'The 4-Chord Song': {
+    title: 'The 4-Chord Song',
+    items: [
+      { type: 'multiple_choice', question: 'Which four chords make up the classic "four-chord song" progression (in any order)?', options: ['G, D, Em, C', 'G, Am, Bm, C', 'A, D, E, F#m', 'C, F, G, Am'], correctAnswer: 0, explanation: 'The most common four-chord progression in pop and rock is G, D, Em, C (or similar order). It appears in Let It Be, No Woman No Cry, With or Without You, and hundreds more.' },
+      { type: 'multiple_choice', question: 'Build G from its components. Which notes form G major?', options: ['G, B, D', 'G, A, D', 'G, C, E', 'G, A#, D'], correctAnswer: 0, explanation: 'G major = root G, major third B, fifth D.' },
+      { type: 'multiple_choice', question: 'Build Em from its components. Which notes form E minor?', options: ['E, G, B', 'E, G#, B', 'E, A, B', 'E, F#, B'], correctAnswer: 0, explanation: 'E minor = root E, minor third G, fifth B.' },
+      { type: 'multiple_choice', question: 'In the progression G–D–Em–C, which chord is minor?', options: ['Em', 'G', 'D', 'C'], correctAnswer: 0, explanation: 'Em (E minor) is the only minor chord in that progression. G, D, and C are major.' }
     ]
   },
   'Parts of the Guitar': {
@@ -257,9 +378,41 @@ export const theoryContent: Record<string, LessonContent> = {
     items: [
       { type: 'fill_blank', sentence: 'Major chords and keys typically sound _____.', options: ['bright or happy', 'sad', 'dark', 'tense'], correctAnswer: 0, explanation: 'Major has a bright, stable, often "happy" quality. Most pop and rock songs use a mix of major and minor; the major chords often mark the uplifting moments.' },
       { type: 'fill_blank', sentence: 'Minor chords and keys typically sound _____.', options: ['darker or sadder', 'happy', 'bright', 'cheerful'], correctAnswer: 0, explanation: 'Minor has a darker, more melancholic or serious quality. The difference from major comes from one note: the "third" of the chord is one half step lower in minor.' },
-      { type: 'multiple_choice', question: 'What actually differs between a major chord and a minor chord?', options: ['The root note', 'The third interval (one half step lower in minor)', 'The fifth', 'The number of notes'], correctAnswer: 1, explanation: 'Both have a root and a fifth; the "third" is what changes. In major the third is 4 half steps above the root; in minor it is 3 half steps. That one half step is why minor sounds sadder and is the core of going from zero to understanding chord quality.' },
-      { type: 'multiple_choice', question: 'In chord symbols, how do we usually indicate minor?', options: ['Capital M', 'Lowercase "m" or "min" or a minus sign (e.g. Am, Amin, A-)', 'The number 3', 'We do not.'], correctAnswer: 1, explanation: 'A chord with no letter after the root is usually major (e.g. C = C major). For minor we add "m" or "min" or "-": Am, Amin, A- all mean A minor. So reading chord charts requires knowing that "m" = minor and that minor has that one half step lower third.' },
-      { type: 'fill_blank', sentence: 'The "third" in a chord is the note that decides if the chord sounds major or _____ .', options: ['minor', 'diminished', 'augmented', 'seventh'], correctAnswer: 0, explanation: 'Basic chords are built from the root, third, and fifth (from the scale). The third is the note that is either "major" (4 half steps above the root) or "minor" (3 half steps). So the third is the single note that defines the chord\'s major vs. minor quality—the core of harmony from zero to hero.' }
+      { type: 'multiple_choice', question: 'What actually differs between a major chord and a minor chord?', options: ['The third interval (one half step lower in minor)', 'The root note', 'The fifth', 'The number of notes'], correctAnswer: 0, explanation: 'Both have a root and a fifth; the "third" is what changes. In major the third is 4 half steps above the root; in minor it is 3 half steps. That one half step is why minor sounds sadder.' },
+      { type: 'multiple_choice', question: 'In chord symbols, how do we usually indicate minor?', options: ['Lowercase "m" or "min" or a minus sign (e.g. Am, Amin, A-)', 'Capital M', 'The number 3', 'We do not.'], correctAnswer: 0, explanation: 'A chord with no letter after the root is usually major (e.g. C = C major). For minor we add "m" or "min" or "-": Am, Amin, A- all mean A minor.' },
+      { type: 'fill_blank', sentence: 'The "third" in a chord is the note that decides if the chord sounds major or _____ .', options: ['minor', 'diminished', 'augmented', 'seventh'], correctAnswer: 0, explanation: 'Basic chords are built from the root, third, and fifth. The third is either "major" (4 half steps above the root) or "minor" (3 half steps). So the third defines the chord\'s major vs. minor quality.' }
+    ]
+  },
+  'Root, Third, Fifth': {
+    title: 'Root, Third, Fifth',
+    items: [
+      { type: 'multiple_choice', question: 'Build a C major chord from its components. Which note is the root?', options: ['C', 'E', 'G', 'B'], correctAnswer: 0, explanation: 'In C major, C is the root—the note the chord is named after. The triad is root (C), major third (E), fifth (G).' },
+      { type: 'multiple_choice', question: 'In a major triad, how many half steps are there from the root to the major third?', options: ['4', '3', '5', '2'], correctAnswer: 0, explanation: 'The major third is 4 half steps above the root. The fifth is 7 half steps above the root. So every basic major chord has this structure.' },
+      { type: 'multiple_choice', question: 'In an A minor chord (A, C, E), which note is the fifth?', options: ['E', 'A', 'C', 'G'], correctAnswer: 0, explanation: 'A minor = root A, minor third C, fifth E. The fifth is the same in both major and minor triads built on the same root.' }
+    ]
+  },
+  'Building from the Root': {
+    title: 'Building from the Root',
+    items: [
+      { type: 'multiple_choice', question: 'To build G major from its root, which note is the major third?', options: ['B', 'G', 'D', 'F#'], correctAnswer: 0, explanation: 'G major = root G, major third B (4 half steps above G), fifth D.' },
+      { type: 'multiple_choice', question: 'To build D minor from its root, which three notes form the chord?', options: ['D, F, A', 'D, F#, A', 'D, G, A', 'D, E, A'], correctAnswer: 0, explanation: 'D minor = root D, minor third F (3 half steps above D), fifth A. The minor third is one half step lower than F# in D major.' },
+      { type: 'fill_blank', sentence: 'The formula for any major chord is: root + major third (_____ half steps up) + fifth (7 half steps up).', options: ['4', '3', '5', '2'], correctAnswer: 0, explanation: 'Major third = 4 half steps above the root; fifth = 7 half steps above the root. From the root you count half steps to build the chord.' }
+    ]
+  },
+  'Chord Roots and Half Steps': {
+    title: 'Chord Roots and Half Steps',
+    items: [
+      { type: 'multiple_choice', question: 'Which note is the root of an Em chord?', options: ['E', 'G', 'B', 'A'], correctAnswer: 0, explanation: 'The root is the note the chord is named after. Em = E minor, so the root is E. Em is built from E (root), G (minor third), B (fifth).' },
+      { type: 'multiple_choice', question: 'On the guitar, one fret equals how many half steps?', options: ['One', 'Two', 'Zero', 'Three'], correctAnswer: 0, explanation: 'One fret = one half step. So you can find the same note on different strings by counting frets and using the note names on the E and A strings.' },
+      { type: 'multiple_choice', question: 'The root of an open C major chord is C. Where does that root note appear in the C chord shape?', options: ['On string 5 (A string) at fret 3', 'On string 1', 'On string 6', 'Only on string 2'], correctAnswer: 0, explanation: 'In the open C shape, the lowest note is C on the A string at fret 3—that is the root. Identifying roots helps you see how chord shapes relate to the fretboard.' }
+    ]
+  },
+  'Note Names on E and A': {
+    title: 'Note Names on E and A',
+    items: [
+      { type: 'multiple_choice', question: 'On the low E string, what note is at fret 3?', options: ['G', 'F', 'A', 'F#'], correctAnswer: 0, explanation: 'Low E string: open E, 1=F, 2=F#, 3=G. So fret 3 is G. These are the roots for E-shaped barre chords.' },
+      { type: 'multiple_choice', question: 'On the A string, what note is at fret 2?', options: ['B', 'A#', 'C', 'C#'], correctAnswer: 0, explanation: 'A string: open A, 1=A#, 2=B. So fret 2 is B. The A string gives you the roots for A-shaped barre chords.' },
+      { type: 'fill_blank', sentence: 'Knowing the notes on the E and A strings helps you find the _____ of barre chords and moveable shapes.', options: ['root', 'fifth', 'third', 'octave'], correctAnswer: 0, explanation: 'Barre chords use the low E or A string as the root. If you know the notes on those strings, you can name and place any barre chord.' }
     ]
   }
 };
@@ -339,7 +492,7 @@ export function createFallbackContent(title: string, description: string): Lesso
   const factPool = sentences.filter((s, i) => s.length >= 22 && sentences.indexOf(s) === i);
   const usedForCorrect = new Set<number>();
 
-  // Helper: pick wrong options that are not the correct one — use other sentences from this lesson, or topic-specific distractors
+  // Helper: pick wrong options only from this lesson's description — no generic presets
   function wrongOptionsFor(correctOption: string, count: number): string[] {
     const wrong: string[] = [];
     const others = factPool.filter(f => f !== correctOption && !f.slice(0, 40).includes(correctOption.slice(0, 30)));
@@ -347,22 +500,18 @@ export function createFallbackContent(title: string, description: string): Lesso
       const c = others[i];
       if (!wrong.includes(c) && c.length > 18) wrong.push(c);
     }
-    const distractors = [
-      'This applies only to instruments other than the guitar.',
-      'The lesson recommends skipping this until you are advanced.',
-      'Speed is more important than accuracy here.',
-      'You should avoid using a metronome for this.',
-      'The lesson says to press in the middle between two frets.',
-      'Only the third of the chord matters, not the root or fifth.',
-      'Moving the same shape up the neck does not change the key.',
-      'The lesson suggests practicing for long sessions once a week only.',
-      'Your strumming hand should stay near the bridge for full tone.',
-      'The flat pad of the finger is preferred for clean notes.',
-    ];
+    // If we still need more, use shorter phrases from the description (split on commas or clauses)
+    if (wrong.length < count) {
+      const clauses = description.split(/[,;:]|\s+and\s+|\s+so\s+/).map(s => s.trim()).filter(s => s.length >= 20 && s.length <= 180);
+      for (const cl of clauses) {
+        const normalized = optionText(cl, 200);
+        if (!wrong.includes(normalized) && normalized !== correctOption && wrong.length < count) wrong.push(normalized);
+      }
+    }
     while (wrong.length < count) {
-      const d = distractors[wrong.length % distractors.length];
-      if (!wrong.includes(d) && d !== correctOption) wrong.push(d);
-      else if (wrong.length < count) wrong.push(`This lesson does not cover that.`);
+      const fallback = `Not stated in this lesson.`;
+      if (!wrong.includes(fallback)) wrong.push(fallback);
+      else wrong.push(`This lesson does not say that.`);
       if (wrong.length >= count) break;
     }
     return wrong.slice(0, count);
@@ -502,4 +651,28 @@ export function getPracticeChordsForLesson(lessonTitle: string): string[] | null
     if (key.toLowerCase() === lower || lower.includes(key.toLowerCase())) return chords;
   }
   return null;
+}
+
+/**
+ * Audit: which lessons have explicit quiz content vs fallback, and which have SongPractice (chord practice popup).
+ * Use this to verify every technique/theory quiz has its own specific questions and chord lessons have practice popup.
+ *
+ * - explicitTechniqueTitles: lesson titles that have their own quiz items in techniqueContent (topic-specific).
+ * - explicitTheoryTitles: lesson titles that have their own quiz items in theoryContent (topic-specific).
+ * - practiceChordTitles: lesson titles that open the chord practice popup (SongPractice) after quiz; add here for chord lessons.
+ *
+ * Lessons not in explicit* get questions from createFallbackContent(description). To give a lesson its own questions,
+ * add an entry to techniqueContent or theoryContent in this file. To add chord practice after a lesson, add the
+ * lesson title to LESSON_PRACTICE_CHORDS (and optionally set practiceChords on the lesson in learning-journey*.ts).
+ */
+export function getQuizAndPracticeAudit(): {
+  explicitTechniqueTitles: string[];
+  explicitTheoryTitles: string[];
+  practiceChordTitles: string[];
+} {
+  return {
+    explicitTechniqueTitles: Object.keys(techniqueContent),
+    explicitTheoryTitles: Object.keys(theoryContent),
+    practiceChordTitles: Object.keys(LESSON_PRACTICE_CHORDS),
+  };
 }

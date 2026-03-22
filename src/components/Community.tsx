@@ -137,33 +137,35 @@ export function Community() {
   // Direct messages from Supabase friend_messages table
   const [directChatMessages, setDirectChatMessages] = useState<any[]>([]);
 
-  // Get selected avatar from localStorage
-  const [selectedAvatarId, setSelectedAvatarId] = useState<number>(() => {
-    const saved = localStorage.getItem('guitarApp_selectedAvatar');
-    return saved ? parseInt(saved, 10) : 6;
-  });
+  // Get selected avatar from localStorage (per-user key so each user's profile shows their own avatar)
+  const [selectedAvatarId, setSelectedAvatarId] = useState<number>(6);
+  useEffect(() => {
+    if (user?.id) {
+      const key = `guitarApp_selectedAvatar_${user.id}`;
+      const saved = localStorage.getItem(key) || localStorage.getItem('guitarApp_selectedAvatar');
+      setSelectedAvatarId(saved ? parseInt(saved, 10) : 6);
+    }
+  }, [user?.id]);
 
-  // Get the current avatar image
+  // Get the current user's avatar image (not a shared/domain default)
   const avatarImage = avatarMap[selectedAvatarId] || avatar6;
 
-  // Listen for avatar changes from Settings page
+  // Listen for avatar changes from Settings page (user-scoped key)
   useEffect(() => {
+    if (!user?.id) return;
+    const key = `guitarApp_selectedAvatar_${user.id}`;
     const handleStorageChange = () => {
-      const saved = localStorage.getItem('guitarApp_selectedAvatar');
-      if (saved) {
-        setSelectedAvatarId(parseInt(saved, 10));
-      }
+      const saved = localStorage.getItem(key) || localStorage.getItem('guitarApp_selectedAvatar');
+      if (saved) setSelectedAvatarId(parseInt(saved, 10));
     };
 
-    // Check for changes when component is focused
     window.addEventListener('storage', handleStorageChange);
     window.addEventListener('focus', handleStorageChange);
-    
     return () => {
       window.removeEventListener('storage', handleStorageChange);
       window.removeEventListener('focus', handleStorageChange);
     };
-  }, []);
+  }, [user?.id]);
 
   // Early return if no user - prevents crashes during loading/auth issues
   if (!user) {

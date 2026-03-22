@@ -300,7 +300,7 @@ export function VideoPopup({
     const isCorrect = selectedAnswer === currentQuestion.correctAnswer;
     
     return (
-      <div className="space-y-3">
+      <div className="space-y-3 px-4 sm:px-6">
         {/* Question counter */}
         <div className="flex justify-center gap-2 mb-2">
           {quiz.map((_, idx) => (
@@ -320,7 +320,7 @@ export function VideoPopup({
         </div>
         
         {/* Question */}
-        <div className="text-center mb-3">
+        <div className="text-center mb-3 px-2 sm:px-3">
           <p className="text-sm font-semibold text-gray-500 dark:text-gray-400">
             Question {currentQuestionIndex + 1} of {quiz.length}
           </p>
@@ -574,7 +574,7 @@ export function VideoPopup({
 
           {viewState === 'quiz' && (
             <div 
-              className="relative rounded-2xl overflow-hidden bg-white dark:bg-gray-800 p-3 sm:p-4"
+              className="relative rounded-2xl overflow-hidden bg-white dark:bg-gray-800 p-4 sm:p-5"
               style={{ 
                 border: '2px solid rgb(237, 237, 237)',
                 boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)'

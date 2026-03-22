@@ -34,6 +34,8 @@ import {
   updateAchievements,
   getTotalAchievementsEarned,
   getTotalPossibleAchievements,
+  getDailyPracticeGoal,
+  getAchievementPathText,
   Achievement
 } from '../utils/progressStorage';
 import { 
@@ -307,26 +309,29 @@ export function Progress() {
 
             <CardContent className="p-4 mt-4 mb-2">
               <div className="space-y-4">
-                {displayWeeklyProgress.map((day, index) => (
-                  <div key={index} className="flex items-center gap-4">
-                    <div className="w-12 text-sm text-gray-600 dark:text-gray-300 font-medium">
-                      {day.day}
-                    </div>
-                    <div className="flex-1">
-                      <div className="flex items-center gap-2">
-                        <div className="flex-1 bg-gray-200 dark:bg-gray-700 rounded-full h-3">
-                          <div 
-                            className={`${getWeeklyProgressColor(index)} h-3 rounded-full transition-all duration-300`}
-                            style={{ width: `${Math.min((day.minutes / 30) * 100, 100)}%` }}
-                          ></div>
+                {displayWeeklyProgress.map((day, index) => {
+                  const dailyGoal = user ? getDailyPracticeGoal(user.id) : 30;
+                  return (
+                    <div key={index} className="flex items-center gap-4">
+                      <div className="w-12 text-sm text-gray-600 dark:text-gray-300 font-medium">
+                        {day.day}
+                      </div>
+                      <div className="flex-1">
+                        <div className="flex items-center gap-2">
+                          <div className="flex-1 bg-gray-200 dark:bg-gray-700 rounded-full h-3">
+                            <div 
+                              className={`${getWeeklyProgressColor(index)} h-3 rounded-full transition-all duration-300`}
+                              style={{ width: `${dailyGoal > 0 ? Math.min((day.minutes / dailyGoal) * 100, 100) : 0}%` }}
+                            ></div>
+                          </div>
+                          <span className="text-sm text-gray-600 dark:text-gray-300 w-16">
+                            {day.minutes}/{dailyGoal}min
+                          </span>
                         </div>
-                        <span className="text-sm text-gray-600 dark:text-gray-300 w-16">
-                          {day.minutes}min
-                        </span>
                       </div>
                     </div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             </CardContent>
           </Card>
@@ -409,10 +414,15 @@ export function Progress() {
                     </h3>
                   </div>
                   <p className={`text-sm ml-1 ${
-                    achievement.earned ? 'text-green-700' : 'text-gray-500 dark:text-gray-500'
-                  }`}>
+                      achievement.earned ? 'text-green-700' : 'text-gray-500 dark:text-gray-500'
+                    }`}>
                     {achievement.description}
                   </p>
+                  {!achievement.earned && achievement.requirement && (
+                    <p className="text-xs ml-1 mt-1 text-gray-500 dark:text-gray-400 italic">
+                      Path: {getAchievementPathText(achievement.requirement)}
+                    </p>
+                  )}
                 </div>
               </div>
             ))}

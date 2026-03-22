@@ -270,6 +270,82 @@ body {
   color: #c0c0c0 !important;
 }
 
+/*
+ * Beats theme — hue keyed to profile “Orange Circle” mascot fill (~#eb4034).
+ * Text/borders are same red family (darker text for contrast). Dashboard card: transparent.
+ */
+.beats-card {
+  border: 1px solid #eb4034;
+  background-color: transparent;
+}
+/* Bottom bar popup only: filled background */
+.beats-popup {
+  border: 1px solid #eb4034;
+  border-bottom: 3px solid #eb4034;
+  background-color: #fff1ef;
+}
+.beats-avatar {
+  background-color: transparent;
+}
+.dark .beats-avatar {
+  background-color: transparent;
+}
+.dark .beats-card {
+  background-color: transparent;
+  border-color: #eb4034;
+}
+.dark .beats-popup {
+  background-color: rgba(72, 26, 22, 0.94);
+  border-color: #eb4034;
+  border-bottom-color: #eb4034;
+}
+.beats-card-text,
+.beats-badge .beats-card-text,
+.beats-badge .beats-card-text span {
+  color: #eb4034;
+}
+.dark .beats-card-text,
+.dark .beats-badge .beats-card-text,
+.dark .beats-badge .beats-card-text span {
+  color: #ff9a8f;
+}
+.beats-badge svg {
+  color: #eb4034;
+  stroke: #eb4034;
+}
+.dark .beats-badge svg {
+  color: #ff9a8f;
+  stroke: #ff9a8f;
+}
+.beats-badge {
+  background-color: rgba(235, 64, 52, 0.16);
+  border: 1px solid #eb4034;
+}
+.dark .beats-badge {
+  background-color: rgba(235, 64, 52, 0.14);
+  border-color: #eb4034;
+}
+.beats-cta {
+  background-color: transparent;
+  border: none;
+}
+.beats-popup-btn {
+  color: #eb4034;
+  background-color: rgba(255, 228, 224, 0.95);
+  border: 1px solid #eb4034;
+}
+.dark .beats-popup-btn {
+  color: #ff9a8f;
+  background-color: rgba(90, 32, 28, 0.85);
+  border-color: #eb4034;
+}
+.beats-popup-text {
+  color: #eb4034;
+}
+.dark .beats-popup-text {
+  color: #ff9a8f;
+}
+
 /* Dialogs and modals */
 .dark [role="dialog"] {
   background-color: #1a1a2e !important;
@@ -645,6 +721,18 @@ html {
   @keyframes fade-in {
     0% { opacity: 0; transform: scale(0.95); }
     100% { opacity: 1; transform: scale(1); }
+  }
+
+  /* Intro transition: overlay fade in */
+  @keyframes fadeIn {
+    0% { opacity: 0; }
+    100% { opacity: 1; }
+  }
+
+  /* Intro transition: text woosh (fade + scale) */
+  @keyframes wooshIn {
+    0% { opacity: 0; transform: scale(0.9) translateY(10px); }
+    100% { opacity: 1; transform: scale(1) translateY(0); }
   }
   
   .animate-fade-in {

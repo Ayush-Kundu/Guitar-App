@@ -94,11 +94,15 @@ export function Settings({ isDarkMode, setIsDarkMode }: SettingsProps) {
   const [showSuccess, setShowSuccess] = useState(false);
   const [showAvatarPicker, setShowAvatarPicker] = useState(false);
   
-  // Get selected avatar from localStorage or default to avatar 6
-  const [selectedAvatarId, setSelectedAvatarId] = useState<number>(() => {
-    const saved = localStorage.getItem('guitarApp_selectedAvatar');
-    return saved ? parseInt(saved, 10) : 6;
-  });
+  // Get selected avatar from localStorage (per-user key so each profile has its own avatar)
+  const [selectedAvatarId, setSelectedAvatarId] = useState<number>(6);
+  useEffect(() => {
+    if (user?.id) {
+      const key = `guitarApp_selectedAvatar_${user.id}`;
+      const saved = localStorage.getItem(key) || localStorage.getItem('guitarApp_selectedAvatar');
+      setSelectedAvatarId(saved ? parseInt(saved, 10) : 6);
+    }
+  }, [user?.id]);
 
   // Song genre preferences
   const [selectedGenres, setSelectedGenres] = useState<string[]>(() => {
@@ -120,10 +124,11 @@ export function Settings({ isDarkMode, setIsDarkMode }: SettingsProps) {
   // Get the current avatar image
   const currentAvatar = avatarOptions.find(a => a.id === selectedAvatarId)?.src || avatar6;
 
-  // Handle avatar selection
+  // Handle avatar selection (store per user so each profile has its own avatar)
   const handleSelectAvatar = async (avatarId: number) => {
     setSelectedAvatarId(avatarId);
-    localStorage.setItem('guitarApp_selectedAvatar', avatarId.toString());
+    if (user?.id) localStorage.setItem(`guitarApp_selectedAvatar_${user.id}`, avatarId.toString());
+    else localStorage.setItem('guitarApp_selectedAvatar', avatarId.toString());
     setShowAvatarPicker(false);
     setShowSuccess(true);
     setTimeout(() => setShowSuccess(false), 2000);

@@ -10,41 +10,42 @@ import { Compete } from "./components/Compete";
 import { Community } from "./components/Community";
 import { Settings } from "./components/Settings";
 import { FooterNavigation } from "./components/FooterNavigation";
-import { Onboarding } from "./components/Onboarding";
+import { NoviceIntro, shouldShowIntro, markIntroDone } from "./components/NoviceIntro";
+import { BeatsPopup } from "./components/BeatsPopup";
 
 function AppContent() {
   const { user, isLoading } = useUser();
   const [activeSection, setActiveSection] = React.useState("dashboard");
-  
-  // Onboarding state - show for new users (tied to user ID)
-  const [showOnboarding, setShowOnboarding] = React.useState(false);
-  
-  // Check if this specific user has seen onboarding
+  const [showIntro, setShowIntro] = React.useState(false);
+  const [beatsPopupDismissed, setBeatsPopupDismissed] = React.useState(false);
+
+  // Intro (guitar intro + coach's board) only first time
   React.useEffect(() => {
-    if (user) {
-      const onboardingKey = `strummy-onboarding-complete-${user.id}`;
-      const hasSeenOnboarding = localStorage.getItem(onboardingKey) === "true";
-      setShowOnboarding(!hasSeenOnboarding);
-    }
+    if (user) setShowIntro(shouldShowIntro(user.id));
   }, [user]);
 
-  // Scroll to top whenever section changes
+  // Beats popup: clear "came from Beats" on load *before* paint so user can't click arrow before we clear (avoids popup showing in wrong spots on fresh load)
+  React.useLayoutEffect(() => {
+    try {
+      if (typeof window !== 'undefined') sessionStorage.removeItem('strummy-beats-directed');
+    } catch (_) {}
+  }, []);
+
+  // Scroll to top whenever section changes. Clear "came from Beats" only when navigating to a section that didn't match (i.e. user used footer/other nav, not Beats CTA).
   const handleSectionChange = React.useCallback((section: string) => {
+    try {
+      const fromBeats = typeof window !== 'undefined' && sessionStorage.getItem('strummy-beats-directed') === section;
+      if (typeof window !== 'undefined' && !fromBeats) {
+        sessionStorage.removeItem('strummy-beats-directed');
+      }
+    } catch (_) {}
     setActiveSection(section);
+    setBeatsPopupDismissed(false);
     window.scrollTo(0, 0);
     const root = document.getElementById('root');
     if (root) root.scrollTo(0, 0);
   }, []);
   
-  // Handle onboarding completion
-  const handleOnboardingComplete = React.useCallback(() => {
-    setShowOnboarding(false);
-    if (user) {
-      const onboardingKey = `strummy-onboarding-complete-${user.id}`;
-      localStorage.setItem(onboardingKey, "true");
-    }
-  }, [user]);
-
   const [isDarkMode, setIsDarkMode] = React.useState(() => {
     if (typeof window !== "undefined") {
       return localStorage.getItem("guitarapp-dark-mode") === "true";
@@ -115,18 +116,40 @@ function AppContent() {
     }
   };
 
+  const beatsSections = ['songs', 'technique', 'theory', 'progress', 'community', 'compete'];
+  const showBeatsPopup =
+    !beatsPopupDismissed &&
+    beatsSections.includes(activeSection) &&
+    typeof window !== 'undefined' &&
+    sessionStorage.getItem('strummy-beats-directed') === activeSection;
+
   return (
     <div className={isDarkMode ? "dark" : ""}>
-      <div className="min-h-screen bg-gradient-to-br from-amber-50 to-orange-50 dark:from-gray-900 dark:to-gray-800 transition-colors duration-300">
+      <div className={`min-h-screen bg-gradient-to-br from-amber-50 to-orange-50 dark:from-gray-900 dark:to-gray-800 transition-colors duration-300 ${showBeatsPopup ? 'pb-28' : ''}`}>
         {renderActiveSection()}
+        {showBeatsPopup && (
+          <BeatsPopup
+            section={activeSection as 'songs' | 'technique' | 'theory' | 'progress' | 'community' | 'compete'}
+            onDismiss={() => setBeatsPopupDismissed(true)}
+            onNavigate={handleSectionChange}
+          />
+        )}
         <FooterNavigation
           activeSection={activeSection}
           onSectionChange={handleSectionChange}
         />
-        {/* Show onboarding for new users */}
-        {showOnboarding && (
-          <Onboarding
-            onComplete={handleOnboardingComplete}
+        {/* Intro: guitar basics + coach's board (only first time) */}
+        {showIntro && user && (
+          <NoviceIntro
+            isOpen={true}
+            userId={user.id}
+            userLevel={user.level}
+            onComplete={() => {
+              markIntroDone(user.id);
+              setShowIntro(false);
+            }}
+            onGoToBasics={() => handleSectionChange('songs')}
+            onGoToSongs={() => handleSectionChange('songs')}
             onNavigate={handleSectionChange}
           />
         )}

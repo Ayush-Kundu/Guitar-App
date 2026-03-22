@@ -73,6 +73,13 @@ export function Songs() {
     }
   }, [practiceOpen]);
 
+  // Open Learn Guitar Basics when requested (e.g. from Beats "Start guitar basics" button)
+  useEffect(() => {
+    if (!user || user.level !== 'novice') return;
+    const openTutorial = () => setTutorialOpen(true);
+    window.addEventListener('strummy-request-open-guitar-basics', openTutorial);
+    return () => window.removeEventListener('strummy-request-open-guitar-basics', openTutorial);
+  }, [user]);
 
   if (!user) return null;
 
@@ -474,19 +481,7 @@ export function Songs() {
             <CardContent className="p-8 bg-transparent text-center">
               <Music className="w-16 h-16 mx-auto mb-4 text-gray-300 dark:text-gray-500" />
               <h3 className="text-xl font-semibold text-gray-600 dark:text-gray-300 mb-2">No songs yet</h3>
-              <p className="text-gray-500 dark:text-gray-400 mb-4">Add songs you want to learn!</p>
-              <button 
-                onClick={() => setCatalogOpen(true)}
-                className="flex items-center gap-2 px-8 py-3 rounded-xl font-medium text-white mx-auto transition-all hover:scale-105"
-                style={{ 
-                  backgroundColor: 'rgb(59, 130, 246)',
-                  border: '2px solid rgb(37, 99, 235)',
-                  borderBottom: '4px solid rgb(37, 99, 235)'
-                }}
-              >
-                <Plus className="w-5 h-5" />
-                Add Songs
-              </button>
+              <p className="text-gray-500 dark:text-gray-400">Add songs you want to learn from the catalog.</p>
             </CardContent>
           </Card>
         ) : (

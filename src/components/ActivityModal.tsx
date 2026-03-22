@@ -5,7 +5,6 @@ import {
   CheckCircle2, 
   X,
   BookOpen,
-  Zap,
   Trophy,
   XCircle,
   ChevronRight,
@@ -16,6 +15,7 @@ import {
   Target
 } from 'lucide-react';
 import { recordPoints } from '../utils/api';
+import { playCorrect, playWrong, playComplete, playAchievementQuiz } from '../utils/soundEffects';
 import { 
   getContentByTitle,
   createFallbackContent,
@@ -48,8 +48,6 @@ export function ActivityModal({ isOpen, onClose, onComplete, activityType, activ
   const [selectedAnswer, setSelectedAnswer] = useState<number | null>(null);
   const [showResult, setShowResult] = useState(false);
   const [correctAnswers, setCorrectAnswers] = useState(0);
-  const [streak, setStreak] = useState(0);
-  const [bestStreak, setBestStreak] = useState(0);
   const [showCorrectAnimation, setShowCorrectAnimation] = useState(false);
   const [showWrongAnimation, setShowWrongAnimation] = useState(false);
   const optionsRef = useRef<HTMLDivElement>(null);
@@ -92,8 +90,6 @@ export function ActivityModal({ isOpen, onClose, onComplete, activityType, activ
       setSelectedAnswer(null);
       setShowResult(false);
       setCorrectAnswers(0);
-      setStreak(0);
-      setBestStreak(0);
       setShowCorrectAnimation(false);
       setShowWrongAnimation(false);
     }
@@ -112,6 +108,7 @@ export function ActivityModal({ isOpen, onClose, onComplete, activityType, activ
 
   const handleComplete = async (markLessonDone?: boolean) => {
     if (!user) return;
+    if (markLessonDone && hasItems) playAchievementQuiz();
     const minutesSpent = quizStartTimeRef.current
       ? Math.max(1, Math.ceil((Date.now() - quizStartTimeRef.current) / 60000))
       : undefined;
@@ -119,7 +116,7 @@ export function ActivityModal({ isOpen, onClose, onComplete, activityType, activ
     try {
       // Technique Theory: points are awarded per unit (1) and per branch (5) in TechniqueTheory.tsx
       const isTechniqueTheoryFlow = (activityType === 'practice' || activityType === 'study') && markLessonDone;
-      const pointsEarned = isTechniqueTheoryFlow ? 0 : (hasItems ? correctAnswers * 10 + bestStreak * 5 : 5);
+      const pointsEarned = isTechniqueTheoryFlow ? 0 : (hasItems ? correctAnswers * 10 : 5);
       if (pointsEarned > 0) {
         await recordPoints({
           userId: user.id,
@@ -148,14 +145,12 @@ export function ActivityModal({ isOpen, onClose, onComplete, activityType, activ
       ? answerIndex === (currentItem as MultipleChoiceItem).correctAnswer
       : answerIndex === (currentItem as FillBlankItem).correctAnswer;
     if (isCorrect) {
+      playCorrect();
       setCorrectAnswers(prev => prev + 1);
-      const newStreak = streak + 1;
-      setStreak(newStreak);
-      if (newStreak > bestStreak) setBestStreak(newStreak);
       setShowCorrectAnimation(true);
       setTimeout(() => setShowCorrectAnimation(false), 800);
     } else {
-      setStreak(0);
+      playWrong();
       setShowWrongAnimation(true);
       setTimeout(() => setShowWrongAnimation(false), 600);
     }
@@ -178,8 +173,6 @@ export function ActivityModal({ isOpen, onClose, onComplete, activityType, activ
     setSelectedAnswer(null);
     setShowResult(false);
     setCorrectAnswers(0);
-    setStreak(0);
-    setBestStreak(0);
   };
 
   const handleRetry = () => {
@@ -199,88 +192,99 @@ export function ActivityModal({ isOpen, onClose, onComplete, activityType, activ
     return activityData?.description || activityData?.data?.description || '';
   };
 
-  /** Build the intro paragraph from quiz items so it teaches the answers, then the quiz tests them. */
-  const getIntroParagraph = (): string => {
+  /** Split a paragraph into bullet points. Preserves all content. Uses newlines if present; otherwise splits on sentence boundaries (avoids e.g. / i.e.). */
+  const paragraphToBullets = (paragraph: string): string[] => {
+    if (!paragraph || !paragraph.trim()) return [];
+    const trimmed = paragraph.trim();
+    if (trimmed.includes('\n')) {
+      return trimmed.split(/\n+/).map(l => l.trim()).filter(Boolean);
+    }
+    const parts = trimmed.split(/(?<=[.!?])\s+(?=[A-Z]|$)/);
+    const bullets: string[] = [];
+    for (let i = 0; i < parts.length; i++) {
+      let s = parts[i].trim();
+      if (!s) continue;
+      if (/^(e\.g\.?|i\.e\.?|etc\.?|vs\.?|Dr\.?|Mr\.?|Mrs\.?|Ms\.?)$/i.test(s) && i + 1 < parts.length) {
+        bullets.push((s + ' ' + parts[i + 1].trim()).trim());
+        i++;
+      } else {
+        bullets.push(s);
+      }
+    }
+    return bullets.filter(b => b.length > 0);
+  };
+
+  /** Build the intro as bullet points from the description and (if present) quiz item summaries. All content preserved. */
+  const getIntroBullets = (): string[] => {
     if (!items.length) {
       const desc = getDescription();
-      return desc || `This lesson covers the fundamentals of ${getActivityTitle().toLowerCase()}. Read through the material, then test your knowledge with the quiz.`;
+      const text = desc || `This lesson covers the fundamentals of ${getActivityTitle().toLowerCase()}. Read through the material, then test your knowledge with the quiz.`;
+      return paragraphToBullets(text);
     }
-    const sentences: string[] = [];
+    const bullets: string[] = [];
     const desc = getDescription().trim();
     if (desc) {
-      sentences.push(desc);
-      sentences.push('Here\'s what you need to know for the quiz:');
+      bullets.push(...paragraphToBullets(desc));
+      bullets.push('Here\'s what you need to know for the quiz:');
     }
     for (const item of items) {
       if (item.type === 'fill_blank') {
         const fill = item as FillBlankItem;
         const answer = fill.options[fill.correctAnswer];
         const sentence = fill.sentence.replace(/_{3,}/g, answer).trim();
-        sentences.push(sentence.endsWith('.') ? sentence : sentence + '.');
+        bullets.push(sentence.endsWith('.') ? sentence : sentence + '.');
       } else {
         const mc = item as MultipleChoiceItem;
         const answer = mc.options[mc.correctAnswer];
         const q = mc.question.trim();
         const endsWithQ = q.endsWith('?');
-        sentences.push(endsWithQ ? `${q} ${answer}.` : `${q}: ${answer}.`);
+        bullets.push(endsWithQ ? `${q} ${answer}.` : `${q}: ${answer}.`);
       }
     }
-    return sentences.join(' ');
+    return bullets;
   };
 
-  // ─── INTRO SCREEN ─────────────────────────────────────────────────────
+  // ─── INTRO SCREEN (paragraph explaining everything, then Start Quiz) ─────
   const renderIntro = () => {
     const estimatedTime = activityData?.estimatedTime || activityData?.data?.estimatedTime || '';
-    const paragraph = getIntroParagraph();
+    const introBullets = getIntroBullets();
     return (
       <div className="flex-1 flex flex-col overflow-hidden min-h-0">
-        {/* Title header */}
-        <div className="flex-shrink-0 pt-2 pb-4">
-          <h2 
-            className="text-base font-bold text-gray-800 mb-2"
-            style={{ fontFamily: font }}
-          >
+        <div className="flex-shrink-0 pt-2 pb-3">
+          <h2 className="text-base font-bold text-gray-800 dark:text-gray-100 mb-2" style={{ fontFamily: font }}>
             {getActivityTitle()}
           </h2>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 flex-wrap">
             {estimatedTime && (
               <span className="flex items-center gap-1.5 text-xs font-medium text-gray-500">
                 <Clock className="w-3 h-3" />
                 {estimatedTime}
               </span>
             )}
-            <span 
+            <span
               className="flex items-center gap-1.5 px-2 py-0.5 rounded-md text-xs font-medium"
               style={{ backgroundColor: themeLight, color: themeColor }}
             >
               <Target className="w-3 h-3" />
-              {items.length} questions
+              {items.length} {items.length === 1 ? 'question' : 'questions'}
             </span>
           </div>
         </div>
-
-        {/* Scrollable reading content - TechniqueTheory card style */}
         <div className="flex-1 overflow-y-auto min-h-0 mb-4">
-          <div 
-            className="backdrop-blur-sm rounded-xl px-4 py-4 shadow-sm"
-            style={cardStyle}
-          >
-            <p 
-              className="text-[13px] text-gray-700 leading-[1.75]"
-              style={{ fontFamily: font }}
-            >
-              {paragraph}
-            </p>
+          <div className="backdrop-blur-sm rounded-xl px-4 py-4 shadow-sm" style={cardStyle}>
+            <ul className="list-disc pl-5 space-y-2 text-[13px] text-gray-700 dark:text-gray-300 leading-[1.75]" style={{ fontFamily: font }}>
+              {introBullets.map((bullet, idx) => (
+                <li key={idx}>{bullet}</li>
+              ))}
+            </ul>
           </div>
         </div>
-
-        {/* Start quiz button - TechniqueTheory button style */}
         <div className="flex-shrink-0 pt-2">
           <div
-            onClick={startQuiz}
+            onClick={() => startQuiz()}
             className="flex items-center justify-center gap-2 w-full py-3 rounded-xl text-sm font-bold cursor-pointer transition-transform hover:scale-[1.01] active:scale-[0.99]"
-            style={{ 
-              backgroundColor: themeBg, 
+            style={{
+              backgroundColor: themeBg,
               borderBottom: `2px solid ${themeBorderLight}`,
               color: themeColor,
               fontFamily: font,
@@ -342,23 +346,12 @@ export function ActivityModal({ isOpen, onClose, onComplete, activityType, activ
             </div>
           </div>
 
-          {/* Stats row - streak only (no XP shown on results) */}
-          {bestStreak > 1 && (
-            <div 
-              className="flex items-center gap-1.5 px-2 py-0.5 rounded-md"
-              style={{ backgroundColor: 'rgba(250, 204, 21, 0.12)' }}
-            >
-              <Zap className="w-3 h-3 text-yellow-500" />
-              <span className="text-xs font-medium text-gray-600">{bestStreak} streak</span>
-            </div>
-          )}
-
           {/* Buttons - same as Technique Theory back button / Done pill */}
           <div className="flex items-center gap-3 pt-1">
             {hasMistakes && (
               <button
                 type="button"
-                onClick={handleRetry}
+                onClick={() => handleRetry()}
                 className="flex-1 flex items-center justify-center gap-2 rounded-lg text-sm font-semibold transition-all hover:scale-[1.01] active:scale-[0.99]"
                 style={{ 
                   backgroundColor: themeBg, 
@@ -377,6 +370,7 @@ export function ActivityModal({ isOpen, onClose, onComplete, activityType, activ
             <button
               type="button"
               onClick={() => {
+                if (isPassing) playComplete();
                 if (isPassing && practiceChords?.length && onStartPractice) {
                   onStartPractice(getActivityTitle(), practiceChords);
                   onClose();
@@ -446,19 +440,9 @@ export function ActivityModal({ isOpen, onClose, onComplete, activityType, activ
 
     return (
       <div className="flex-1 flex flex-col min-h-0 overflow-hidden pt-1 pb-4">
-        {/* Streak - TechniqueTheory pill style */}
-        {streak > 1 && (
-          <div className="flex justify-center mb-3">
-            <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-[10px] font-bold" style={{ backgroundColor: 'rgba(250, 204, 21, 0.15)', color: 'rgb(180, 120, 0)' }}>
-              <Zap className="w-3 h-3 fill-yellow-500 text-yellow-500" />
-              {streak} in a row!
-            </div>
-          </div>
-        )}
-
-        {/* Question card - TechniqueTheory card style */}
+        {/* Question card */}
         <div 
-          className={`backdrop-blur-sm rounded-xl px-4 py-4 mb-4 shadow-sm transition-all duration-300 ${
+          className={`backdrop-blur-sm rounded-2xl px-4 sm:px-6 py-4 mb-4 shadow-md transition-all duration-300 ${
             showCorrectAnimation ? 'ring-2 ring-emerald-400/60 ring-offset-1' : 
             showWrongAnimation ? 'ring-2 ring-red-400/60 ring-offset-1' : ''
           }`}
@@ -575,17 +559,25 @@ export function ActivityModal({ isOpen, onClose, onComplete, activityType, activ
                   border: `2.5px solid ${selectedAnswer === correctAnswer ? 'rgba(34, 197, 94, 0.25)' : 'rgba(239, 68, 68, 0.25)'}`
                 }}
               >
-                <p className="text-xs text-gray-600 leading-relaxed break-words" style={{ fontFamily: font }}>
+                <div className="text-xs text-gray-600 leading-relaxed break-words" style={{ fontFamily: font }}>
                   <span className="font-bold" style={{ color: selectedAnswer === correctAnswer ? 'rgb(22, 163, 74)' : 'rgb(220, 38, 38)' }}>
                     {selectedAnswer === correctAnswer ? 'Correct! ' : 'Not quite. '}
                   </span>
-                  {currentItem.explanation}
-                </p>
+                  {(() => {
+                    const expBullets = paragraphToBullets(currentItem.explanation);
+                    if (expBullets.length <= 1) return <>{currentItem.explanation}</>;
+                    return (
+                      <ul className="list-disc pl-4 mt-1 space-y-1">
+                        {expBullets.map((b, i) => <li key={i}>{b}</li>)}
+                      </ul>
+                    );
+                  })()}
+                </div>
               </div>
             )}
 
             <div 
-              onClick={handleNextItem}
+              onClick={() => handleNextItem()}
               className="flex items-center justify-center gap-2 w-full py-3 rounded-xl text-sm font-bold cursor-pointer transition-transform hover:scale-[1.01] active:scale-[0.99]"
               style={{ backgroundColor: themeBg, borderBottom: `2px solid ${themeBorderLight}`, color: themeColor, fontFamily: font }}
             >
@@ -618,7 +610,7 @@ export function ActivityModal({ isOpen, onClose, onComplete, activityType, activ
         <DialogTitle className="sr-only">{getActivityTitle()}</DialogTitle>
 
         {/* Inner wrapper: padding; when results, don't grow so dialog stays content-sized */}
-        <div className={`flex flex-col px-4 py-4 ${phase === 'results' ? '' : 'flex-1 min-h-0 overflow-hidden'}`}>
+        <div className={`flex flex-col px-4 sm:px-6 py-4 ${phase === 'results' ? '' : 'flex-1 min-h-0 overflow-hidden'}`}>
         
         {/* Header - only during quiz/results (TechniqueTheory card style, X on right) */}
         {showHeader && (
@@ -639,12 +631,6 @@ export function ActivityModal({ isOpen, onClose, onComplete, activityType, activ
                 </h2>
                 <div className="flex items-center gap-2 text-xs text-gray-500 mt-0.5">
                   {phase === 'quiz' && <span>{currentItemIndex + 1} of {items.length}</span>}
-                  {streak > 0 && phase === 'quiz' && (
-                    <span className="flex items-center gap-1 text-yellow-600 font-semibold">
-                      <Zap className="w-3 h-3 fill-yellow-500 text-yellow-500" />
-                      {streak}
-                    </span>
-                  )}
                 </div>
               </div>
               <button

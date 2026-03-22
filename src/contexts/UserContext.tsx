@@ -6,6 +6,7 @@ import { createLocalPost } from '../api/local-posts';
 import { createClient } from '@supabase/supabase-js';
 import { loadProgress, getSelectedSongs, getAllSongProgress, loadProgressFromSupabase, syncFullProgressToSupabase } from '../utils/progressStorage';
 import { capacitorStorage } from '../utils/capacitorStorage';
+import { playAchievementPoints } from '../utils/soundEffects';
 
 // Fix these lines to use Vite environment variables
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
@@ -1342,10 +1343,15 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
       timestamp: new Date().toISOString()
     };
 
+    const newTotal = user.totalPoints + activity.points;
+    const milestones = [100, 250, 500, 1000, 2500, 5000];
+    const crossed = milestones.some(m => user.totalPoints < m && newTotal >= m);
+    if (crossed) playAchievementPoints();
+
     // Update user points
     const updatedUser = {
       ...user,
-      totalPoints: user.totalPoints + activity.points,
+      totalPoints: newTotal,
       weeklyPoints: user.weeklyPoints + activity.points
     };
 

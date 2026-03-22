@@ -30,7 +30,7 @@ export function Onboarding({ onComplete, onNavigate }: OnboardingProps) {
   const slides: OnboardingSlide[] = [
     {
       title: "Welcome to Strummy!",
-      description: "Your personal guitar learning companion. Let me show you around and help you start your musical journey!",
+      description: "Now we're going to give you a tour of Strummy. Your personal guitar learning companion — here's your coach's board to help you start your musical journey!",
       icon: <Sparkles className="w-5 h-5" />,
       color: 'rgb(249, 115, 22)',
       section: 'dashboard'
@@ -109,24 +109,23 @@ export function Onboarding({ onComplete, onNavigate }: OnboardingProps) {
   const isLastSlide = currentSlide === slides.length - 1;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-5 sm:p-6">
       {/* Semi-transparent backdrop */}
       <div 
         className="absolute inset-0 bg-black/40" 
         onClick={handleSkip}
       />
       
-      {/* Card Container - styled like Dashboard cards */}
+      {/* Card Container - coach's board / tour (styled like intro popup) */}
       <div
-        className="relative backdrop-blur-sm w-full max-w-sm overflow-hidden rounded-2xl shadow-lg"
+        className="relative w-full max-w-md overflow-hidden rounded-2xl shadow-lg backdrop-blur-sm"
         style={{
-          backgroundColor: 'rgba(255, 255, 255, 0.95)',
-          border: '2px solid rgb(237, 237, 237)',
-          borderBottom: '4px solid rgb(220, 220, 220)'
+          background: 'linear-gradient(to bottom right, #fff7ed, #fef2f2, #fdf2f8)',
+          border: '1px solid rgb(237, 237, 237)',
         }}
       >
-        {/* Content */}
-        <div className="p-6">
+        {/* Content - comfortable padding */}
+        <div className="p-6 sm:p-7">
           {/* Top Row: Skip Button */}
           <div className="flex justify-end mb-4">
             <button
@@ -154,13 +153,13 @@ export function Onboarding({ onComplete, onNavigate }: OnboardingProps) {
                 {slide.icon}
               </div>
             </div>
-            <h2 className="text-lg font-bold text-gray-800">
+            <h2 className="text-lg font-bold text-gray-800" style={{ fontFamily: '"Nunito", sans-serif' }}>
               {slide.title}
             </h2>
           </div>
 
           {/* Description */}
-          <p className="text-gray-600 text-sm leading-relaxed mb-8">
+          <p className="text-gray-600 text-sm leading-relaxed mb-8" style={{ fontFamily: '"Nunito", sans-serif' }}>
             {slide.description}
           </p>
 
