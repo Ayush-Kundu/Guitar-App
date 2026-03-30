@@ -30,9 +30,11 @@ const getColorValue = (colorClass: string) => {
 
 interface SkillProgressBarProps {
   onSectionChange?: (section: string) => void;
+  /** Omit outer card chrome — parent supplies border/background (e.g. dashboard goals shell). */
+  embedded?: boolean;
 }
 
-export function SkillProgressBar({ onSectionChange }: SkillProgressBarProps) {
+export function SkillProgressBar({ onSectionChange, embedded }: SkillProgressBarProps) {
   const { user, getLevelProgressPercentage } = useUser();
   const [levelProgressPercentage, setLevelProgressPercentage] = useState(0);
 
@@ -65,12 +67,22 @@ export function SkillProgressBar({ onSectionChange }: SkillProgressBarProps) {
   };
 
   return (
-    <div 
-      className={`bg-white/70 backdrop-blur-sm rounded-xl p-6 shadow-sm ${
-        onSectionChange ? 'cursor-pointer hover:bg-white/80 dark:hover:bg-gray-800/80 transition-all duration-200 hover:scale-[1.02]' : ''
-      }`}
-      style={{border: "2.5px solid rgb(237, 237, 237)", backgroundColor: 'rgba(255, 255, 255, 0.58)' }}
-      onClick={handleClick}
+    <div
+      className={
+        embedded
+          ? 'w-full px-0.5 py-1 sm:px-1 sm:py-2'
+          : `bg-white/70 backdrop-blur-sm rounded-xl p-6 shadow-sm ${
+              onSectionChange
+                ? 'cursor-pointer hover:bg-white/80 dark:hover:bg-gray-800/80 transition-all duration-200 hover:scale-[1.02]'
+                : ''
+            }`
+      }
+      style={
+        embedded
+          ? undefined
+          : { border: '2.5px solid rgb(237, 237, 237)', backgroundColor: 'rgba(255, 255, 255, 0.58)' }
+      }
+      onClick={embedded ? undefined : handleClick}
     >
 
       {/* Current Level Badge */}

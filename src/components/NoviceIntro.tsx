@@ -15,7 +15,10 @@ import {
   Home,
   TrendingUp,
   Check,
+  Users,
+  MessageCircle,
 } from 'lucide-react';
+import beatsSaysAvatar from '../assets/beats-says-avatar.png';
 import { setDailyPracticeGoal } from '../utils/progressStorage';
 
 const font = '"Nunito", "Segoe UI", system-ui, sans-serif';
@@ -34,9 +37,9 @@ function stripBold(text: string): string {
 export interface NoviceIntroProps {
   isOpen: boolean;
   userId: string;
-  userLevel?: string;
   onComplete: () => void;
-  onGoToBasics?: () => void;
+  /** Opens Learn Guitar Basics on Songs (no Beats bottom popup). */
+  onStartLearnGuitarBasics?: () => void;
   onGoToSongs?: () => void;
   onNavigate?: (section: string) => void;
 }
@@ -44,9 +47,19 @@ export interface NoviceIntroProps {
 const COACH_SLIDES = [
   { id: 'coach-welcome', title: "Welcome to Strummy!", description: "Your personal guitar learning companion — here's your coach's board to help you start your musical journey!", icon: Sparkles, color: 'rgb(249, 115, 22)', section: 'dashboard' },
   { id: 'coach-dashboard', title: "Your Dashboard", description: "Your home base: daily goals, recent activity, and quick access to all features.", icon: Home, color: 'rgb(249, 115, 22)', section: 'dashboard' },
+  {
+    id: 'coach-beats',
+    title: 'Beats says — your personal trainer',
+    description:
+      "On your Dashboard you'll see Beats says: your in-app coach. Beats watches what you've done today — practice minutes, technique, theory — and suggests the single best next step. Tap the card and Strummy opens the right tab for you. It's like having a trainer who keeps your routine on track and updates every time you practice.",
+    icon: MessageCircle,
+    color: 'rgb(235, 64, 52)',
+    section: 'dashboard',
+  },
   { id: 'coach-songs', title: "Learn Songs You Love", description: "Browse songs with chord progressions, strumming patterns, and tutorials. Filter by difficulty and genre.", icon: Music, color: 'rgb(59, 130, 246)', section: 'songs' },
   { id: 'coach-learn', title: "Master Techniques & Theory", description: "Structured lessons on chords, strums, fingerpicking, and scales. Complete quizzes to track progress.", icon: BookOpen, color: 'rgb(16, 185, 129)', section: 'technique' },
   { id: 'coach-progress', title: "Track Your Progress", description: "Stats, streaks, and achievements. Set daily goals and stay motivated.", icon: TrendingUp, color: 'rgb(168, 85, 247)', section: 'progress' },
+  { id: 'coach-community', title: 'Community', description: 'Say hi, cheer others on, and see what people are practicing — optional but fun.', icon: Users, color: 'rgb(14, 165, 233)', section: 'dashboard' },
 ];
 
 const GUITAR_SLIDES = [
@@ -94,34 +107,16 @@ const STRING_LABELS_WIDTH = 48;
 const STRING_NAMES = ['E', 'A', 'D', 'G', 'B', 'e'];
 const STRING_COLORS = ['#8B5A2B', '#A06E3C', '#B4824F', '#BE9160', '#C8A070', '#D2AF80'];
 
-const LEARN_BASICS_SLIDE = {
-  id: 'learn-basics',
-  title: 'Learn Guitar Basics',
-  icon: BookOpen,
-  color: 'rgb(59, 130, 246)' as const,
-  bullets: [
-    "In the Songs section, open Learn Guitar Basics to see where each note is on the fretboard. The app listens and tells you when you're right.",
-    "Start with one note, then a few notes, then a short scale. Use the speed control to slow down.",
-  ],
-};
-
-const NOVICE_LEVELS = ['novice', 'beginner', 'elementary'];
-
-export function NoviceIntro({ isOpen, userId, userLevel, onComplete, onGoToBasics, onGoToSongs, onNavigate }: NoviceIntroProps) {
+export function NoviceIntro({ isOpen, userId, onComplete, onStartLearnGuitarBasics, onGoToSongs, onNavigate }: NoviceIntroProps) {
   const [slideIndex, setSlideIndex] = useState(0);
   const [selectedMinutes, setSelectedMinutes] = useState(30);
 
-  const SLIDES = React.useMemo(() => {
-    const base = [...GUITAR_SLIDES, ...COACH_SLIDES];
-    if (userLevel && NOVICE_LEVELS.includes(userLevel)) base.push(LEARN_BASICS_SLIDE as typeof base[0]);
-    return base;
-  }, [userLevel]);
+  const SLIDES = React.useMemo(() => [...GUITAR_SLIDES, ...COACH_SLIDES], []);
 
   const slide = SLIDES[slideIndex];
   const isLast = slideIndex === SLIDES.length - 1;
   const isNextSlide = slide?.id === 'next';
   const isMinutesSlide = slide?.id === 'minutes';
-  const isLearnBasicsSlide = slide?.id === 'learn-basics';
   const isCoachSlide = slide && 'section' in slide && !!(slide as { section?: string }).section;
   const isFirstCoachSlide = isCoachSlide && slide?.id === 'coach-welcome';
 
@@ -141,6 +136,11 @@ export function NoviceIntro({ isOpen, userId, userLevel, onComplete, onGoToBasic
   }, [slideIndex, isCoachSlide, slide, onNavigate]);
 
   const handleNext = () => {
+    if (slide?.id === 'coach-community') {
+      onNavigate?.('dashboard');
+      onComplete();
+      return;
+    }
     if (isLast) {
       onComplete();
       return;
@@ -288,9 +288,26 @@ export function NoviceIntro({ isOpen, userId, userLevel, onComplete, onGoToBasic
             </div>
 
             {isCoachSlide ? (
-              <p className="text-gray-600 text-sm leading-relaxed pr-1" style={{ fontFamily: font }}>
-                {(slide as { description: string }).description}
-              </p>
+              <>
+                <p className="text-gray-600 text-sm leading-relaxed pr-1" style={{ fontFamily: font }}>
+                  {(slide as { description: string }).description}
+                </p>
+                {(slide as { id?: string }).id === 'coach-beats' && (
+                  <div className="flex flex-col items-center gap-2 mt-5">
+                    <div className="rounded-full p-1 ring-4 ring-[#eb4034]/35 shadow-md bg-[#eb4034]/[0.08]">
+                      <img
+                        src={beatsSaysAvatar}
+                        alt=""
+                        className="w-16 h-16 sm:w-20 sm:h-20 rounded-full object-cover object-center"
+                        draggable={false}
+                      />
+                    </div>
+                    <p className="text-xs text-center text-gray-500 m-0 max-w-sm" style={{ fontFamily: font }}>
+                      That’s Beats — tap the red card on your Dashboard anytime for your next move.
+                    </p>
+                  </div>
+                )}
+              </>
             ) : isMinutesSlide ? (
               <>
                 <p className="text-sm text-gray-600 mb-4 leading-relaxed pr-1" style={{ fontFamily: font }}>
@@ -346,7 +363,13 @@ export function NoviceIntro({ isOpen, userId, userLevel, onComplete, onGoToBasic
                     fontFamily: font,
                   }}
                 >
-                  {isLast ? <>Get Started <Check className="w-4 h-4" /></> : <>Next <ChevronRight className="w-4 h-4" /></>}
+                  {slide?.id === 'coach-community' ? (
+                    <>Finish tour <Check className="w-4 h-4" /></>
+                  ) : isLast ? (
+                    <>Get Started <Check className="w-4 h-4" /></>
+                  ) : (
+                    <>Next <ChevronRight className="w-4 h-4" /></>
+                  )}
                 </button>
               </div>
             )}
@@ -370,7 +393,7 @@ export function NoviceIntro({ isOpen, userId, userLevel, onComplete, onGoToBasic
                 </button>
               </div>
             )}
-            {isLearnBasicsSlide && (
+            {isNextSlide && !isMinutesSlide && (
               <div className="flex flex-col gap-3">
                 <div className="flex gap-3">
                   <button
@@ -383,48 +406,27 @@ export function NoviceIntro({ isOpen, userId, userLevel, onComplete, onGoToBasic
                   </button>
                   <button
                     type="button"
-                    onClick={() => {
-                      try { sessionStorage.setItem('strummy-open-guitar-basics', '1'); } catch (_) {}
-                      onGoToBasics?.();
-                      onComplete();
-                    }}
+                    onClick={() => { setSlideIndex((i) => i + 1); onNavigate?.('dashboard'); }}
                     className="flex-1 flex items-center justify-center gap-2 py-3 rounded-xl text-sm font-bold"
-                    style={{ backgroundColor: (slide as { color: string }).color, color: 'white', border: `2px solid ${(slide as { color: string }).color}`, fontFamily: font }}
+                    style={{ backgroundColor: 'rgba(249, 115, 22, 0.2)', borderBottom: '3px solid rgb(249, 115, 22)', color: 'rgb(194, 65, 12)', fontFamily: font }}
                   >
-                    Get Started <Check className="w-4 h-4" />
+                    Tour the app <ChevronRight className="w-4 h-4" />
                   </button>
                 </div>
-                <button
-                  type="button"
-                  onClick={onComplete}
-                  className="w-full py-2.5 rounded-xl text-sm font-medium"
-                  style={{ fontFamily: font, backgroundColor: 'rgba(0,0,0,0.06)', color: 'rgb(107, 114, 128)', border: '1.5px solid rgb(229, 231, 235)' }}
-                >
-                  Skip Learn Guitar Basics
-                </button>
+                {onStartLearnGuitarBasics && (
+                  <button
+                    type="button"
+                    onClick={() => onStartLearnGuitarBasics()}
+                    className="w-full flex items-center justify-center gap-2 py-3 rounded-xl text-sm font-bold border-2 border-blue-200 bg-blue-50/90 text-blue-800 dark:bg-blue-950/40 dark:border-blue-700 dark:text-blue-100"
+                    style={{ fontFamily: font }}
+                  >
+                    <BookOpen className="w-4 h-4 shrink-0" />
+                    Open Learn Guitar Basics
+                  </button>
+                )}
               </div>
             )}
-            {isNextSlide && !isMinutesSlide && (
-              <div className="flex gap-3">
-                <button
-                  type="button"
-                  onClick={handlePrev}
-                  className="flex items-center justify-center gap-1 px-4 py-3 rounded-xl text-sm font-semibold"
-                  style={{ backgroundColor: 'rgba(0,0,0,0.06)', color: 'rgb(75, 85, 99)', fontFamily: font }}
-                >
-                  <ChevronLeft className="w-4 h-4" /> Back
-                </button>
-                <button
-                  type="button"
-                  onClick={() => { setSlideIndex((i) => i + 1); onNavigate?.('dashboard'); }}
-                  className="flex-1 flex items-center justify-center gap-2 py-3 rounded-xl text-sm font-bold"
-                  style={{ backgroundColor: 'rgba(249, 115, 22, 0.2)', borderBottom: '3px solid rgb(249, 115, 22)', color: 'rgb(194, 65, 12)', fontFamily: font }}
-                >
-                  Next <ChevronRight className="w-4 h-4" />
-                </button>
-              </div>
-            )}
-            {!isNextSlide && !isMinutesSlide && !isCoachSlide && !isLearnBasicsSlide && (
+            {!isNextSlide && !isMinutesSlide && !isCoachSlide && (
               <div className="flex gap-3">
                 {slideIndex > 0 && (
                   <button

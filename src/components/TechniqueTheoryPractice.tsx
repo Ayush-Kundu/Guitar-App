@@ -7,6 +7,8 @@ import React, { useState, useEffect, useRef } from 'react';
 import { Dialog, DialogContent, DialogTitle } from './ui/dialog';
 import { X, Hand, BookOpen, CheckCircle2 } from 'lucide-react';
 import { ChordDetectionService, ChordDetectionResult } from '../utils/chordDetection';
+import { techniqueTheoryChordMatch } from '../utils/techniqueChordMatch';
+import { getChordFingering } from '../utils/chordFingerings';
 
 const font = '"Nunito", "Segoe UI", system-ui, sans-serif';
 
@@ -20,35 +22,16 @@ const STRING_COLORS = [
   '#A06E3C', '#B4824F', '#BE9160', '#C8A070', '#D2AF80', // e (high) = string 1
 ];
 
-/** Fret for each string (1=high e .. 6=low E). -1 = mute, 0 = open, 1+ = fret */
-const CHORD_FINGERINGS: Record<string, number[]> = {
-  Em: [0, 0, 0, 2, 2, 0],
-  E: [0, 0, 1, 2, 2, 0],
-  A: [0, 2, 2, 2, 0, -1],
-  Am: [0, 1, 2, 2, 0, -1],
-  D: [2, 3, 2, 0, -1, -1],
-  G: [3, 0, 0, 0, 2, 3],
-  C: [0, 1, 0, 2, 3, -1],
-  F: [1, 1, 2, 3, 3, 1],
-};
-
-function getChordFingering(chordName: string): number[] {
-  const s = chordName.replace(/\s/g, '');
-  const isMinor = /\bmin|m$/i.test(s) || s.toLowerCase().includes('minor');
-  const base = s.replace(/minor|min|m$/gi, '').replace(/major/gi, '') || s.charAt(0);
-  const letter = base.charAt(0).toUpperCase() + base.slice(1);
-  const key = letter + (isMinor ? 'm' : '');
-  if (CHORD_FINGERINGS[key]) return CHORD_FINGERINGS[key];
-  if (CHORD_FINGERINGS[letter]) return CHORD_FINGERINGS[letter];
-  return CHORD_FINGERINGS[letter + 'm'] ?? [0, 0, 0, 0, 0, 0];
-}
-
 export interface TechniqueTheoryPracticeProps {
   isOpen: boolean;
   onClose: () => void;
   title: string;
   chords: string[];
   type: 'technique' | 'theory';
+  /** Lesson-specific focus line from lesson-physical-practice (e.g. posture, strumming). */
+  practiceFocusTitle?: string;
+  /** Step-by-step physical practice for this lesson. */
+  practiceInstructions?: string[];
   onComplete: () => void;
   userLevel?: string;
 }
@@ -86,7 +69,7 @@ function getStringY(stringNum: number): number {
 type FretboardFeedback = 'correct' | 'wrong' | null;
 
 /** Fretboard matching SongPractice: same container, string labels, 6 horizontal lines, one note cell per string. */
-function FretboardView({
+export function TechniqueTheoryFretboardView({
   fingering,
   accentColor,
   feedback,
@@ -188,6 +171,8 @@ export function TechniqueTheoryPractice({
   title,
   chords,
   type,
+  practiceFocusTitle,
+  practiceInstructions,
   onComplete,
   userLevel,
 }: TechniqueTheoryPracticeProps) {
@@ -299,12 +284,8 @@ export function TechniqueTheoryPractice({
     };
   }, [isOpen, userLevel, safeChords.length]);
 
-  const normalizeForMatch = (s: string) =>
-    s.replace(/\s/g, '').toUpperCase().replace(/MINOR|MIN$/gi, 'M').replace(/MAJOR|MAJ$/gi, '').trim();
-  const normalizedDetected = detectedChord ? normalizeForMatch(detectedChord) : null;
-  const normalizedCurrent = normalizeForMatch(currentChord);
-  const isCurrentMatch = normalizedDetected && (normalizedDetected === normalizedCurrent || normalizedDetected.startsWith(normalizedCurrent) || normalizedCurrent.startsWith(normalizedDetected));
-  const isWrong = normalizedDetected && !isCurrentMatch;
+  const isCurrentMatch = Boolean(detectedChord && techniqueTheoryChordMatch(detectedChord, currentChord));
+  const isWrong = Boolean(detectedChord && !isCurrentMatch);
 
   useEffect(() => {
     if (!isCurrentMatch) return;
@@ -365,7 +346,9 @@ export function TechniqueTheoryPractice({
                 <h2 className="text-sm font-bold text-gray-800 truncate" style={{ fontFamily: font }}>
                   {title}
                 </h2>
-                <p className="text-xs text-gray-500">Play the chord(s) on the fretboard</p>
+                <p className="text-xs text-gray-500" style={{ fontFamily: font }}>
+                  {practiceFocusTitle || 'Play the chord(s) on the fretboard'}
+                </p>
               </div>
               <button
                 type="button"
@@ -378,6 +361,19 @@ export function TechniqueTheoryPractice({
               </button>
             </div>
           </div>
+
+          {practiceInstructions && practiceInstructions.length > 0 && (
+            <div className="backdrop-blur-sm rounded-xl px-3 py-3 shadow-sm" style={cardStyle}>
+              <p className="text-xs font-semibold text-gray-700 mb-2" style={{ fontFamily: font }}>
+                On your guitar
+              </p>
+              <ul className="list-disc pl-4 space-y-1.5 text-xs text-gray-600 leading-relaxed" style={{ fontFamily: font }}>
+                {practiceInstructions.map((line, i) => (
+                  <li key={i}>{line}</li>
+                ))}
+              </ul>
+            </div>
+          )}
 
           {/* Step indicator when multiple chords: Step 1 of 3, Step 2 of 3, ... */}
           {isStepMode && (
@@ -411,7 +407,7 @@ export function TechniqueTheoryPractice({
                 {isStepMode ? `Step ${currentStepIndex + 1} of ${safeChords.length}: Play ${currentChord}` : `Play: ${safeChords[0]}`}
               </span>
             </div>
-            <FretboardView
+            <TechniqueTheoryFretboardView
               fingering={currentFingering}
               accentColor={colors.fill}
               feedback={fretboardFeedback}

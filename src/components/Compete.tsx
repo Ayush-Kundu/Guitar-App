@@ -5,334 +5,39 @@ import { Button } from './ui/button';
 import { Input } from './ui/input';
 import { ActivityModal } from './ActivityModal';
 import { ImageWithFallback } from './figma/ImageWithFallback';
-import { loadProgress, awardPoints as awardPointsStorage, getWeeklyGoals, getPracticeStreak } from '../utils/progressStorage';
+import {
+  loadProgress,
+  awardPoints as awardPointsStorage,
+  getWeeklyGoals,
+  getPracticeStreak,
+} from '../utils/progressStorage';
 import { createClient } from '@supabase/supabase-js';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from './ui/dialog';
+import { Dialog, DialogContent, DialogContentFullscreen, DialogHeader, DialogTitle } from './ui/dialog';
 import { ScrollArea } from './ui/scroll-area';
 import guitarContent from '../data/guitar-content.json';
-import weeklyChallengesData from '../data/weekly-challenges.json';
-import { 
-  Trophy, 
-  Crown, 
-  Medal, 
-  Sword, 
+import {
+  getWeeklyChallengesList,
+  getWeeklyChallengeProgress,
+  getDifficultyStyle,
+  getDifficultyBarFillClass,
+  type WeeklyChallenge,
+} from '../utils/weeklyChallengesShared';
+import {
+  Trophy,
+  Crown,
+  Medal,
+  Sword,
   Shield,
   Award,
   UserPlus,
   MessageCircle,
   Search,
   Coins,
-  Music,
-  Play,
   X,
   Check,
-  Clock,
   Target,
-  Users,
-  Guitar,
-  Star,
   ChevronRight,
-  Flame,
-  BookOpen,
-  Compass,
-  Sunrise,
-  Moon,
-  TrendingUp,
-  Timer,
-  Zap,
-  LayoutGrid,
-  Calendar,
-  Repeat,
-  BatteryCharging,
-  Grid,
-  RotateCcw,
-  RefreshCw,
-  Layers,
-  FastForward,
-  Globe,
-  PlayCircle,
-  CheckSquare,
-  Heart,
-  CheckCircle,
-  Hand
 } from 'lucide-react';
-
-// Challenge type
-interface Challenge {
-  id: number;
-  title: string;
-  description: string;
-  difficulty: string;
-  category: string;
-  points: number;
-  proofType: string;
-  tips: string;
-  icon?: string;
-  requirement?: {
-    type: string;
-    count: number;
-    [key: string]: any;
-  };
-}
-
-// Get weekly challenges based on the current week
-const getWeeklyChallenges = (): Challenge[] => {
-  const challenges = weeklyChallengesData.challenges as Challenge[];
-  
-  // Calculate week number of the year
-  const now = new Date();
-  const start = new Date(now.getFullYear(), 0, 1);
-  const weekNumber = Math.ceil(((now.getTime() - start.getTime()) / 86400000 + start.getDay() + 1) / 7);
-  
-  // Each week shows 4 challenges, cycling through all 104
-  const startIndex = ((weekNumber - 1) * 4) % challenges.length;
-  const selectedChallenges: Challenge[] = [];
-  
-  for (let i = 0; i < 4; i++) {
-    selectedChallenges.push(challenges[(startIndex + i) % challenges.length]);
-  }
-  
-  return selectedChallenges;
-};
-
-// Get difficulty color
-const getDifficultyColor = (difficulty: string) => {
-  switch (difficulty) {
-    case 'beginner': return { bg: 'bg-green-100', text: 'text-green-700', border: 'border-green-300' };
-    case 'intermediate': return { bg: 'bg-yellow-100', text: 'text-yellow-700', border: 'border-yellow-300' };
-    case 'advanced': return { bg: 'bg-red-100', text: 'text-red-700', border: 'border-red-300' };
-    default: return { bg: 'bg-gray-100', text: 'text-gray-700', border: 'border-gray-300' };
-  }
-};
-
-// Get icon component based on icon name
-const getChallengeIcon = (iconName?: string) => {
-  const iconMap: { [key: string]: any } = {
-    'music': Music,
-    'users': Users,
-    'flame': Flame,
-    'clock': Clock,
-    'hand': Hand,
-    'book': BookOpen,
-    'compass': Compass,
-    'sword': Sword,
-    'sunrise': Sunrise,
-    'moon': Moon,
-    'coins': Coins,
-    'trending-up': TrendingUp,
-    'target': Target,
-    'guitar': Guitar,
-    'timer': Timer,
-    'star': Star,
-    'message-circle': MessageCircle,
-    'zap': Zap,
-    'layout': LayoutGrid,
-    'calendar': Calendar,
-    'repeat': Repeat,
-    'user-plus': UserPlus,
-    'battery-charging': BatteryCharging,
-    'award': Award,
-    'grid': Grid,
-    'rotate-ccw': RotateCcw,
-    'refresh-cw': RefreshCw,
-    'layers': Layers,
-    'fast-forward': FastForward,
-    'trophy': Trophy,
-    'globe': Globe,
-    'play-circle': PlayCircle,
-    'check-square': CheckSquare,
-    'heart': Heart,
-    'shield': Shield,
-    'crown': Crown,
-    'check-circle': CheckCircle
-  };
-  return iconMap[iconName || 'trophy'] || Trophy;
-};
-
-// Calculate challenge progress based on user's actual progress
-const getChallengeProgress = (challenge: Challenge, userId: string): { current: number; target: number; isComplete: boolean } => {
-  if (!challenge.requirement || !userId) {
-    return { current: 0, target: 1, isComplete: false };
-  }
-
-  const progress = loadProgress(userId);
-  const requirement = challenge.requirement;
-  const target = requirement.count || 1;
-  let current = 0;
-
-  // Get current week's start for weekly tracking
-  const getWeekStart = () => {
-    const now = new Date();
-    const day = now.getDay();
-    const diff = now.getDate() - day + (day === 0 ? -6 : 1);
-    const weekStart = new Date(now.setDate(diff));
-    return weekStart.toISOString().split('T')[0];
-  };
-  const weekStart = getWeekStart();
-
-  switch (requirement.type) {
-    case 'songs_completed':
-    case 'unique_songs_completed':
-      current = Object.values(progress.songs).filter(s => s.progress >= 100).length;
-      break;
-
-    case 'friends_added':
-    case 'total_friends':
-    case 'same_level_friends':
-    case 'country_friends':
-    case 'timezone_friends':
-      // For now, mock friend count - would need to integrate with friend system
-      current = 0; // Would need friends data
-      break;
-
-    case 'streak_days':
-      current = progress.streak || 0;
-      break;
-
-    case 'practice_minutes':
-      // Weekly practice minutes
-      const weeklyGoals = progress.weeklyGoals?.[weekStart];
-      if (weeklyGoals) {
-        current = (weeklyGoals.songCompletedMinutes || 0) + 
-                  (weeklyGoals.techniqueCompletedMinutes || 0) + 
-                  (weeklyGoals.theoryCompletedMinutes || 0);
-      }
-      break;
-
-    case 'techniques_completed':
-      current = Object.values(progress.techniques).filter(t => t.completed).length;
-      break;
-
-    case 'theory_completed':
-      current = Object.values(progress.theory).filter(t => t.completed).length;
-      break;
-
-    case 'genres_played':
-      const genres = new Set(Object.values(progress.songs).map(s => s.genre));
-      current = genres.size;
-      break;
-
-    case 'duels_won':
-    case 'total_duels':
-    case 'win_streak':
-    case 'consecutive_wins':
-    case 'defensive_wins':
-    case 'duels_initiated':
-      // Would need to integrate with duel system
-      current = 0;
-      break;
-
-    case 'points_earned':
-      current = progress.totalPoints || 0;
-      break;
-
-    case 'rank_improved':
-    case 'leaderboard_rank':
-    case 'weekly_rank':
-    case 'rank_maintained':
-      // Would need to integrate with leaderboard system
-      current = 0;
-      break;
-
-    case 'hard_songs_completed':
-      // Count songs with high difficulty
-      current = Object.values(progress.songs).filter(s => s.progress >= 100).length; // Simplified
-      break;
-
-    case 'chords_learned':
-    case 'unique_chords_used':
-      current = Object.values(progress.techniques).filter(
-        t => t.category.toLowerCase().includes('chord') && t.completed
-      ).length;
-      break;
-
-    case 'longest_session_minutes':
-      // Would need to track longest session
-      current = 0;
-      break;
-
-    case 'perfect_songs':
-    case 'high_accuracy_songs':
-      current = Object.values(progress.songs).filter(s => s.progress >= 100).length;
-      break;
-
-    case 'messages_sent':
-    case 'social_interactions':
-    case 'helped_beginners':
-    case 'requests_accepted':
-      // Would need to integrate with social system
-      current = 0;
-      break;
-
-    case 'challenges_completed':
-    case 'all_weekly_challenges':
-    case 'same_day_challenges':
-      // Would need separate tracking
-      current = 0;
-      break;
-
-    case 'morning_sessions':
-    case 'evening_sessions':
-    case 'quick_start_songs':
-    case 'app_opens':
-    case 'daily_arena':
-      // Would need session time tracking
-      current = 0;
-      break;
-
-    case 'daily_goals_completed':
-      const routine = progress.dailyRoutines?.[new Date().toISOString().split('T')[0]];
-      if (routine?.completed) current = 1;
-      break;
-
-    case 'weekend_practice_minutes':
-      // Would need to track weekend specifically
-      current = 0;
-      break;
-
-    case 'daily_song_streak':
-    case 'exact_daily_songs':
-      // Would need daily song tracking
-      current = progress.streak || 0;
-      break;
-
-    case 'technique_categories':
-    case 'all_technique_categories':
-      const techCategories = new Set(
-        Object.values(progress.techniques).filter(t => t.completed).map(t => t.category)
-      );
-      current = techCategories.size;
-      break;
-
-    case 'achievements_unlocked':
-      current = Object.values(progress.achievements).filter(Boolean).length;
-      break;
-
-    case 'songs_improved':
-      // Would need to track improved songs
-      current = 0;
-      break;
-
-    case 'total_activities':
-      current = Object.values(progress.songs).length + 
-                Object.values(progress.techniques).length + 
-                Object.values(progress.theory).length;
-      break;
-
-    case 'level_up':
-      current = progress.currentLevel > 1 ? 1 : 0;
-      break;
-
-    default:
-      current = 0;
-  }
-
-  return {
-    current: Math.min(current, target),
-    target,
-    isComplete: current >= target
-  };
-};
 
 import guitarCompete from '../assets/20251005_0034_Duel Characters Removed Background_remix_01k6smkddjencvmx83rm1j7mar.png';
 import bronzeImage from '../assets/image.png';
@@ -430,9 +135,9 @@ export function Compete() {
   
   // Challenge state
   const [challengeOpen, setChallengeOpen] = useState(false);
-  const [weeklyChallenges] = useState<Challenge[]>(getWeeklyChallenges());
+  const [weeklyChallenges] = useState<WeeklyChallenge[]>(getWeeklyChallengesList());
   const [completedChallenges, setCompletedChallenges] = useState<number[]>([]);
-  const [selectedChallenge, setSelectedChallenge] = useState<Challenge | null>(null);
+  const [selectedChallenge, setSelectedChallenge] = useState<WeeklyChallenge | null>(null);
   const [showChallengeDetails, setShowChallengeDetails] = useState(false);
 
   // Load completed challenges and check for auto-completion based on user progress
@@ -460,7 +165,9 @@ export function Compete() {
       const newlyCompleted: number[] = [];
       weeklyChallenges.forEach(challenge => {
         if (!existingCompleted.includes(challenge.id)) {
-          const progress = getChallengeProgress(challenge, user.id);
+          const progress = getWeeklyChallengeProgress(challenge, user.id, {
+            weeklyPoints: user.weeklyPoints ?? 0,
+          });
           if (progress.isComplete) {
             newlyCompleted.push(challenge.id);
             // Award points for newly completed challenges
@@ -481,6 +188,16 @@ export function Compete() {
       }));
     }
   }, [user, weeklyChallenges]);
+
+  useEffect(() => {
+    if (!user?.id) return;
+    try {
+      if (sessionStorage.getItem('strummy-open-weekly-challenges') === '1') {
+        sessionStorage.removeItem('strummy-open-weekly-challenges');
+        setChallengeOpen(true);
+      }
+    } catch (_) {}
+  }, [user?.id]);
 
   // Save completed challenges to localStorage
   const saveCompletedChallenges = (completed: number[]) => {
@@ -733,21 +450,21 @@ export function Compete() {
   // Platinum I: 4500 (3850+650), Platinum II: 5200 (4500+700), Platinum III: 5950 (5200+750)
   
   const tierThresholds = [
-    { rank: 'Bronze', tier: 'I', points: 0, color: 'text-orange-600 bg-orange-100', icon: Medal },
-    { rank: 'Bronze', tier: 'II', points: 100, color: 'text-orange-600 bg-orange-100', icon: Medal },
-    { rank: 'Bronze', tier: 'III', points: 250, color: 'text-orange-600 bg-orange-100', icon: Medal },
-    { rank: 'Silver', tier: 'I', points: 450, color: 'text-gray-500 bg-gray-100', icon: Award },
-    { rank: 'Silver', tier: 'II', points: 700, color: 'text-gray-500 bg-gray-100', icon: Award },
-    { rank: 'Silver', tier: 'III', points: 1000, color: 'text-gray-500 bg-gray-100', icon: Award },
-    { rank: 'Gold', tier: 'I', points: 1350, color: 'text-yellow-600 bg-yellow-100', icon: Trophy },
-    { rank: 'Gold', tier: 'II', points: 1750, color: 'text-yellow-600 bg-yellow-100', icon: Trophy },
-    { rank: 'Gold', tier: 'III', points: 2200, color: 'text-yellow-600 bg-yellow-100', icon: Trophy },
-    { rank: 'Diamond', tier: 'I', points: 2700, color: 'text-purple-600 bg-purple-100', icon: Crown },
-    { rank: 'Diamond', tier: 'II', points: 3250, color: 'text-purple-600 bg-purple-100', icon: Crown },
-    { rank: 'Diamond', tier: 'III', points: 3850, color: 'text-purple-600 bg-purple-100', icon: Crown },
-    { rank: 'Platinum', tier: 'I', points: 4500, color: 'text-cyan-600 bg-cyan-100', icon: Crown },
-    { rank: 'Platinum', tier: 'II', points: 5200, color: 'text-cyan-600 bg-cyan-100', icon: Crown },
-    { rank: 'Platinum', tier: 'III', points: 5950, color: 'text-cyan-600 bg-cyan-100', icon: Crown },
+    { rank: 'Bronze', tier: 'I', points: 0, color: 'text-amber-900 bg-amber-100', icon: Medal },
+    { rank: 'Bronze', tier: 'II', points: 100, color: 'text-amber-900 bg-amber-100', icon: Medal },
+    { rank: 'Bronze', tier: 'III', points: 250, color: 'text-amber-900 bg-amber-100', icon: Medal },
+    { rank: 'Silver', tier: 'I', points: 450, color: 'text-slate-600 bg-slate-200', icon: Award },
+    { rank: 'Silver', tier: 'II', points: 700, color: 'text-slate-600 bg-slate-200', icon: Award },
+    { rank: 'Silver', tier: 'III', points: 1000, color: 'text-slate-600 bg-slate-200', icon: Award },
+    { rank: 'Gold', tier: 'I', points: 1350, color: 'text-amber-800 bg-amber-200', icon: Trophy },
+    { rank: 'Gold', tier: 'II', points: 1750, color: 'text-amber-800 bg-amber-200', icon: Trophy },
+    { rank: 'Gold', tier: 'III', points: 2200, color: 'text-amber-800 bg-amber-200', icon: Trophy },
+    { rank: 'Diamond', tier: 'I', points: 2700, color: 'text-indigo-800 bg-indigo-100', icon: Crown },
+    { rank: 'Diamond', tier: 'II', points: 3250, color: 'text-indigo-800 bg-indigo-100', icon: Crown },
+    { rank: 'Diamond', tier: 'III', points: 3850, color: 'text-indigo-800 bg-indigo-100', icon: Crown },
+    { rank: 'Platinum', tier: 'I', points: 4500, color: 'text-rose-800 bg-rose-100', icon: Crown },
+    { rank: 'Platinum', tier: 'II', points: 5200, color: 'text-rose-800 bg-rose-100', icon: Crown },
+    { rank: 'Platinum', tier: 'III', points: 5950, color: 'text-rose-800 bg-rose-100', icon: Crown },
   ];
 
   // Generate user rank based on total points (progressive system)
@@ -1122,27 +839,40 @@ export function Compete() {
               </div>
             </div>
             <div className="mt-4">
-              <div className="flex justify-between text-sm mb-2">
+              <div className="flex justify-between text-sm mb-2 gap-2 flex-wrap">
                 {userRank.nextTier ? (
-                  <span>{userRank.pointsToNext} points to {userRank.nextTier.rank} {userRank.nextTier.tier}</span>
+                  <span>
+                    {userRank.pointsToNext} pts to {userRank.nextTier.rank} {userRank.nextTier.tier}
+                  </span>
                 ) : (
                   <span>Max tier reached!</span>
                 )}
-                <span>+{weeklyPoints} points this week</span>
+                <span className="text-white/90">+{weeklyPoints} pts this week</span>
               </div>
-              <div className="w-full bg-white/20 rounded-full h-3">
-                <div 
-                  className="h-3 rounded-full transition-all duration-500" 
-                  style={{ 
+              {userRank.nextTier && (
+                <p className="text-xs text-white/70 mb-2 tabular-nums">
+                  Progress to next rank: {totalPoints.toLocaleString()} / {userRank.nextTier.points.toLocaleString()} pts
+                </p>
+              )}
+              <div className="w-full bg-white/20 rounded-full h-3 overflow-hidden">
+                <div
+                  className="h-3 rounded-full transition-all duration-500"
+                  style={{
                     width: `${userRank.progressToNext}%`,
-                    backgroundColor: userRank.rank === 'Bronze' ? 'rgb(205, 160, 110)' :
-                                     userRank.rank === 'Silver' ? 'rgb(180, 180, 190)' :
-                                     userRank.rank === 'Gold' ? 'rgb(255, 215, 100)' :
-                                     userRank.rank === 'Diamond' ? 'rgb(160, 220, 255)' :
-                                     userRank.rank === 'Platinum' ? 'rgb(140, 230, 210)' :
-                                     'rgb(180, 200, 255)'
+                    background:
+                      userRank.rank === 'Bronze'
+                        ? 'linear-gradient(90deg, rgb(110, 72, 38), rgb(165, 112, 55))'
+                        : userRank.rank === 'Silver'
+                          ? 'linear-gradient(90deg, rgb(175, 180, 190), rgb(220, 224, 232))'
+                          : userRank.rank === 'Gold'
+                            ? 'linear-gradient(90deg, rgb(184, 140, 40), rgb(232, 195, 85))'
+                            : userRank.rank === 'Diamond'
+                              ? 'linear-gradient(90deg, rgb(90, 120, 200), rgb(150, 185, 245))'
+                              : userRank.rank === 'Platinum'
+                                ? 'linear-gradient(90deg, rgb(175, 160, 195), rgb(215, 205, 225))'
+                                : 'linear-gradient(90deg, rgb(140, 170, 230), rgb(180, 200, 255))',
                   }}
-                ></div>
+                />
               </div>
               <div className="flex justify-between text-xs mt-1 text-white/60">
                 <span>{userRank.rank} {userRank.tier}</span>
@@ -1328,44 +1058,54 @@ export function Compete() {
 
 
       {/* Weekly Challenge Dialog */}
-      <Dialog open={challengeOpen} onOpenChange={setChallengeOpen}>
-        <DialogContent 
-          className="p-0 overflow-hidden rounded-2xl"
-          style={{
-            width: 'calc(100% - 1rem)', maxWidth: '42rem',
-            border: '3px solid rgb(59, 130, 246)',
-            boxShadow: '0 0 40px rgba(59, 130, 246, 0.3)'
-          }}
-        >
-          {/* Close Button */}
-          <button
-            onClick={() => setChallengeOpen(false)}
-            className="absolute top-4 right-4 z-50 w-8 h-8 rounded-full bg-white/20 hover:bg-white/40 flex items-center justify-center transition-all"
-          >
-            <X className="w-5 h-5 text-white" />
-          </button>
+      <Dialog
+        open={challengeOpen}
+        onOpenChange={(open) => {
+          setChallengeOpen(open);
+          if (!open) {
+            setShowChallengeDetails(false);
+            setSelectedChallenge(null);
+          }
+        }}
+      >
+        <DialogContentFullscreen className="bg-white dark:bg-slate-900 p-0 border-0 shadow-none">
+          <div className="flex flex-col h-full min-h-0 w-full">
+            <div
+              className="flex-shrink-0 flex items-start justify-between gap-3 px-4 py-4 sm:px-5 sm:py-5"
+              style={{
+                background: 'linear-gradient(135deg, #3b82f6 0%, #2563eb 100%)',
+                boxShadow: '0 4px 24px rgba(37, 99, 235, 0.25)',
+              }}
+            >
+              <div className="min-w-0 flex-1 text-center sm:text-left">
+                <h2 className="text-xl font-bold text-white">Weekly Challenges</h2>
+                <p className="text-blue-100 text-sm mt-1">
+                  {completedChallenges.length}/{weeklyChallenges.length} completed •{' '}
+                  {weeklyChallenges.reduce((acc, c) => (completedChallenges.includes(c.id) ? acc + c.points : acc), 0)} pts earned
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={() => setChallengeOpen(false)}
+                className="shrink-0 w-10 h-10 rounded-xl bg-white/15 hover:bg-white/25 flex items-center justify-center transition-colors border border-white/30"
+                aria-label="Close weekly challenges"
+              >
+                <X className="w-5 h-5 text-white" />
+              </button>
+            </div>
 
-          {/* Header */}
-          <div 
-            className="px-5 py-4"
-            style={{ 
-              background: 'linear-gradient(135deg, #3b82f6 0%, #2563eb 100%)'
-            }}
-          >
-            <h2 className="text-xl font-bold text-white text-center">Weekly Challenges</h2>
-            <p className="text-blue-100 text-sm text-center mt-1">{completedChallenges.length}/{weeklyChallenges.length} completed • {weeklyChallenges.reduce((acc, c) => completedChallenges.includes(c.id) ? acc + c.points : acc, 0)} pts earned</p>
-          </div>
-
-          {/* Challenge List */}
-          <div className="p-6 bg-white dark:bg-slate-800">
+            <div className="flex-1 min-h-0 overflow-y-auto overscroll-contain p-4 sm:p-6 bg-white dark:bg-slate-900">
             {!showChallengeDetails ? (
               <div className="space-y-4">
-                {weeklyChallenges.map((challenge, index) => {
+                {weeklyChallenges.map((challenge) => {
                   const isCompleted = completedChallenges.includes(challenge.id);
-                  const diffColors = getDifficultyColor(challenge.difficulty);
-                  const progress = user ? getChallengeProgress(challenge, user.id) : { current: 0, target: 1, isComplete: false };
+                  const diffColors = getDifficultyStyle(challenge.difficulty);
+                  const progress = user
+                    ? getWeeklyChallengeProgress(challenge, user.id, { weeklyPoints: user.weeklyPoints ?? 0 })
+                    : { current: 0, target: 1, isComplete: false };
                   const progressPercent = Math.min(100, (progress.current / progress.target) * 100);
-                  
+                  const barFill = getDifficultyBarFillClass(challenge.difficulty, isCompleted);
+
                   return (
                     <div
                       key={challenge.id}
@@ -1374,49 +1114,72 @@ export function Compete() {
                         setShowChallengeDetails(true);
                       }}
                       className={`p-4 rounded-xl cursor-pointer transition-all border-2 ${
-                        isCompleted 
-                          ? 'bg-green-50 dark:bg-green-900/30 border-green-300 dark:border-green-600' 
+                        isCompleted
+                          ? 'bg-green-50 dark:bg-green-900/30 border-green-300 dark:border-green-600'
                           : 'hover:scale-[1.02] active:scale-[0.98] bg-blue-50/70 dark:bg-slate-700/70 border-blue-200 dark:border-slate-600'
                       }`}
                       style={{ borderBottomWidth: '4px' }}
                     >
                       <div className="flex items-center gap-4">
                         <div className="flex-1 min-w-0">
-                          <div className="flex items-center gap-2 mb-1">
-                            <h3 className={`font-bold text-base ${isCompleted ? 'text-green-700 dark:text-green-400' : 'text-gray-800 dark:text-white'}`}>
+                          <div className="flex items-start justify-between gap-2 mb-1">
+                            <h3
+                              className={`font-bold text-base flex-1 min-w-0 ${
+                                isCompleted ? 'text-green-700 dark:text-green-400' : 'text-gray-800 dark:text-white'
+                              }`}
+                            >
                               {challenge.title}
                             </h3>
+                            <span
+                              className={`shrink-0 text-sm font-bold tabular-nums ${
+                                isCompleted ? 'text-green-700 dark:text-green-400' : diffColors.text
+                              }`}
+                            >
+                              +{challenge.points} pts
+                            </span>
                           </div>
-                          <p className={`text-sm line-clamp-1 ${isCompleted ? 'text-green-600 dark:text-green-400' : 'text-gray-600 dark:text-gray-300'}`}>
+                          <p
+                            className={`text-sm line-clamp-1 ${
+                              isCompleted ? 'text-green-600 dark:text-green-400' : 'text-gray-600 dark:text-gray-300'
+                            }`}
+                          >
                             {challenge.description}
                           </p>
-                          
-                          {/* Progress bar */}
+
                           <div className="mt-2 mb-2">
                             <div className="flex justify-between text-xs mb-1">
-                              <span className="text-gray-500 dark:text-gray-400">{progress.current} / {progress.target}</span>
-                              <span className={`font-medium ${isCompleted ? 'text-green-600 dark:text-green-400' : 'text-blue-600 dark:text-blue-400'}`}>
+                              <span
+                                className={`tabular-nums font-medium ${
+                                  isCompleted ? 'text-green-600 dark:text-green-400' : diffColors.text
+                                }`}
+                              >
+                                {progress.current} / {progress.target}
+                              </span>
+                              <span
+                                className={`font-semibold tabular-nums ${
+                                  isCompleted ? 'text-green-600 dark:text-green-400' : diffColors.text
+                                }`}
+                              >
                                 {Math.round(progressPercent)}%
                               </span>
                             </div>
-                            <div className="h-2 bg-gray-200 dark:bg-slate-600 rounded-full overflow-hidden">
-                              <div 
-                                className={`h-full transition-all duration-500 ${isCompleted ? 'bg-green-500' : 'bg-blue-500'}`}
+                            <div className="h-2.5 rounded-full overflow-hidden border border-gray-400 dark:border-slate-500 bg-gray-100 dark:bg-slate-700/90 box-border">
+                              <div
+                                className={`h-full transition-all duration-500 ${barFill}`}
                                 style={{ width: `${progressPercent}%` }}
                               />
                             </div>
                           </div>
-                          
+
                           <div className="flex items-center gap-3">
                             <span className={`text-xs px-2 py-0.5 rounded-full ${diffColors.bg} ${diffColors.text}`}>
                               {challenge.difficulty}
                             </span>
-                            <span className="text-sm font-bold text-yellow-600">{challenge.points} pts</span>
                           </div>
                         </div>
-                        
+
                         {isCompleted && (
-                          <div className="px-3 py-1 bg-green-500 rounded-full">
+                          <div className="px-3 py-1 bg-green-500 rounded-full shrink-0">
                             <span className="text-xs font-bold text-white">DONE</span>
                           </div>
                         )}
@@ -1433,51 +1196,66 @@ export function Compete() {
                     setShowChallengeDetails(false);
                     setSelectedChallenge(null);
                   }}
-                  className="text-blue-600 hover:text-blue-800 text-sm flex items-center gap-1"
+                  className="text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 text-sm flex items-center gap-1"
                 >
                   ← Back to challenges
                 </button>
 
                 {/* Challenge Header */}
                 <div className="mb-4">
-                  <h3 className="text-xl font-bold text-gray-800">{selectedChallenge.title}</h3>
+                  <h3 className="text-xl font-bold text-gray-800 dark:text-gray-100">{selectedChallenge.title}</h3>
                   <div className="flex items-center gap-2 mt-1">
-                    <span className={`text-xs px-2 py-0.5 rounded-full ${getDifficultyColor(selectedChallenge.difficulty).bg} ${getDifficultyColor(selectedChallenge.difficulty).text}`}>
+                    <span
+                      className={`text-xs px-2 py-0.5 rounded-full ${getDifficultyStyle(selectedChallenge.difficulty).bg} ${getDifficultyStyle(selectedChallenge.difficulty).text}`}
+                    >
                       {selectedChallenge.difficulty}
                     </span>
-                    <span className="text-sm font-bold text-yellow-600">+{selectedChallenge.points} pts</span>
+                    <span
+                      className={`text-sm font-bold ${getDifficultyStyle(selectedChallenge.difficulty).text}`}
+                    >
+                      +{selectedChallenge.points} pts
+                    </span>
                   </div>
                 </div>
 
-                <div className="p-4 bg-gray-50 rounded-xl mb-3">
-                  <p className="text-gray-700 text-base">{selectedChallenge.description}</p>
+                <div className="p-4 bg-gray-50 dark:bg-slate-800 rounded-xl mb-3 border border-gray-100 dark:border-slate-600">
+                  <p className="text-gray-700 dark:text-gray-200 text-base">{selectedChallenge.description}</p>
                 </div>
 
                 {/* Requirement info */}
                 {selectedChallenge.requirement && (
-                  <div className="p-4 bg-blue-50 rounded-xl border border-blue-200 mb-3">
-                    <span className="font-medium text-blue-700">Goal: {selectedChallenge.requirement.count} {selectedChallenge.requirement.type.replace(/_/g, ' ')}</span>
+                  <div className="p-4 bg-blue-50 dark:bg-blue-950/40 rounded-xl border border-blue-200 dark:border-blue-800 mb-3">
+                    <span className="font-medium text-blue-700 dark:text-blue-300">
+                      Goal: {selectedChallenge.requirement.count} {selectedChallenge.requirement.type.replace(/_/g, ' ')}
+                    </span>
                   </div>
                 )}
 
                 {/* Progress Display - Auto-completes based on actual progress */}
                 {(() => {
-                  const progress = user ? getChallengeProgress(selectedChallenge, user.id) : { current: 0, target: 1, isComplete: false };
+                  const progress = user
+                    ? getWeeklyChallengeProgress(selectedChallenge, user.id, { weeklyPoints: user.weeklyPoints ?? 0 })
+                    : { current: 0, target: 1, isComplete: false };
                   const progressPercent = Math.min(100, (progress.current / progress.target) * 100);
-                  
+                  const detailDiff = getDifficultyStyle(selectedChallenge.difficulty);
+                  const detailBarFill = getDifficultyBarFillClass(selectedChallenge.difficulty, progress.isComplete);
+
                   return (
                     <div className="space-y-3">
-                      {/* Progress bar */}
                       <div className="w-full">
                         <div className="flex justify-between text-sm mb-1">
-                          <span className="text-gray-600">Progress</span>
-                          <span className={`font-bold ${progress.isComplete ? 'text-green-600' : 'text-blue-600'}`}>
+                          <span className="text-gray-600 dark:text-gray-400">Progress</span>
+                          <span
+                            className={`font-bold tabular-nums ${
+                              progress.isComplete ? 'text-green-600 dark:text-green-400' : detailDiff.text
+                            }`}
+                          >
                             {progress.current} / {progress.target}
                           </span>
                         </div>
-                        <div className="h-3 bg-gray-200 rounded-full overflow-hidden">
-                          <div 
-                            className={`h-full transition-all duration-500 ${progress.isComplete ? 'bg-green-500' : 'bg-blue-500'}`}
+                        <div className="h-3 rounded-full overflow-hidden border border-gray-400 dark:border-slate-500 bg-gray-100 dark:bg-slate-700/90 box-border">
+                          <div
+                            className={`h-full transition-all duration-500 ${detailBarFill}`}
                             style={{ width: `${progressPercent}%` }}
                           />
                         </div>
@@ -1508,8 +1286,9 @@ export function Compete() {
                 })()}
               </div>
             )}
+            </div>
           </div>
-        </DialogContent>
+        </DialogContentFullscreen>
       </Dialog>
     </div>
   );

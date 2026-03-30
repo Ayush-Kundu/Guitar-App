@@ -1,5 +1,5 @@
-import React, { useState, useEffect, useRef, useCallback } from 'react';
-import { Dialog, DialogContent, DialogTitle } from './ui/dialog';
+import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
+import { Dialog, DialogContentFullscreen, DialogTitle } from './ui/dialog';
 import { Play, Pause, RotateCcw, CheckCircle2, X, Trophy } from 'lucide-react';
 import {
   getSongData,
@@ -26,6 +26,8 @@ interface SongPracticeProps {
     bpm: number;
     genre: string;
     difficulty?: number;
+    /** Single-note melody line (novice / beginner catalog). */
+    melodyOnly?: boolean;
   };
   userId: string;
   userLevel?: string;
@@ -34,6 +36,14 @@ interface SongPracticeProps {
     progressPercent: number,
     songInfo: { songId: string; title: string; artist: string; genre: string }
   ) => void;
+  /** Practice only events in this window (seconds on the raw timeline, before UI lead-in). */
+  timeWindowSec?: { start: number; end: number };
+  /** Section drills: allow Done / “continue” without a perfect run; still logs light progress when used with onComplete. */
+  relaxedCompletion?: boolean;
+  /** Extra line under the title (e.g. “Section 1 of 3”). */
+  headerSubtitle?: string;
+  /** Skip the melody “learn the notes first” prep screen (direct full practice / quick path). */
+  skipMelodyNotePrep?: boolean;
 }
 
 // =============================================================================
@@ -88,7 +98,18 @@ const getExpectedNoteName = (stringNum: number, fret: number): string => {
 // MAIN COMPONENT
 // =============================================================================
 
-export function SongPractice({ isOpen, onClose, song, userId, userLevel, onComplete }: SongPracticeProps) {
+export function SongPractice({
+  isOpen,
+  onClose,
+  song,
+  userId,
+  userLevel,
+  onComplete,
+  timeWindowSec,
+  relaxedCompletion,
+  headerSubtitle,
+  skipMelodyNotePrep = false,
+}: SongPracticeProps) {
   // -------------------------------------------------------------------------
   // STATE
   // -------------------------------------------------------------------------
@@ -100,6 +121,8 @@ export function SongPractice({ isOpen, onClose, song, userId, userLevel, onCompl
 
   // Song data
   const [noteEvents, setNoteEvents] = useState<NoteEvent[]>([]);
+  /** Melody-only: show note names before the scrolling tab session. */
+  const [showMelodyNotePrep, setShowMelodyNotePrep] = useState(false);
   const [totalDuration, setTotalDuration] = useState(180);
 
   // UI state
@@ -182,25 +205,52 @@ export function SongPractice({ isOpen, onClose, song, userId, userLevel, onCompl
     setNoteFeedback({});
     activeNoteStartTimeRef.current = {};
     practiceStartTimeRef.current = Date.now();
+    setShowMelodyNotePrep(Boolean(song.melodyOnly) && !skipMelodyNotePrep);
 
     // Load song data
     const chords = song.chords || ['C', 'G', 'Am', 'F'];
     const bpm = song.bpm || 120;
     const duration = song.duration || '3:00';
 
-    const data = getSongData(song.title || 'Unknown', chords, bpm, duration);
+    const data = getSongData(song.title || 'Unknown', chords, bpm, duration, {
+      melodyOnly: Boolean(song.melodyOnly),
+    });
+    const raw = data?.events || [];
 
-    // Add lead-in time to all note events so user has time to prepare
-    const eventsWithLeadIn = (data?.events || []).map(event => ({
-      ...event,
-      time: event.time + LEAD_IN_TIME
-    }));
+    let eventsWithLeadIn: NoteEvent[];
+    if (timeWindowSec && raw.length > 0) {
+      const { start, end } = timeWindowSec;
+      const winStart = Math.min(start, end);
+      const winEnd = Math.max(start, end);
+      eventsWithLeadIn = raw
+        .filter((event) => event.time >= winStart && event.time < winEnd)
+        .map((event) => ({
+          ...event,
+          time: event.time - winStart + LEAD_IN_TIME,
+        }));
+      if (eventsWithLeadIn.length === 0) {
+        // Keep section mode distinct: if a window has no notes, use the closest note as a tiny drill.
+        const nearest = [...raw].sort((a, b) => {
+          const da = Math.min(Math.abs(a.time - winStart), Math.abs(a.time - winEnd));
+          const db = Math.min(Math.abs(b.time - winStart), Math.abs(b.time - winEnd));
+          return da - db;
+        })[0];
+        eventsWithLeadIn = nearest
+          ? [{ ...nearest, time: LEAD_IN_TIME }]
+          : [];
+      }
+    } else {
+      eventsWithLeadIn = raw.map((event) => ({
+        ...event,
+        time: event.time + LEAD_IN_TIME,
+      }));
+    }
     setNoteEvents(eventsWithLeadIn);
 
-    // Calculate duration (include lead-in time)
+    // Calculate duration (include lead-in time), based on the active window.
     const BUFFER = 4;
-    if (data?.events?.length > 0) {
-      setTotalDuration(calculateDurationFromEvents(data.events) + LEAD_IN_TIME + BUFFER);
+    if (eventsWithLeadIn.length > 0) {
+      setTotalDuration(calculateDurationFromEvents(eventsWithLeadIn) + BUFFER);
       } else {
       const [mins, secs] = duration.split(':').map(Number);
       setTotalDuration((mins || 0) * 60 + (secs || 0) + LEAD_IN_TIME + BUFFER);
@@ -283,7 +333,13 @@ export function SongPractice({ isOpen, onClose, song, userId, userLevel, onCompl
       setDetectedChord(null);
       setDetectedNotes([]);
     };
-  }, [isOpen, song]);
+  }, [
+    isOpen,
+    song,
+    skipMelodyNotePrep,
+    timeWindowSec?.start,
+    timeWindowSec?.end,
+  ]);
 
   // Animation loop
   useEffect(() => {
@@ -506,16 +562,27 @@ export function SongPractice({ isOpen, onClose, song, userId, userLevel, onCompl
   const handleComplete = () => {
     chordDetectionRef.current?.stopRecording();
 
+    const elapsedMs = practiceStartTimeRef.current ? Date.now() - practiceStartTimeRef.current : 0;
+    const minutesPracticed = Math.max(0, Math.round(elapsedMs / 60000));
+    const songId = song.songId || `${song.title.toLowerCase().replace(/\s+/g, '_')}_${song.artist.toLowerCase().replace(/\s+/g, '_')}`;
+
+    if (relaxedCompletion) {
+      const pct = showCompletion ? 100 : hasMadeMistake ? 35 : 55;
+      onComplete(minutesPracticed, pct, {
+        songId,
+        title: song.title,
+        artist: song.artist,
+        genre: song.genre,
+      });
+      setTimeout(onClose, 400);
+      return;
+    }
+
     // Only award progress/points if the song was played 100% correctly (trophy earned)
     if (!showCompletion) {
       setTimeout(onClose, 400);
       return;
     }
-
-    const elapsedMs = practiceStartTimeRef.current ? Date.now() - practiceStartTimeRef.current : 0;
-    const minutesPracticed = Math.round(elapsedMs / 60000);
-
-    const songId = song.songId || `${song.title.toLowerCase().replace(/\s+/g, '_')}_${song.artist.toLowerCase().replace(/\s+/g, '_')}`;
 
     onComplete(minutesPracticed, 100, {
       songId,
@@ -524,6 +591,21 @@ export function SongPractice({ isOpen, onClose, song, userId, userLevel, onCompl
       genre: song.genre
     });
 
+    setTimeout(onClose, 400);
+  };
+
+  const handleRelaxedContinueFromMistakes = () => {
+    chordDetectionRef.current?.stopRecording();
+    setShowMistakeOptions(false);
+    const elapsedMs = practiceStartTimeRef.current ? Date.now() - practiceStartTimeRef.current : 0;
+    const minutesPracticed = Math.max(0, Math.round(elapsedMs / 60000));
+    const songId = song.songId || `${song.title.toLowerCase().replace(/\s+/g, '_')}_${song.artist.toLowerCase().replace(/\s+/g, '_')}`;
+    onComplete(minutesPracticed, 35, {
+      songId,
+      title: song.title,
+      artist: song.artist,
+      genre: song.genre,
+    });
     setTimeout(onClose, 400);
   };
 
@@ -606,6 +688,25 @@ export function SongPractice({ isOpen, onClose, song, userId, userLevel, onCompl
     return { isLeadIn, isActive: !!activeNote, activeFeedback };
   };
 
+  const uniqueMelodyNotes = useMemo(() => {
+    if (!song.melodyOnly || !noteEvents.length) return [];
+    const seen = new Set<string>();
+    const out: { string: number; fret: number; name: string; openLabel: string }[] = [];
+    for (const ev of noteEvents) {
+      const k = `${ev.string}-${ev.fret}`;
+      if (seen.has(k)) continue;
+      seen.add(k);
+      const idx = Math.max(0, Math.min(5, 6 - ev.string));
+      out.push({
+        string: ev.string,
+        fret: ev.fret,
+        name: getExpectedNoteName(ev.string, ev.fret),
+        openLabel: STRING_NAMES[idx],
+      });
+    }
+    return out;
+  }, [song.melodyOnly, noteEvents]);
+
   // -------------------------------------------------------------------------
   // RENDER
   // -------------------------------------------------------------------------
@@ -635,27 +736,98 @@ export function SongPractice({ isOpen, onClose, song, userId, userLevel, onCompl
     }
   }
 
+  const showMelodyPrepScreen =
+    Boolean(song.melodyOnly) && showMelodyNotePrep && uniqueMelodyNotes.length > 0;
+
   return (
-    <Dialog open={isOpen} onOpenChange={handleClose}>
-      <DialogContent
-        className="h-[85vh] max-h-[700px] p-0 overflow-hidden [&>button:last-of-type]:hidden flex flex-col bg-gradient-to-br from-indigo-50 via-purple-50 to-pink-50 dark:from-gray-900 dark:via-slate-800 dark:to-gray-900 border-2 border-gray-200 dark:border-slate-600"
-        style={{
-          width: 'calc(100% - 0.75rem)', maxWidth: '56rem',
-          borderRadius: '16px',
-          transform: slideOut ? 'translateY(120%)' : 'translateY(0)',
-          opacity: slideOut ? 0 : 1,
-          transition: 'transform 0.5s ease-in, opacity 0.4s ease-out'
-        }}
+    <Dialog open={isOpen} onOpenChange={(open) => { if (!open) handleClose(); }}>
+      <DialogContentFullscreen
+        className="bg-gradient-to-br from-indigo-50 via-purple-50 to-pink-50 dark:from-gray-900 dark:via-slate-800 dark:to-gray-900"
         aria-describedby={undefined}
       >
         <DialogTitle className="sr-only">{song.title} - Practice Session</DialogTitle>
 
+        {showMelodyPrepScreen ? (
+          <div className="flex flex-col flex-1 min-h-0 w-full">
+            <div className="flex-shrink-0 px-4 sm:px-6 py-4 border-b border-gray-200/80 dark:border-slate-600 bg-white/90 dark:bg-slate-800/95">
+              <div className="flex items-start justify-between gap-3">
+                <div>
+                  <p className="text-xs font-semibold uppercase tracking-wide text-teal-600 dark:text-teal-400 mb-1">
+                    Learn the notes first
+                  </p>
+                  <h2 className="text-lg font-bold text-gray-900 dark:text-white">{song.title}</h2>
+                  <p className="text-sm text-gray-500 dark:text-gray-400 mt-0.5">
+                    Single-note melody — match each tab number to a pitch before you play.
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  onClick={handleClose}
+                  className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0 bg-white/70 dark:bg-slate-600 border-2 border-gray-200 dark:border-slate-500"
+                  aria-label="Close"
+                >
+                  <X className="w-4 h-4 text-gray-500 dark:text-gray-300" />
+                </button>
+              </div>
+            </div>
+            <div className="flex-1 min-h-0 overflow-y-auto px-4 sm:px-6 py-4">
+              <ul className="space-y-2 max-w-lg mx-auto">
+                {uniqueMelodyNotes.map((row) => (
+                  <li
+                    key={`${row.string}-${row.fret}`}
+                    className="flex items-center justify-between gap-3 rounded-xl border-2 border-gray-200 dark:border-slate-600 bg-white/90 dark:bg-slate-800/90 px-4 py-3"
+                  >
+                    <span className="text-sm text-gray-600 dark:text-gray-300">
+                      <span className="font-semibold text-gray-800 dark:text-gray-100">{row.openLabel}</span>
+                      {' · '}
+                      {row.fret === 0 ? 'open' : `fret ${row.fret}`}
+                    </span>
+                    <span className="text-base font-bold text-teal-700 dark:text-teal-300 tabular-nums">
+                      {row.name}
+                    </span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+            <div className="flex-shrink-0 px-4 sm:px-6 py-4 border-t border-gray-200/80 dark:border-slate-600 bg-white/90 dark:bg-slate-800/95">
+              <button
+                type="button"
+                onClick={() => setShowMelodyNotePrep(false)}
+                className="w-full py-3.5 rounded-xl text-sm font-bold text-white bg-teal-600 border-2 border-teal-700 border-b-[4px] active:translate-y-0.5 transition-transform"
+              >
+                I&apos;ve reviewed these — start practice
+              </button>
+            </div>
+          </div>
+        ) : (
+        <div
+          className="flex flex-col flex-1 min-h-0 w-full overflow-hidden"
+          style={{
+            transform: slideOut ? 'translateY(120%)' : 'translateY(0)',
+            opacity: slideOut ? 0 : 1,
+            transition: 'transform 0.5s ease-in, opacity 0.4s ease-out',
+          }}
+        >
         {/* Header */}
         <div className="flex-shrink-0 px-3 sm:px-5 py-3 sm:py-4 bg-white/90 dark:bg-slate-800">
           <div className="flex items-center justify-between">
             <div>
               <h2 className="text-lg font-bold text-gray-800 dark:text-white">{song.title}</h2>
-              <p className="text-sm text-gray-500 dark:text-gray-400">{song.artist} • {song.bpm} BPM</p>
+              <p className="text-sm text-gray-500 dark:text-gray-400">
+                {song.artist} • {song.bpm} BPM
+                {song.melodyOnly ? (
+                  <>
+                    <span className="text-gray-300 dark:text-gray-600"> · </span>
+                    <span className="font-medium text-teal-600 dark:text-teal-400">Single-note melody</span>
+                  </>
+                ) : null}
+                {headerSubtitle ? (
+                  <>
+                    <span className="text-gray-300 dark:text-gray-600"> · </span>
+                    <span className="font-medium text-indigo-600 dark:text-indigo-300">{headerSubtitle}</span>
+                  </>
+                ) : null}
+              </p>
             </div>
             <button
               onClick={handleClose}
@@ -813,7 +985,7 @@ export function SongPractice({ isOpen, onClose, song, userId, userLevel, onCompl
                   <p className="text-sm text-gray-500 mb-6">
                     Mistake at <span className="font-semibold text-red-500">{formatTime(firstMistakeTime || 0)}</span>
                   </p>
-                  <div className="flex gap-3 w-full">
+                  <div className={`flex gap-3 w-full ${relaxedCompletion ? 'flex-col' : ''}`}>
                   <button
                     onClick={handleRestartFromStart}
                       className="flex-1 px-4 py-2.5 rounded-lg text-sm font-medium text-white transition-all hover:opacity-90 active:scale-95"
@@ -825,9 +997,19 @@ export function SongPractice({ isOpen, onClose, song, userId, userLevel, onCompl
                     onClick={handleRestartFromMistake}
                       className="flex-1 px-4 py-2.5 rounded-lg text-sm font-medium transition-all hover:opacity-90 active:scale-95"
                       style={{ backgroundColor: '#FEE2E2', border: '2px solid #F87171', color: '#DC2626' }}
-                    >
-                      Try Again
+                  >
+                    Try Again
                   </button>
+                  {relaxedCompletion ? (
+                    <button
+                      type="button"
+                      onClick={handleRelaxedContinueFromMistakes}
+                      className="w-full px-4 py-2.5 rounded-lg text-sm font-medium text-white transition-all hover:opacity-90 active:scale-95"
+                      style={{ backgroundColor: '#4F46E5', border: '2px solid #4338CA' }}
+                    >
+                      Continue program
+                    </button>
+                  ) : null}
                 </div>
               </div>
             </div>
@@ -875,7 +1057,7 @@ export function SongPractice({ isOpen, onClose, song, userId, userLevel, onCompl
                 </div>
               )}
 
-              {/* Detected chord - directly from API song-constrained output */}
+              {/* Detected harmony (chord API); in melody mode treat as pitch hint */}
               <div
                 className="text-4xl font-bold"
                 style={{
@@ -892,6 +1074,9 @@ export function SongPractice({ isOpen, onClose, song, userId, userLevel, onCompl
               >
                 {!chordDetectionConnected ? '🔌' : detectedChord || '--'}
                 </div>
+              {song.melodyOnly && chordDetectionConnected && (
+                <div className="text-[10px] text-gray-400 mt-0.5">Match the tab note; detection shows nearest chord</div>
+              )}
 
               {/* Match indicator */}
               {chordDetectionConnected && isChordMatching !== null && (
@@ -981,7 +1166,9 @@ export function SongPractice({ isOpen, onClose, song, userId, userLevel, onCompl
             </button>
           </div>
         </div>
-      </DialogContent>
+        </div>
+        )}
+      </DialogContentFullscreen>
     </Dialog>
   );
 }

@@ -1,9 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useUser } from '../contexts/UserContext';
 import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
-import { Progress as ProgressBar } from './ui/progress';
-import { CircularProgress } from './ui/circular-progress';
-import { SkillProgressBar } from './SkillProgressBar';
 import guitarVictoryStance from '../assets/20251019_1608_Guitar Victory Stance_remix_01k7zbmn8zfmqtx50kwjas8yr9.png';
 import { 
   TrendingUp, 
@@ -25,7 +22,6 @@ import {
   loadProgress as loadUserProgress, 
   getWeeklyPracticeMinutes, 
   getAchievements as getStoredAchievements,
-  getSkillAreas as getStoredSkillAreas,
   getPracticeStreak,
   getTotalWeeklyMinutes,
   getMasteredSongsCount,
@@ -54,7 +50,6 @@ export function Progress() {
   const [progressData, setProgressData] = useState<any>(null);
   const [weeklyMinutesData, setWeeklyMinutesData] = useState<Record<string, number>>({});
   const [achievementsData, setAchievementsData] = useState<Record<string, boolean>>({});
-  const [skillAreasData, setSkillAreasData] = useState<any>(null);
   const [streak, setStreak] = useState(0);
   const [totalWeeklyMinutes, setTotalWeeklyMinutes] = useState(0);
   const [masteredSongs, setMasteredSongs] = useState(0);
@@ -69,8 +64,6 @@ export function Progress() {
       setProgressData(progress);
       setWeeklyMinutesData(getWeeklyPracticeMinutes(user.id));
       setAchievementsData(getStoredAchievements(user.id));
-      setSkillAreasData(getStoredSkillAreas(user.id));
-      
       // Update achievements and check for newly earned ones
       updateAchievements(user.id);
       
@@ -109,89 +102,6 @@ export function Progress() {
   if (!user) {
     return null;
   }
-
-  const getSkillAreasForDisplay = () => {
-    // Use stored skill areas if available
-    const stored = skillAreasData;
-    if (stored) {
-      return [
-        {
-          name: 'Chord Mastery',
-          current: stored.chordMastery.current,
-          total: stored.chordMastery.total,
-          color: 'rgb(10, 201, 235)',
-          icon: <Music className="w-4 h-4" />
-        },
-        {
-          name: 'Strumming Patterns',
-          current: stored.strummingPatterns.current,
-          total: stored.strummingPatterns.total,
-          color: 'rgb(125, 149, 255)',
-          icon: <Target className="w-4 h-4" />
-        },
-        {
-          name: 'Music Theory',
-          current: stored.musicTheory.current,
-          total: stored.musicTheory.total,
-          color: 'rgb(171, 135, 255)',
-          icon: <BookOpen className="w-4 h-4" />
-        },
-        {
-          name: 'Song Repertoire',
-          current: stored.songRepertoire.current,
-          total: stored.songRepertoire.total,
-          color: 'rgb(9, 200, 57)',
-          icon: <CheckCircle2 className="w-4 h-4" />
-        }
-      ];
-    }
-
-    // Fallback to level-based defaults
-    const configs = {
-      novice: { chordTotal: 5, theoryTotal: 5, songTotal: 2, strummingTotal: 3 },
-      beginner: { chordTotal: 10, theoryTotal: 8, songTotal: 5, strummingTotal: 5 },
-      elementary: { chordTotal: 15, theoryTotal: 12, songTotal: 8, strummingTotal: 8 },
-      intermediate: { chordTotal: 20, theoryTotal: 15, songTotal: 12, strummingTotal: 12 },
-      proficient: { chordTotal: 25, theoryTotal: 18, songTotal: 15, strummingTotal: 15 },
-      advanced: { chordTotal: 30, theoryTotal: 22, songTotal: 20, strummingTotal: 18 },
-      expert: { chordTotal: 35, theoryTotal: 25, songTotal: 25, strummingTotal: 20 }
-    };
-    
-    const config = configs[user.level as keyof typeof configs] || configs.beginner;
-    
-    return [
-      {
-        name: 'Chord Mastery',
-        current: 0,
-        total: config.chordTotal,
-        color: 'rgb(10, 201, 235)',
-        icon: <Music className="w-4 h-4" />
-      },
-      {
-        name: 'Strumming Patterns',
-        current: 0,
-        total: config.strummingTotal,
-        color: 'rgb(125, 149, 255)',
-        icon: <Target className="w-4 h-4" />
-      },
-      {
-        name: 'Music Theory',
-        current: 0,
-        total: config.theoryTotal,
-        color: 'rgb(171, 135, 255)',
-        icon: <BookOpen className="w-4 h-4" />
-      },
-      {
-        name: 'Song Repertoire',
-        current: 0,
-        total: config.songTotal,
-        color: 'rgb(9, 200, 57)',
-        icon: <CheckCircle2 className="w-4 h-4" />
-      }
-    ];
-  };
-
-  const skillAreas = getSkillAreasForDisplay();
 
   // Use streak from storage, fallback to user context
   const displayStreak = streak !== 0 ? streak : user.practiceStreak;
@@ -259,13 +169,6 @@ export function Progress() {
     const colors = ['bg-red-500', 'bg-orange-500', 'bg-amber-500', 'bg-yellow-500', 'bg-lime-500', 'bg-green-500', 'bg-emerald-500'];
     return colors[index % colors.length];
   };
-
-  // Calculate circular progress values
-  const overallProgress = skillAreas.length > 0
-    ? Math.round(skillAreas.reduce((acc, skill) => acc + (skill.total > 0 ? skill.current / skill.total : 0), 0) / skillAreas.length * 100)
-    : 0;
-  const weeklyGoalProgress = Math.round((user.hoursThisWeek / 10) * 100); // Assuming 10 hours is the weekly goal
-  const streakProgress = Math.round(Math.min((user.practiceStreak / 30) * 100, 100)); // 30 days = 100%
 
   return (
     <>
@@ -335,11 +238,6 @@ export function Progress() {
               </div>
             </CardContent>
           </Card>
-
-        {/* Overall Skill Progression */}
-        <div className="mb-8">
-          <SkillProgressBar />
-        </div>
 
         {/* Achievements */}
         <div className="mb-8">
@@ -423,35 +321,6 @@ export function Progress() {
                       Path: {getAchievementPathText(achievement.requirement)}
                     </p>
                   )}
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-
-        <div className="mb-8 rounded-2xl p-4" style={{ border: '2px solid rgb(200, 200, 200)', borderBottom: '4px solid rgb(200, 200, 200)', backgroundColor: 'rgba(255, 255, 255, 0.5)' }}>
-          <h2 className="text-2xl font-bold text-center mb-6 text-gray-500 dark:text-gray-400">Skill Areas</h2>
-          <div className="space-y-6">
-            {skillAreas.map((skill, index) => (
-              <div key={index}>
-                <div className="flex items-center justify-between mb-2">
-                  <div className="flex items-center gap-2">
-                    <div className={`w-8 h-8 rounded-lg flex items-center justify-center`} style={{ backgroundColor: skill.color }}>
-                      <div className="text-white">
-                        {skill.icon}
-                      </div>
-                    </div>
-                    <span className="font-medium text-gray-700 dark:text-white">{skill.name}</span>
-                  </div>
-                  <span className="text-sm text-gray-500 dark:text-gray-400">
-                    {skill.current}/{skill.total}
-                  </span>
-                </div>
-                <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-3">
-                  <div 
-                    className="h-3 rounded-full" 
-                    style={{ width: `${(skill.current / skill.total) * 100}%`, backgroundColor: skill.color }}
-                  ></div>
                 </div>
               </div>
             ))}

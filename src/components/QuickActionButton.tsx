@@ -50,11 +50,7 @@ export function QuickActionButton({
   return (
     <button
       onClick={onClick}
-      className="flex flex-col items-center gap-2 p-4 rounded-2xl hover:scale-105 transition-all duration-200 backdrop-blur-sm"
-      style={{ 
-        border: '2px solid rgb(237, 237, 237)',
-        backgroundColor: 'rgba(255, 255, 255, 0.85)',
-      }}
+      className="flex flex-col items-center gap-2 p-4 rounded-2xl hover:scale-105 transition-all duration-200 backdrop-blur-sm bg-white/50 dark:bg-slate-900/50 shadow-sm hover:shadow-md"
     >
       <div 
         className="w-12 h-12 rounded-xl flex items-center justify-center shadow-sm"

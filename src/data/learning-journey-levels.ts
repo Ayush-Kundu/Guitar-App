@@ -59,7 +59,7 @@ export const techniquePathBeginner: Unit[] = [
   unit('tech-b-unit-5', 5, 'More Chord Shapes', 'Am, E, B7 and variants', 'Add A minor, E major, and B7. These open up more songs and progressions.', '✋', ['tech-b-unit-4'], [
     lesson('tech-b-5-1', 'A Minor and E Major', 'Two essential chords', 'Am and E are used in countless songs. Practice switching between C, Am, G, Em.', '15 min', 'technique'),
     lesson('tech-b-5-2', 'B7 and Dominant 7ths', 'The bluesy sound', 'B7 introduces the dominant seventh. Use it in progressions like E–A–B7–E.', '15 min', 'technique'),
-    lesson('tech-b-5-3', 'Full Open Chord Set', 'All together', 'Review all open chords and play a 4-chord song (e.g. G–D–Em–C) with a strum pattern.', '15 min', 'technique', true)
+    lesson('tech-b-5-3', 'Open Chords: Final Review', 'All together', 'Review all open chords and play a 4-chord song (e.g. G–D–Em–C) with a strum pattern.', '15 min', 'technique', true)
   ]),
   unit('tech-b-unit-6', 6, 'First Songs and Application', 'Play real songs', 'Apply everything: chords, strumming, and timing. Learn 1–2 simple songs from start to finish.', '🎤', ['tech-b-unit-5'], [
     lesson('tech-b-6-1', 'Choosing a First Song', 'Right difficulty', 'Pick a song that uses only chords you know and a simple strum pattern.', '5 min', 'technique'),

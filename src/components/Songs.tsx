@@ -6,6 +6,7 @@ import { Progress } from './ui/progress';
 import { ActivityModal } from './ActivityModal';
 import { EmptyState } from './EmptyState';
 import { SongPractice } from './SongPractice';
+import { SongLearnProgramWizard } from './SongLearnProgramWizard';
 import { GuitarTutorial } from './GuitarTutorial';
 import { Dialog, DialogContent } from './ui/dialog';
 import { 
@@ -21,7 +22,6 @@ import {
   GraduationCap
 } from 'lucide-react';
 import { Badge } from './ui/badge';
-import { SkillProgressBar } from './SkillProgressBar';
 import guitarCelebration from '../assets/20251110_1336_Guitar Character Celebration_remix_01k9qv39xaenxbhjcq4ym616ha.png';
 import { 
   getAllSongProgress, 
@@ -31,6 +31,7 @@ import {
   removeSelectedSong,
   isSelectedSong,
   updateSongProgress,
+  hasCompletedSongLearnProgram,
   SongProgress as StoredSongProgress,
   SelectedSong
 } from '../utils/progressStorage';
@@ -51,6 +52,9 @@ export function Songs() {
   const [removeConfirmOpen, setRemoveConfirmOpen] = useState(false);
   const [songToRemove, setSongToRemove] = useState<{ id: string; title: string } | null>(null);
   const [tutorialOpen, setTutorialOpen] = useState(false);
+  const [learnWizardOpen, setLearnWizardOpen] = useState(false);
+  const [wizardSong, setWizardSong] = useState<any>(null);
+  const [skipMelodyNotePrep, setSkipMelodyNotePrep] = useState(false);
 
   const refreshData = () => {
     if (user) {
@@ -72,6 +76,12 @@ export function Songs() {
       refreshData();
     }
   }, [practiceOpen]);
+
+  useEffect(() => {
+    if (!learnWizardOpen) {
+      refreshData();
+    }
+  }, [learnWizardOpen]);
 
   // Open Learn Guitar Basics when requested (e.g. from Beats "Start guitar basics" button)
   useEffect(() => {
@@ -203,12 +213,31 @@ export function Songs() {
     return cardColors[index % cardColors.length];
   };
 
-  const handlePractice = (song: any) => {
-    // Ensure songId is set - should come from userSelectedSongs
-    const songWithId = {
-      ...song,
-      songId: song.songId || `${song.title.toLowerCase().replace(/\s+/g, '_')}_${song.artist.toLowerCase().replace(/\s+/g, '_')}`
-    };
+  const normalizePlaylistSong = (song: any) => ({
+    ...song,
+    songId:
+      song.songId ||
+      `${song.title.toLowerCase().replace(/\s+/g, '_')}_${song.artist.toLowerCase().replace(/\s+/g, '_')}`,
+  });
+
+  const handleStartSongFlow = (song: any) => {
+    if (!user) return;
+    const songWithId = normalizePlaylistSong(song);
+    if (hasCompletedSongLearnProgram(user.id, songWithId.songId)) {
+      setSkipMelodyNotePrep(true);
+      setSelectedSong(songWithId);
+      setPracticeOpen(true);
+      return;
+    }
+    setWizardSong(songWithId);
+    setLearnWizardOpen(true);
+  };
+
+  const handleSkipToPractice = (e: React.MouseEvent, song: any) => {
+    e.stopPropagation();
+    if (!user) return;
+    const songWithId = normalizePlaylistSong(song);
+    setSkipMelodyNotePrep(true);
     setSelectedSong(songWithId);
     setPracticeOpen(true);
   };
@@ -493,7 +522,7 @@ export function Songs() {
                 return (
                   <Card
                     key={song.songId}
-                    onClick={() => handlePractice(song)}
+                    onClick={() => handleStartSongFlow(song)}
                     className={`rounded-2xl transition-all duration-500 hover:scale-[1.02] overflow-hidden backdrop-blur-sm cursor-pointer relative border-2 ${
                       isCompleted 
                         ? 'border-green-300 dark:border-green-600 bg-green-50/40 dark:bg-green-900/20' 
@@ -523,10 +552,17 @@ export function Songs() {
                     </CardHeader>
                     
                     <CardContent className="bg-transparent">
-                      <div className="flex items-center justify-between text-xs text-gray-500">
+                      <div className="flex items-center justify-between text-xs text-gray-500 gap-2 flex-wrap">
                         <span>{getAccurateSongDuration(song.title, song.duration)} · {song.bpm} BPM</span>
-                        <span>{song.timesPlayed || 0} plays</span>
+                        <span className="tabular-nums">{song.timesPlayed || 0} plays</span>
                       </div>
+                      <button
+                        type="button"
+                        onClick={(e) => handleSkipToPractice(e, song)}
+                        className="mt-2 text-xs font-semibold text-blue-600 dark:text-blue-400 hover:underline text-left"
+                      >
+                        Skip to practice
+                      </button>
                     </CardContent>
                   </Card>
                 );
@@ -550,11 +586,28 @@ export function Songs() {
           onClose={() => {
             setPracticeOpen(false);
             setSelectedSong(null);
+            setSkipMelodyNotePrep(false);
           }}
           song={selectedSong}
           userId={user.id}
           userLevel={user.level}
+          skipMelodyNotePrep={skipMelodyNotePrep}
           onComplete={handlePracticeComplete}
+        />
+      )}
+
+      {wizardSong && user && (
+        <SongLearnProgramWizard
+          isOpen={learnWizardOpen}
+          onClose={() => {
+            setLearnWizardOpen(false);
+            setWizardSong(null);
+          }}
+          song={wizardSong}
+          userId={user.id}
+          userLevel={user.level}
+          onPracticeLogged={handlePracticeComplete}
+          onGraduated={refreshData}
         />
       )}
 

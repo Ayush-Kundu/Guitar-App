@@ -6,8 +6,9 @@ import {
   isSectionTaskComplete,
   type BeatsSection,
 } from '../utils/beatsInstructions';
-/** Same as Settings profile “Orange Circle” (red Beats) */
-import beatsAvatarProfile from '../assets/20260124_1729_Image Generation_remix_01kfsc93hye3pvncmet7494507-Picsart-CropImage (5).png';
+import { clearGuidedBeatsFlow } from '../utils/beatsGuidedFlow';
+/** Cropped Beats mascot (no letterbox) */
+import beatsSaysAvatar from '../assets/beats-says-avatar.png';
 import { MoreHorizontal } from 'lucide-react';
 
 const POPUP_IGNORE_PREFIX = 'strummy-ignore-beats-popup-';
@@ -21,13 +22,21 @@ function isPopupIgnored(section: string, today: string): boolean {
   return localStorage.getItem(getIgnoreKey(section, today)) === 'true';
 }
 
+export type BeatsPopupVisualWeight = 'emphasized' | 'subtle';
+
 interface BeatsPopupProps {
   section: BeatsSection;
+  visualWeight?: BeatsPopupVisualWeight;
   onDismiss?: () => void;
   onNavigate?: (section: string) => void;
 }
 
-export function BeatsPopup({ section, onDismiss, onNavigate }: BeatsPopupProps) {
+export function BeatsPopup({
+  section,
+  visualWeight = 'emphasized',
+  onDismiss,
+  onNavigate,
+}: BeatsPopupProps) {
   const { user } = useUser();
   const [progressData, setProgressData] = useState<ReturnType<typeof loadProgress> | null>(null);
   const [dismissed, setDismissed] = useState(false);
@@ -35,16 +44,28 @@ export function BeatsPopup({ section, onDismiss, onNavigate }: BeatsPopupProps) 
 
   const today = new Date().toISOString().split('T')[0];
   const ignoreKey = getIgnoreKey(section, today);
+  const subtle = visualWeight === 'subtle';
 
   useEffect(() => {
     if (!user) return;
     setProgressData(loadProgress(user.id));
   }, [user, section]);
 
-  // Only hide if they previously clicked "Ignore" for this section today. When user just clicked Beats CTA we clear that key before nav, so we stay visible.
+  useEffect(() => {
+    if (!user?.id) return;
+    const uid = user.id;
+    const onSync = (ev: Event) => {
+      const d = (ev as CustomEvent<{ userId?: string }>).detail;
+      if (d?.userId === uid) setProgressData(loadProgress(uid));
+    };
+    window.addEventListener('strummy-progress-sync', onSync);
+    return () => window.removeEventListener('strummy-progress-sync', onSync);
+  }, [user?.id]);
+
   useEffect(() => {
     const ignored = isPopupIgnored(section, today);
-    const fromBeats = typeof window !== 'undefined' && sessionStorage.getItem('strummy-beats-directed') === section;
+    const fromBeats =
+      typeof window !== 'undefined' && sessionStorage.getItem('strummy-beats-directed') === section;
     if (!fromBeats && ignored) setDismissed(true);
     else if (fromBeats) setDismissed(false);
   }, [section, today]);
@@ -57,6 +78,7 @@ export function BeatsPopup({ section, onDismiss, onNavigate }: BeatsPopupProps) 
     localStorage.setItem(ignoreKey, 'true');
     try {
       sessionStorage.removeItem('strummy-beats-directed');
+      clearGuidedBeatsFlow();
     } catch (_) {}
     onDismiss?.();
     setDismissed(true);
@@ -66,6 +88,7 @@ export function BeatsPopup({ section, onDismiss, onNavigate }: BeatsPopupProps) 
     localStorage.setItem(ignoreKey, 'true');
     try {
       sessionStorage.removeItem('strummy-beats-directed');
+      clearGuidedBeatsFlow();
     } catch (_) {}
     onNavigate?.('dashboard');
     onDismiss?.();
@@ -78,65 +101,85 @@ export function BeatsPopup({ section, onDismiss, onNavigate }: BeatsPopupProps) 
   const showMessageExpand = messageFull.trim() !== messageShort.trim();
   const taskComplete = isSectionTaskComplete(section, progressData, user, today);
 
+  const avatarClass = subtle ? 'w-7 h-7 ring-1 ring-orange-200/50' : 'w-9 h-9 ring-2 ring-orange-200/80';
+  const cardClass = subtle
+    ? 'opacity-90 beats-popup border border-gray-200/60 dark:border-slate-600/80'
+    : 'beats-popup';
+
   return (
     <div
-      className="fixed left-0 right-0 z-40 px-3 safe-area-bottom"
+      className="fixed left-0 right-0 z-40 px-4 sm:px-5 safe-area-bottom"
       style={{ bottom: '64px' }}
     >
-      <div className="w-full max-w-md mx-auto rounded-xl p-3 shadow-sm beats-popup" data-beats="popup">
-        <div className="flex items-center gap-2">
+      <div
+        className={`w-full max-w-md mx-auto rounded-2xl p-3 sm:p-4 shadow-md ${cardClass}`}
+        data-beats="popup"
+      >
+        <div className="flex items-start gap-2">
           <div
-            className="w-6 h-6 rounded-full overflow-hidden flex-shrink-0 flex items-center justify-center beats-avatar"
+            className={`rounded-full overflow-hidden flex-shrink-0 flex items-center justify-center beats-avatar ${avatarClass}`}
           >
-            <img
-              src={beatsAvatarProfile}
-              alt="Beats"
-              className="w-full h-full object-cover"
-            />
+            <img src={beatsSaysAvatar} alt="Beats" className="beats-avatar-img" />
           </div>
-          <div className="flex-1 min-w-0 flex items-start gap-2">
-            <p className="text-xs font-semibold leading-tight beats-popup-text flex-shrink-0 pt-0.5">Beats says</p>
-            <div className="flex-1 min-w-0 flex items-start gap-2">
-              {!showMessageExpand ? (
-                <p className="text-xs leading-snug beats-popup-text m-0 min-w-0 flex-1">{messageShort}</p>
-              ) : (
-                <div className="flex flex-1 min-w-0 items-end gap-1">
+          <div className="flex-1 min-w-0 flex flex-col gap-1.5">
+            <div className="flex items-start justify-between gap-2">
+              <div className="flex-1 min-w-0">
+                <p
+                  className={`font-bold leading-tight beats-popup-text m-0 mb-0.5 ${
+                    subtle ? 'text-[10px]' : 'text-[11px]'
+                  }`}
+                >
+                  Beats says
+                </p>
+                {!messageExpanded ? (
                   <p
-                    className={`text-xs leading-snug beats-popup-text m-0 flex-1 min-w-0 break-words ${
-                      !messageExpanded ? 'line-clamp-1' : ''
-                    }`}
+                    className={`leading-snug beats-popup-text m-0 ${
+                      subtle ? 'text-[11px]' : 'text-xs font-medium'
+                    } ${showMessageExpand ? 'line-clamp-3' : ''}`}
                   >
-                    {messageExpanded ? messageFull : messageShort}
+                    {messageShort}
                   </p>
+                ) : (
+                  <div
+                    className={`max-h-[min(50vh,220px)] overflow-y-auto overscroll-contain leading-relaxed beats-popup-text m-0 pr-0.5 ${
+                      subtle ? 'text-[11px]' : 'text-xs'
+                    } whitespace-pre-wrap`}
+                  >
+                    {messageFull}
+                  </div>
+                )}
+              </div>
+              <div className="flex items-center gap-1 flex-shrink-0">
+                {showMessageExpand ? (
                   <button
                     type="button"
                     onClick={() => setMessageExpanded(e => !e)}
-                    className="flex-shrink-0 p-0 m-0 border-0 bg-transparent shadow-none rounded-none beats-popup-text cursor-pointer pb-px"
-                    title={messageExpanded ? 'Show shorter' : 'Show full message'}
+                    className="p-1 rounded-md border-0 bg-transparent shadow-none beats-popup-text cursor-pointer"
+                    title={messageExpanded ? 'Show shorter' : 'Show steps'}
                     aria-expanded={messageExpanded}
-                    aria-label={messageExpanded ? 'Collapse Beats message' : 'Expand Beats message'}
+                    aria-label={messageExpanded ? 'Collapse Beats steps' : 'Expand Beats steps'}
                   >
-                    <MoreHorizontal className="w-3.5 h-3.5 shrink-0" strokeWidth={2.25} />
+                    <MoreHorizontal className="w-3.5 h-3.5 shrink-0" />
                   </button>
-                </div>
-              )}
-            {taskComplete ? (
-              <button
-                type="button"
-                onClick={handleBackToDashboard}
-                className="flex-shrink-0 py-1 px-2 rounded-lg text-xs font-medium beats-popup-btn whitespace-nowrap"
-              >
-                Back to dashboard
-              </button>
-            ) : (
-              <button
-                type="button"
-                onClick={handleIgnore}
-                className="flex-shrink-0 py-1 px-2 rounded-lg text-xs font-medium beats-popup-btn whitespace-nowrap"
-              >
-                Ignore Beats
-              </button>
-            )}
+                ) : null}
+                {taskComplete ? (
+                  <button
+                    type="button"
+                    onClick={handleBackToDashboard}
+                    className="py-0.5 px-1.5 rounded-md text-[9px] font-semibold beats-popup-btn whitespace-nowrap leading-tight"
+                  >
+                    Back to dashboard
+                  </button>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={handleIgnore}
+                    className="py-0.5 px-1.5 rounded-md text-[9px] font-semibold beats-popup-btn whitespace-nowrap leading-tight"
+                  >
+                    Ignore Beats
+                  </button>
+                )}
+              </div>
             </div>
           </div>
         </div>

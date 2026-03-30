@@ -47,6 +47,8 @@ export interface User {
   chordsLearned: number;
   hoursThisWeek: number;
   totalPoints: number; // Total points earned
+  /** Practice coins (~3× scarcer than points); store spend TBD */
+  totalCoins: number;
   weeklyPoints: number; // Points earned this week
   levelProgress: number; // Progress within current level (0-100)
   joinDate: string;
@@ -384,6 +386,7 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
               chordsLearned: 0,
               hoursThisWeek: 0,
               totalPoints: profile.points || 0,
+              totalCoins: 0,
               weeklyPoints: 0,
               levelProgress: 0,
               joinDate: new Date().toISOString(),
@@ -391,6 +394,12 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
               avatar: '🎸',
             isOnline: true
           };
+          
+          try {
+            const lp = loadProgress(profile.user_id);
+            userData.totalCoins = typeof lp.totalCoins === 'number' ? lp.totalCoins : 0;
+            userData.totalPoints = typeof lp.totalPoints === 'number' ? lp.totalPoints : userData.totalPoints;
+          } catch (_) {}
           
           setUser(userData);
           localStorage.setItem('guitarAppUser', JSON.stringify(userData));
@@ -1314,14 +1323,31 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
       )
       .subscribe();
 
-    // Cleanup subscriptions on unmount
+    // Cleanup: unsubscribe first so the client closes cleanly (avoids noisy
+    // "WebSocket is closed before the connection is established" on fast unmount).
     return () => {
       isUnmounted = true;
-      supabase.removeChannel(chatsSubscription);
-      supabase.removeChannel(messagesSubscription);
-      supabase.removeChannel(friendshipsSubscription);
-      supabase.removeChannel(friendRequestsSubscription);
-      supabase.removeChannel(friendMessagesSubscription);
+      const channels = [
+        chatsSubscription,
+        messagesSubscription,
+        friendshipsSubscription,
+        friendRequestsSubscription,
+        friendMessagesSubscription,
+      ];
+      for (const ch of channels) {
+        void (async () => {
+          try {
+            await ch.unsubscribe();
+          } catch {
+            /* noop */
+          }
+          try {
+            supabase.removeChannel(ch);
+          } catch {
+            /* noop */
+          }
+        })();
+      }
     };
     // Only re-run when user.id changes - NOT when chats/friends update
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -1386,6 +1412,7 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
       chordsLearned: userData?.chordsLearned || (userData?.level === 'novice' ? 0 : userData?.level === 'beginner' ? 3 : 8),
       hoursThisWeek: userData?.hoursThisWeek || 0,
       totalPoints: userData?.totalPoints || 0,
+      totalCoins: userData?.totalCoins ?? 0,
       weeklyPoints: userData?.weeklyPoints || 0,
       levelProgress: userData?.levelProgress || 0,
       joinDate: userData?.joinDate || now,
@@ -1641,6 +1668,7 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
           chordsLearned: 0,
           hoursThisWeek: 0,
           totalPoints: 0,
+          totalCoins: 0,
           weeklyPoints: 0,
           levelProgress: 0,
           joinDate: new Date().toISOString(),
@@ -1706,6 +1734,7 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
           chordsLearned: 0,
           hoursThisWeek: 0,
         totalPoints: profile.points || 0,
+        totalCoins: 0,
           weeklyPoints: 0,
           levelProgress: 0,
           joinDate: new Date().toISOString(),
@@ -1714,6 +1743,12 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
         username: profile.username || email.split('@')[0],
           isOnline: true
         };
+
+      try {
+        const lp = loadProgress(profile.user_id);
+        userData.totalCoins = typeof lp.totalCoins === 'number' ? lp.totalCoins : 0;
+        userData.totalPoints = typeof lp.totalPoints === 'number' ? lp.totalPoints : userData.totalPoints;
+      } catch (_) {}
 
       setUser(userData);
         
@@ -1803,6 +1838,7 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
               chordsLearned: 0,
               hoursThisWeek: 0,
               totalPoints: existingProfile.points || 0,
+              totalCoins: 0,
               weeklyPoints: 0,
               levelProgress: 0,
               joinDate: new Date().toISOString(),
@@ -1811,6 +1847,12 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
               username: existingProfile.username || name,
               isOnline: true
             };
+
+            try {
+              const lp = loadProgress(existingProfile.user_id);
+              userData.totalCoins = typeof lp.totalCoins === 'number' ? lp.totalCoins : 0;
+              userData.totalPoints = typeof lp.totalPoints === 'number' ? lp.totalPoints : userData.totalPoints;
+            } catch (_) {}
 
             setUser(userData);
             if (typeof window !== 'undefined') {
@@ -1860,6 +1902,7 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
               chordsLearned: 0,
               hoursThisWeek: 0,
               totalPoints: 0,
+              totalCoins: 0,
               weeklyPoints: 0,
               levelProgress: 0,
               joinDate: new Date().toISOString(),
@@ -1929,6 +1972,31 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
       }
     }
   };
+
+  // Keep profile points/streak aligned when progress file updates (e.g. lesson goals, song practice).
+  useEffect(() => {
+    if (!user?.id) return;
+    const onSync = (e: Event) => {
+      const detail = (e as CustomEvent<{ userId: string }>).detail;
+      if (!detail?.userId || detail.userId !== user.id) return;
+      const p = loadProgress(user.id);
+      setUser(prev => {
+        if (!prev) return prev;
+        const next = {
+          ...prev,
+          totalPoints: typeof p.totalPoints === 'number' ? p.totalPoints : prev.totalPoints,
+          totalCoins: typeof p.totalCoins === 'number' ? p.totalCoins : prev.totalCoins ?? 0,
+          practiceStreak: typeof p.streak === 'number' ? p.streak : prev.practiceStreak,
+        };
+        try {
+          localStorage.setItem('guitarAppUser', JSON.stringify(next));
+        } catch (_) {}
+        return next;
+      });
+    };
+    window.addEventListener('strummy-progress-sync', onSync as EventListener);
+    return () => window.removeEventListener('strummy-progress-sync', onSync as EventListener);
+  }, [user?.id]);
 
   const updateProfile = async (updates: Partial<User>) => {
     if (!user) return;
@@ -2028,7 +2096,12 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
           const preferredGenres = (typeof window !== 'undefined' && localStorage.getItem('guitarApp_preferredGenres'))
             ? JSON.parse(localStorage.getItem('guitarApp_preferredGenres')!)
             : user.musicPreferences;
-          const genresToUse = Array.isArray(preferredGenres) && preferredGenres.length > 0 ? preferredGenres : user.musicPreferences;
+          let genresToUse =
+            Array.isArray(preferredGenres) && preferredGenres.length > 0
+              ? preferredGenres
+              : Array.isArray(user.musicPreferences) && user.musicPreferences.length > 0
+                ? user.musicPreferences
+                : ['rock', 'pop', 'blues'];
           genresToUse.forEach((theme: string) => {
             const themeContent = levelContent[theme as keyof typeof levelContent];
             if (themeContent) {
@@ -2114,6 +2187,7 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
             chordsLearned: 0,
             hoursThisWeek: 0,
             totalPoints: 0,
+            totalCoins: 0,
             weeklyPoints: 0,
             levelProgress: 0,
             joinDate: new Date().toISOString(),
@@ -3150,6 +3224,7 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
           chordsLearned: 0,
           hoursThisWeek: 0,
           totalPoints: profile.points || 0,
+          totalCoins: 0,
           weeklyPoints: 0,
           levelProgress: 0,
           joinDate: new Date().toISOString(),

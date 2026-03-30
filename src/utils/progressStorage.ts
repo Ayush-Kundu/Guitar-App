@@ -43,6 +43,25 @@ const getCompeteLevel = (points: number): string => {
   return `${currentTier.rank} ${currentTier.tier}`;
 };
 
+function dispatchProgressSync(userId: string): void {
+  if (typeof window === 'undefined') return;
+  window.dispatchEvent(new CustomEvent('strummy-progress-sync', { detail: { userId } }));
+}
+
+function dispatchStreakCelebrationIfIncreased(before: number, after: number): void {
+  if (typeof window === 'undefined' || after <= before) return;
+  window.dispatchEvent(
+    new CustomEvent('strummy-celebration', { detail: { kind: 'streak' as const, streak: after } })
+  );
+}
+
+function dispatchSongCompletedCelebration(title: string): void {
+  if (typeof window === 'undefined') return;
+  window.dispatchEvent(
+    new CustomEvent('strummy-celebration', { detail: { kind: 'song_complete' as const, title } })
+  );
+}
+
 // Sync points, compete_level, and streak to Supabase
 const syncToSupabase = async (userId: string, points: number, streak: number): Promise<void> => {
   if (!supabase) {
@@ -84,6 +103,8 @@ export interface SongProgress {
   lastPracticed: string;
   totalMinutes: number;
   timesPlayed: number;
+  /** Finished the stepped “learn guitar basics” song program; opens free practice next time. */
+  learnBasicsProgramCompleted?: boolean;
 }
 
 export interface TechniqueProgress {
@@ -189,6 +210,8 @@ export interface SelectedSong {
   difficulty: number;
   addedAt: string;
   isCustom?: boolean;
+  /** Catalog: practice as single-note melody (novice / beginner). */
+  melodyOnly?: boolean;
 }
 
 export interface UserProgress {
@@ -197,6 +220,8 @@ export interface UserProgress {
   lastPracticeDate: string;
   totalPracticeMinutes: number;
   totalPoints: number; // Points earned from practice
+  /** In-app currency; ~3× scarcer than points (floor(points/3) on grants). Spend API TBD. */
+  totalCoins: number;
   currentLevel: number; // User's current level
   songs: Record<string, SongProgress>;
   selectedSongs: SelectedSong[]; // Songs the user has selected to learn
@@ -316,6 +341,7 @@ export const initializeProgress = (userId: string): UserProgress => {
     lastPracticeDate: '',
     totalPracticeMinutes: 0,
     totalPoints: 0,
+    totalCoins: 0,
     currentLevel: 1,
     songs: {},
     selectedSongs: [], // Empty - user starts with no songs selected
@@ -413,18 +439,14 @@ export const initializeProgress = (userId: string): UserProgress => {
 export const loadProgress = (userId: string): UserProgress => {
   try {
     const key = getStorageKey(userId);
-    console.log('📂 loadProgress: Loading from key:', key);
     const stored = localStorage.getItem(key);
     if (stored) {
       const progress = JSON.parse(stored);
-      console.log('📂 loadProgress: Found songs:', Object.keys(progress.songs || {}));
       // Ensure all required fields exist
       return {
         ...initializeProgress(userId),
         ...progress,
       };
-    } else {
-      console.log('📂 loadProgress: No data found, returning initial progress');
     }
   } catch (error) {
     console.error('Error loading progress:', error);
@@ -448,6 +470,7 @@ export const saveProgress = (progress: UserProgress): void => {
     } else {
       console.error('❌ saveProgress: Failed to verify save!');
     }
+    dispatchProgressSync(progress.userId);
   } catch (error) {
     console.error('Error saving progress:', error);
   }
@@ -690,7 +713,9 @@ export const updateSongProgress = (
   progress.totalPracticeMinutes += minutesPracticed;
 
   // Update streak
+  const streakBeforeSong = progress.streak;
   updateStreak(progress);
+  dispatchStreakCelebrationIfIncreased(streakBeforeSong, progress.streak);
 
   // Initialize tracking objects if they don't exist
   if (!progress.songsCompleted) progress.songsCompleted = {};
@@ -701,6 +726,7 @@ export const updateSongProgress = (
     progress.totalPoints += POINTS.SONG_COMPLETE;
     progress.songsCompleted[songId] = true;
     console.log(`[Points] +${POINTS.SONG_COMPLETE} pts for completing song: ${title}`);
+    dispatchSongCompletedCelebration(title);
 
     // Send song completed notification and play sound
     sendAchievementNotification('song_completed', { songName: title });
@@ -760,7 +786,7 @@ export const updateSongProgress = (
   
   // Sync to Supabase when points/progress change
   syncToSupabase(userId, progress.totalPoints, progress.streak);
-  
+
   // Debug: Verify the save worked by re-loading
   const verifyProgress = loadProgress(userId);
   console.log('🔍 VERIFY - Song progress in localStorage after save:', verifyProgress.songs[songId]);
@@ -780,6 +806,36 @@ export const getAllSongProgress = (userId: string): Record<string, SongProgress>
   console.log('[getAllSongProgress] Retrieved songs:', progress.songs);
   return progress.songs;
 };
+
+/** True if this song’s stepped learn program is done or the song was already mastered (100%). */
+export function hasCompletedSongLearnProgram(userId: string, songId: string): boolean {
+  const p = getSongProgress(userId, songId);
+  if (p?.learnBasicsProgramCompleted) return true;
+  if (p && p.progress >= 100) return true;
+  return false;
+}
+
+/** Mark the stepped program complete so the next tap opens practice directly. */
+export function markSongLearnProgramComplete(
+  userId: string,
+  songId: string,
+  meta: { title: string; artist: string; genre: string }
+): void {
+  const progress = loadProgress(userId);
+  const today = getToday();
+  const existing = progress.songs[songId];
+  progress.songs[songId] = {
+    ...existing,
+    songId,
+    title: meta.title || existing?.title || '',
+    artist: meta.artist || existing?.artist || '',
+    genre: meta.genre || existing?.genre || '',
+    lastPracticed: today,
+    learnBasicsProgramCompleted: true,
+  };
+  saveProgress(progress);
+  dispatchProgressSync(userId);
+}
 
 // ========== Technique Progress ==========
 export const updateTechniqueProgress = (
@@ -963,7 +1019,9 @@ export const updateTechniqueProgress = (
   progress.totalPracticeMinutes += minutesPracticed;
 
   // Update streak
+  const streakBeforeTech = progress.streak;
   updateStreak(progress);
+  dispatchStreakCelebrationIfIncreased(streakBeforeTech, progress.streak);
 
   // Check for weekly technique goal completion (combined with theory = 3 pts)
   const weeklyTechKey = `${weekStart}_weekly_technique`;
@@ -1023,7 +1081,7 @@ export const updateTechniqueProgress = (
   
   // Sync to Supabase when points/streak change
   syncToSupabase(userId, progress.totalPoints, progress.streak);
-  
+
   console.log(`[updateTechniqueProgress] Complete. Points earned: ${pointsEarned}, Total points: ${progress.totalPoints}, Daily technique minutes: ${progress.dailyProgress[today]?.techniqueMinutes || 0}`);
   return { technique: updated, pointsEarned };
 };
@@ -1214,7 +1272,9 @@ export const updateTheoryProgress = (
   progress.totalPracticeMinutes += minutesStudied;
 
   // Update streak
+  const streakBeforeTheory = progress.streak;
   updateStreak(progress);
+  dispatchStreakCelebrationIfIncreased(streakBeforeTheory, progress.streak);
 
   // Check for weekly theory goal completion (combined with technique = 3 pts)
   const weeklyTheoryKey = `${weekStart}_weekly_theory`;
@@ -1259,7 +1319,7 @@ export const updateTheoryProgress = (
   
   // Sync to Supabase when points/streak change
   syncToSupabase(userId, progress.totalPoints, progress.streak);
-  
+
   console.log(`[updateTheoryProgress] Complete. Points earned: ${pointsEarned}, Total points: ${progress.totalPoints}, Daily theory minutes: ${progress.dailyProgress[today]?.theoryMinutes || 0}`);
   return { theory: updated, pointsEarned };
 };
@@ -1517,12 +1577,26 @@ export const addPoints = (userId: string, points: number): number => {
   const progress = loadProgress(userId);
   progress.totalPoints = (progress.totalPoints || 0) + points;
   saveProgress(progress);
-  
+
   // Sync to Supabase when points change
   syncToSupabase(userId, progress.totalPoints, progress.streak);
-  
+
   return progress.totalPoints;
 };
+
+/** Grant coins (whole units). Typically floor(pointGrant / 3) so coins are ~3× “rarer” than points. */
+export const addCoins = (userId: string, coins: number): number => {
+  if (coins <= 0) return loadProgress(userId).totalCoins || 0;
+  const progress = loadProgress(userId);
+  progress.totalCoins = (progress.totalCoins || 0) + Math.floor(coins);
+  saveProgress(progress);
+  syncToSupabase(userId, progress.totalPoints, progress.streak);
+  return progress.totalCoins;
+};
+
+/** Points earned this grant → coin grant using floor division (lower bound). */
+export const coinsFromPointsFloor = (points: number): number =>
+  points > 0 ? Math.floor(points / 3) : 0;
 
 /** Add minutes spent on technique/theory learning journey quizzes. Updates daily + weekly tallies and awards today's goal point once when threshold (5 min) is reached. */
 export const addLearningJourneyMinutes = (userId: string, type: 'technique' | 'theory', minutes: number): void => {
@@ -1599,7 +1673,9 @@ export const addLearningJourneyMinutes = (userId: string, type: 'technique' | 't
     console.log(`[Points] +${POINTS.MINUTE_GOAL_THEORY} pt for today's theory goal (5 min)`);
   }
 
+  const streakBeforeJourneyMin = progress.streak;
   updateStreak(progress);
+  dispatchStreakCelebrationIfIncreased(streakBeforeJourneyMin, progress.streak);
   saveProgress(progress);
   syncToSupabase(userId, progress.totalPoints, progress.streak);
 };
@@ -1639,6 +1715,9 @@ export const markLearningJourneyLessonCompleted = (userId: string, type: 'techni
     progress.totalPoints = (progress.totalPoints || 0) + POINTS.MINUTE_GOAL_THEORY;
     console.log(`[Points] +${POINTS.MINUTE_GOAL_THEORY} pt for today's theory goal (1 lesson completed)`);
   }
+  const streakBeforeLesson = progress.streak;
+  updateStreak(progress);
+  dispatchStreakCelebrationIfIncreased(streakBeforeLesson, progress.streak);
   saveProgress(progress);
   syncToSupabase(userId, progress.totalPoints, progress.streak);
 };
@@ -1851,6 +1930,7 @@ export const addSelectedSong = (userId: string, song: {
   duration: string;
   difficulty: number;
   isCustom?: boolean;
+  melodyOnly?: boolean;
 }): void => {
   const progress = loadProgress(userId);
   
@@ -1873,6 +1953,7 @@ export const addSelectedSong = (userId: string, song: {
     difficulty: song.difficulty,
     addedAt: new Date().toISOString(),
     isCustom: song.isCustom,
+    melodyOnly: song.melodyOnly,
   });
   
   saveProgress(progress);

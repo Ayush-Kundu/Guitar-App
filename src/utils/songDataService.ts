@@ -1,9 +1,10 @@
 /**
  * Song Data Service
- * 
- * Loads JSON song data files for the practice popup.
- * Maps frontend song titles to their corresponding JSON event files.
+ *
+ * Loads embedded demo timelines or builds a practice timeline from the song’s chord list.
  */
+
+import { getChordFingering } from './chordFingerings';
 
 export interface NoteEvent {
   time: number;      // Start time in seconds
@@ -221,127 +222,140 @@ function normalizeTitle(title: string): string {
     .replace(/^_|_$/g, '');
 }
 
-// Find matching song data
-export function findSongData(title: string): SongData | null {
+/** Exact title / key only — avoids wrong timeline from fuzzy substring matches. */
+export function findSongDataExact(title: string): SongData | null {
   const normalized = normalizeTitle(title);
-  
-  // Direct match
-  if (DEMO_SONGS[normalized]) {
-    return DEMO_SONGS[normalized];
+  if (DEMO_SONGS[normalized]) return DEMO_SONGS[normalized];
+  for (const data of Object.values(DEMO_SONGS)) {
+    if (normalizeTitle(data.title) === normalized) return data;
   }
-  
-  // Partial match
-  for (const [key, data] of Object.entries(DEMO_SONGS)) {
-    if (normalized.includes(key) || key.includes(normalized)) {
-      return data;
-    }
-    if (normalizeTitle(data.title) === normalized) {
-      return data;
-    }
-  }
-  
   return null;
 }
 
-// Generate default events from chords if no data exists
+/** @deprecated Prefer findSongDataExact + chord timeline; kept for duration helpers. */
+export function findSongData(title: string): SongData | null {
+  const exact = findSongDataExact(title);
+  if (exact) return exact;
+  const normalized = normalizeTitle(title);
+  for (const [key, data] of Object.entries(DEMO_SONGS)) {
+    if (normalized.includes(key) || key.includes(normalized)) return data;
+  }
+  return null;
+}
+
+/** Pluck positions for one chord from shared fingerings (string 6 = low E … 1 = high e). */
+export function chordToPluckPositions(chordName: string): { string: number; fret: number }[] {
+  const f = getChordFingering(chordName);
+  const out: { string: number; fret: number }[] = [];
+  for (let i = 0; i < 6; i++) {
+    const stringNum = 6 - i;
+    const fret = f[i];
+    if (fret >= 0) out.push({ string: stringNum, fret });
+  }
+  return out;
+}
+
+/** Timeline from this song’s chord list + tempo (matches what the user is practicing). */
 export function generateDefaultEvents(
-  chords: string[], 
-  bpm: number, 
+  chords: string[],
+  bpm: number,
   durationStr: string
 ): NoteEvent[] {
   const events: NoteEvent[] = [];
+  const list = chords.length ? chords : ['C'];
   const [mins, secs] = durationStr.split(':').map(Number);
-  const totalSeconds = mins * 60 + secs;
+  const totalSeconds = Math.max(16, (mins || 0) * 60 + (secs || 0));
   const beatsPerSecond = bpm / 60;
-  const secondsPerChord = 4 / beatsPerSecond;
-  
-  // Chord to fret position mapping - all notes played together as a chord
-  const chordToFret: Record<string, { string: number; fret: number }[]> = {
-    // Major chords
-    'C': [{ string: 5, fret: 3 }, { string: 4, fret: 2 }, { string: 3, fret: 0 }, { string: 2, fret: 1 }, { string: 1, fret: 0 }],
-    'D': [{ string: 4, fret: 0 }, { string: 3, fret: 2 }, { string: 2, fret: 3 }, { string: 1, fret: 2 }],
-    'E': [{ string: 6, fret: 0 }, { string: 5, fret: 2 }, { string: 4, fret: 2 }, { string: 3, fret: 1 }, { string: 2, fret: 0 }, { string: 1, fret: 0 }],
-    'F': [{ string: 6, fret: 1 }, { string: 5, fret: 3 }, { string: 4, fret: 3 }, { string: 3, fret: 2 }, { string: 2, fret: 1 }, { string: 1, fret: 1 }],
-    'G': [{ string: 6, fret: 3 }, { string: 5, fret: 2 }, { string: 4, fret: 0 }, { string: 3, fret: 0 }, { string: 2, fret: 0 }, { string: 1, fret: 3 }],
-    'A': [{ string: 5, fret: 0 }, { string: 4, fret: 2 }, { string: 3, fret: 2 }, { string: 2, fret: 2 }, { string: 1, fret: 0 }],
-    'B': [{ string: 5, fret: 2 }, { string: 4, fret: 4 }, { string: 3, fret: 4 }, { string: 2, fret: 4 }, { string: 1, fret: 2 }],
-    
-    // Minor chords
-    'Am': [{ string: 5, fret: 0 }, { string: 4, fret: 2 }, { string: 3, fret: 2 }, { string: 2, fret: 1 }, { string: 1, fret: 0 }],
-    'Bm': [{ string: 5, fret: 2 }, { string: 4, fret: 4 }, { string: 3, fret: 4 }, { string: 2, fret: 3 }, { string: 1, fret: 2 }],
-    'Cm': [{ string: 5, fret: 3 }, { string: 4, fret: 5 }, { string: 3, fret: 5 }, { string: 2, fret: 4 }, { string: 1, fret: 3 }],
-    'Dm': [{ string: 4, fret: 0 }, { string: 3, fret: 2 }, { string: 2, fret: 3 }, { string: 1, fret: 1 }],
-    'Em': [{ string: 6, fret: 0 }, { string: 5, fret: 2 }, { string: 4, fret: 2 }, { string: 3, fret: 0 }, { string: 2, fret: 0 }, { string: 1, fret: 0 }],
-    'Fm': [{ string: 6, fret: 1 }, { string: 5, fret: 3 }, { string: 4, fret: 3 }, { string: 3, fret: 1 }, { string: 2, fret: 1 }, { string: 1, fret: 1 }],
-    'Gm': [{ string: 6, fret: 3 }, { string: 5, fret: 5 }, { string: 4, fret: 5 }, { string: 3, fret: 3 }, { string: 2, fret: 3 }, { string: 1, fret: 3 }],
-    
-    // 7th chords
-    'C7': [{ string: 5, fret: 3 }, { string: 4, fret: 2 }, { string: 3, fret: 3 }, { string: 2, fret: 1 }, { string: 1, fret: 0 }],
-    'D7': [{ string: 4, fret: 0 }, { string: 3, fret: 2 }, { string: 2, fret: 1 }, { string: 1, fret: 2 }],
-    'E7': [{ string: 6, fret: 0 }, { string: 5, fret: 2 }, { string: 4, fret: 0 }, { string: 3, fret: 1 }, { string: 2, fret: 0 }, { string: 1, fret: 0 }],
-    'G7': [{ string: 6, fret: 3 }, { string: 5, fret: 2 }, { string: 4, fret: 0 }, { string: 3, fret: 0 }, { string: 2, fret: 0 }, { string: 1, fret: 1 }],
-    'A7': [{ string: 5, fret: 0 }, { string: 4, fret: 2 }, { string: 3, fret: 0 }, { string: 2, fret: 2 }, { string: 1, fret: 0 }],
-    'B7': [{ string: 5, fret: 2 }, { string: 4, fret: 1 }, { string: 3, fret: 2 }, { string: 2, fret: 0 }, { string: 1, fret: 2 }],
-    
-    // Sus chords
-    'Dsus4': [{ string: 4, fret: 0 }, { string: 3, fret: 2 }, { string: 2, fret: 3 }, { string: 1, fret: 3 }],
-    'Asus4': [{ string: 5, fret: 0 }, { string: 4, fret: 2 }, { string: 3, fret: 2 }, { string: 2, fret: 3 }, { string: 1, fret: 0 }],
-    'Esus4': [{ string: 6, fret: 0 }, { string: 5, fret: 2 }, { string: 4, fret: 2 }, { string: 3, fret: 2 }, { string: 2, fret: 0 }, { string: 1, fret: 0 }],
-    
-    // Add9 and other common chords
-    'Cadd9': [{ string: 5, fret: 3 }, { string: 4, fret: 2 }, { string: 3, fret: 0 }, { string: 2, fret: 3 }, { string: 1, fret: 0 }],
-    'Em7': [{ string: 6, fret: 0 }, { string: 5, fret: 2 }, { string: 4, fret: 0 }, { string: 3, fret: 0 }, { string: 2, fret: 0 }, { string: 1, fret: 0 }],
-    'A7sus4': [{ string: 5, fret: 0 }, { string: 4, fret: 2 }, { string: 3, fret: 0 }, { string: 2, fret: 3 }, { string: 1, fret: 0 }],
-    
-    // Power chords
-    'G5': [{ string: 6, fret: 3 }, { string: 5, fret: 5 }],
-    'A5': [{ string: 5, fret: 0 }, { string: 4, fret: 2 }],
-    'C5': [{ string: 5, fret: 3 }, { string: 4, fret: 5 }],
-    'D5': [{ string: 4, fret: 0 }, { string: 3, fret: 2 }],
-    'E5': [{ string: 6, fret: 0 }, { string: 5, fret: 2 }],
-    'Bb5': [{ string: 5, fret: 1 }, { string: 4, fret: 3 }],
-  };
-  
+  const secondsPerChord = Math.max(0.35, 4 / beatsPerSecond);
+
   let currentTime = 0;
   let chordIndex = 0;
-  
+
   while (currentTime < totalSeconds) {
-    const chord = chords[chordIndex % chords.length];
-    const positions = chordToFret[chord] || chordToFret['Am']; // Default to Am
-    
-    // Add all chord notes at the same time (played together as a chord)
+    const chord = list[chordIndex % list.length].trim();
+    const positions = chordToPluckPositions(chord);
     for (const pos of positions) {
       events.push({
         time: currentTime,
         string: pos.string,
         fret: pos.fret,
-        duration: secondsPerChord * 0.8,
-        technique: 'pluck'
+        duration: secondsPerChord * 0.85,
+        technique: 'pluck',
       });
     }
-    
     currentTime += secondsPerChord;
     chordIndex++;
   }
-  
+
   return events;
 }
 
-// Get song data - returns embedded data or generates from chords
+/** One pluck per chord change — highest string in the voicing (melody string). */
+function melodyNoteFromChord(chordName: string): { string: number; fret: number } {
+  const positions = chordToPluckPositions(chordName);
+  if (positions.length === 0) return { string: 2, fret: 1 };
+  return positions.reduce((best, p) => (p.string < best.string ? p : best));
+}
+
+/** Single-note timeline for early levels (no stacked chord strums). */
+export function generateMelodyOnlyEvents(
+  chords: string[],
+  bpm: number,
+  durationStr: string
+): NoteEvent[] {
+  const events: NoteEvent[] = [];
+  const list = chords.length ? chords : ['C'];
+  const [mins, secs] = durationStr.split(':').map(Number);
+  const totalSeconds = Math.max(16, (mins || 0) * 60 + (secs || 0));
+  const beatsPerSecond = bpm / 60;
+  const secondsPerChord = Math.max(0.35, 4 / beatsPerSecond);
+
+  let currentTime = 0;
+  let chordIndex = 0;
+
+  while (currentTime < totalSeconds) {
+    const chord = list[chordIndex % list.length].trim();
+    const pos = melodyNoteFromChord(chord);
+    events.push({
+      time: currentTime,
+      string: pos.string,
+      fret: pos.fret,
+      duration: Math.min(secondsPerChord * 0.92, 1.2),
+      technique: 'pluck',
+    });
+    currentTime += secondsPerChord;
+    chordIndex++;
+  }
+
+  return events;
+}
+
+export interface GetSongDataOptions {
+  /** Skip embedded demos; build a single-note line from the chord list. */
+  melodyOnly?: boolean;
+}
+
+/**
+ * Practice popup data: use curated demo only when the title matches exactly;
+ * otherwise build events from the passed chord progression (per-song / per-activity).
+ */
 export function getSongData(
   title: string,
   chords: string[],
   bpm: number,
-  duration: string
+  duration: string,
+  options?: GetSongDataOptions
 ): SongData {
-  // Try to find existing song data
-  const existingData = findSongData(title);
-  
-  if (existingData) {
-    return existingData;
+  if (!options?.melodyOnly) {
+    const exact = findSongDataExact(title);
+    if (exact) {
+      return exact;
+    }
   }
-  
-  // Generate from chord data
+
+  const events = options?.melodyOnly
+    ? generateMelodyOnlyEvents(chords, bpm, duration)
+    : generateDefaultEvents(chords, bpm, duration);
   return {
     song_id: normalizeTitle(title),
     title: title,
@@ -353,8 +367,8 @@ export function getSongData(
     genre: 'unknown',
     tuning: 'standard',
     capo: 0,
-    chords: chords,
-    events: generateDefaultEvents(chords, bpm, duration)
+    chords: chords.length ? chords : ['C'],
+    events,
   };
 }
 

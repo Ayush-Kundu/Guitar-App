@@ -2,7 +2,7 @@
 // INTERACTIVE QUIZ TYPES - Teach concepts through quizzes (fill-in-blank, multiple choice)
 // =============================================================================
 
-export type QuizItemType = 'multiple_choice' | 'fill_blank';
+export type QuizItemType = 'multiple_choice' | 'fill_blank' | 'drag_blank';
 
 export interface MultipleChoiceItem {
   type: 'multiple_choice';
@@ -20,7 +20,16 @@ export interface FillBlankItem {
   explanation?: string;
 }
 
-export type QuizItem = MultipleChoiceItem | FillBlankItem;
+/** Same shape as fill_blank; UI uses drag-and-drop (or tap chip → tap gap) into the sentence. */
+export interface DragBlankItem {
+  type: 'drag_blank';
+  sentence: string;
+  options: string[];
+  correctAnswer: number;
+  explanation?: string;
+}
+
+export type QuizItem = MultipleChoiceItem | FillBlankItem | DragBlankItem;
 
 export interface LessonContent {
   title: string;
@@ -82,12 +91,94 @@ export const techniqueContent: Record<string, LessonContent> = {
   'What Are Frets?': {
     title: 'What Are Frets?',
     items: [
-      { type: 'fill_blank', sentence: 'The metal bars going across the neck are called _____.', options: ['frets', 'strings', 'markers', 'nuts'], correctAnswer: 0, explanation: 'Frets are the thin metal strips (fret wire) that divide the neck into segments. When you press a string down just behind a fret, the vibrating length shortens and the pitch goes up. So frets give you fixed, repeatable notes—the foundation for every chord and scale.' },
-      { type: 'multiple_choice', question: 'Where do you press the string to change the note cleanly?', options: ['On top of the fret', 'Just behind the fret', 'In the middle between frets', 'On the body'], correctAnswer: 1, explanation: 'Press the string down firmly just behind the fret wire (closer to the headstock than the middle of the space). That way the fret acts as the endpoint of the vibrating length and the note rings clearly. Too far from the fret and you get buzz or a dead sound.' },
-      { type: 'fill_blank', sentence: 'Moving toward the _____ shortens the string and raises the pitch.', options: ['body', 'headstock', 'bridge', 'nut'], correctAnswer: 0, explanation: 'The vibrating length is from the fret (or nut) to the bridge. So the closer your finger is to the body (higher fret number), the shorter the length and the higher the note. This is why the same string gives different notes at different frets—each fret is one half step higher.' },
-      { type: 'multiple_choice', question: 'What is "fret 0" or an "open" string?', options: ['A broken string', 'When you do not press any fret and the string vibrates full length', 'The 12th fret', 'A muted note'], correctAnswer: 1, explanation: 'When you do not press any fret, the string vibrates from the nut to the bridge—that is "open" or "fret 0." So we have open E, open A, etc. Every other note on that string is made by pressing at fret 1, 2, 3, and so on.' },
-      { type: 'fill_blank', sentence: 'Each fret raises the pitch by one _____ step—the smallest step we use in Western music.', options: ['half', 'whole', 'octave', 'tone'], correctAnswer: 0, explanation: 'One fret = one half step (semitone). So on any string you get all 12 notes in order by going fret by fret. That connects the fretboard directly to the musical alphabet and to scales and chords.' }
-    ]
+      {
+        type: 'multiple_choice',
+        question:
+          'A fret is the thin metal wire embedded across the fingerboard. Pressing a string just behind a fret shortens the vibrating part of the string so the pitch changes. Which statement is true?',
+        options: [
+          'Frets are only decorative paint lines.',
+          'Frets are metal strips; the string is pressed behind a fret so that fret becomes the new “end” of the vibrating string.',
+          'Frets are the same as the tuning pegs.',
+          'Frets are the six long wires you pluck.',
+        ],
+        correctAnswer: 1,
+        explanation:
+          'Frets are metal fret wire across the neck. The string vibrates between the bridge and either the nut (open) or the fret you press behind. Shorter vibrating length = higher pitch. The strings you pluck are separate from frets; pegs are only for tuning.',
+      },
+      {
+        type: 'multiple_choice',
+        question:
+          'String order: With the guitar on your leg (right-handed), the string closest to your eyes is the thickest (low notes). We number strings 1 = thinnest/highest through 6 = thickest/lowest for TAB and diagrams. Which string is the 6th string?',
+        options: ['High E (thinnest)', 'B', 'G', 'Low E (thickest)'],
+        correctAnswer: 3,
+        explanation:
+          'String 6 is the thick low E at the top of the fretboard in playing position. String 1 is the thin high E toward the floor. TAB lines match this: bottom line of TAB = high E, top line = low E.',
+      },
+      {
+        type: 'multiple_choice',
+        question:
+          'Why letters (E, A, D, G, B)? Pitches use the musical alphabet A–G (with sharps/flats between some letters). Open strings are named for the note they sound. Why are both the thickest and thinnest strings called E?',
+        options: [
+          'They are different instruments.',
+          'They are the same pitch.',
+          'They are the same note name but different octaves—low E vs high E two octaves apart.',
+          'Only one of them is really E.',
+        ],
+        correctAnswer: 2,
+        explanation:
+          'Letter names label pitch classes. Low E and high E share the name because they are the same note at different registers (octaves). Standard tuning from thick to thin is E–A–D–G–B–E.',
+      },
+      {
+        type: 'fill_blank',
+        sentence:
+          'The metal bars going across the neck are called _____.',
+        options: ['frets', 'strings', 'markers', 'nuts'],
+        correctAnswer: 0,
+        explanation:
+          'Frets are the thin metal strips that divide the neck. Pressing behind a fret shortens the string and raises pitch in fixed half steps.',
+      },
+      {
+        type: 'multiple_choice',
+        question:
+          'Clean note: Where should you press the string relative to the fret wire?',
+        options: ['On top of the metal fret', 'Just behind the fret (headstock side of the wire)', 'Exactly halfway between two frets', 'On the bridge'],
+        correctAnswer: 1,
+        explanation:
+          'Press just behind the fret so the wire acts as a clean stop for the string. Too far back causes buzz or weak tone.',
+      },
+      {
+        type: 'fill_blank',
+        sentence:
+          'Moving toward the _____ (higher fret numbers) shortens the vibrating string and raises the pitch.',
+        options: ['body', 'headstock', 'pickguard only', 'strap button'],
+        correctAnswer: 0,
+        explanation:
+          'Higher frets are closer to the body. Shorter string length from bridge to your finger = higher pitch.',
+      },
+      {
+        type: 'multiple_choice',
+        question:
+          'Open string / fret 0: You pluck without pressing a fret, so the string vibrates its full length from the nut to the bridge. What is the nut?',
+        options: [
+          'The metal frets in the middle of the neck',
+          'The slotted bar at the top of the fretboard that sets where the open string ends',
+          'Only the bridge',
+          'The sound hole',
+        ],
+        correctAnswer: 1,
+        explanation:
+          'The nut is the zero point at the headstock end. Open = nut to bridge full length. That is fret 0 for that string.',
+      },
+      {
+        type: 'fill_blank',
+        sentence:
+          'Each fret raises the pitch by one _____ step (semitone)—the smallest step in common Western music.',
+        options: ['half', 'whole', 'octave', 'third'],
+        correctAnswer: 0,
+        explanation:
+          'One fret = one half step. Twelve frets ≈ one octave on the same string. That is why the fretboard maps directly to the chromatic scale.',
+      },
+    ],
   },
   'How to Press a String': {
     title: 'How to Press a String',
@@ -299,6 +390,158 @@ export const techniqueContent: Record<string, LessonContent> = {
       { type: 'fill_blank', sentence: 'Standard tuning is E-A-D-G-B-E from the _____ string to the thinnest.', options: ['thickest', 'thinnest', 'middle', 'open'], correctAnswer: 0, explanation: 'We always list tuning from the thickest (6th) to the thinnest (1st): E, A, D, G, B, E. That is what "standard tuning" means. Every chord chart and tab assumes this unless they say otherwise (e.g. "drop D"). So memorizing E-A-D-G-B-E is part of the foundation.' },
       { type: 'multiple_choice', question: 'Why does the guitar go out of tune?', options: ['Strings do not change.', 'Temperature, humidity, playing, and stretching gradually change string tension.', 'Only when you break a string.', 'Tuning is permanent.'], correctAnswer: 1, explanation: 'Strings stretch slightly with playing and with changes in temperature and humidity. New strings go out of tune quickly until they settle. So checking your tuning often—especially at the start of a practice or session—keeps everything sounding right. It only takes a minute and makes a huge difference.' }
     ]
+  },
+  'Down Strums': {
+    title: 'Down Strums',
+    items: [
+      { type: 'fill_blank', sentence: 'A down strum brushes from the _____ string toward the thinnest.', options: ['thickest', 'middle', 'open', 'muted'], correctAnswer: 0, explanation: 'Down strums move from thick to thin strings. The motion usually comes from a loose wrist, not a stiff elbow.' },
+      { type: 'multiple_choice', question: 'What is the steady pulse you strum along with called?', options: ['Melody', 'Beat', 'Harmony', 'Capo'], correctAnswer: 1, explanation: 'The beat is the repeating pulse (1-2-3-4). Staying on the beat is what makes strumming sound musical.' },
+      { type: 'multiple_choice', question: 'Where should most of the strumming motion come from?', options: ['Elbow only', 'Wrist (loose)', 'Shoulder', 'Neck'], correctAnswer: 1, explanation: 'A loose wrist gives control and endurance; big elbow-only swings are harder to keep even.' }
+    ]
+  },
+  'Up Strums': {
+    title: 'Up Strums',
+    items: [
+      { type: 'multiple_choice', question: 'On an up strum, which strings are usually emphasized?', options: ['Only the thickest two', 'Often the thinner treble strings', 'Only string 6', 'None'], correctAnswer: 1, explanation: 'The return motion often catches the higher strings; down strums tend to cover more of the set.' },
+      { type: 'fill_blank', sentence: 'Down and _____ strums together form the basis of almost every strum pattern.', options: ['up', 'side', 'mute', 'tap'], correctAnswer: 0, explanation: 'Alternating down and up motion is the foundation; patterns choose which strokes actually hit the strings.' },
+      { type: 'multiple_choice', question: 'Why is the up strum often lighter than the down strum?', options: ['It is always wrong to strum up', 'You may hit fewer strings and use less force on the return', 'Up strums are only for bass', 'Strings cannot vibrate upward'], correctAnswer: 1, explanation: 'Many grooves use a lighter upstroke on the treble side for feel and clarity.' }
+    ]
+  },
+  'Down-Up Pattern': {
+    title: 'Down-Up Pattern',
+    items: [
+      { type: 'multiple_choice', question: 'Why keep your strumming hand moving like a pendulum even when you skip a strum?', options: ['To look busy', 'So timing stays even and the pulse is steady', 'To tune the guitar', 'To mute all strings'], correctAnswer: 1, explanation: 'Constant motion preserves the beat; you choose which strokes contact the strings.' },
+      { type: 'fill_blank', sentence: 'Skipping a strum but keeping the hand moving is a core skill for _____ rhythm.', options: ['steady', 'random', 'silent', 'broken'], correctAnswer: 0, explanation: 'Ghost strokes keep your internal clock running so patterns like D-D-U-U-D-U feel natural.' },
+      { type: 'multiple_choice', question: 'Down-Up-Down-Up is best described as:', options: ['A chord name', 'The foundation that other strum patterns vary', 'A type of capo', 'Only for fingerstyle'], correctAnswer: 1, explanation: 'Most patterns are just choosing which downs and ups hit the strings.' }
+    ]
+  },
+  'Holding a Pick Properly': {
+    title: 'Holding a Pick Properly',
+    items: [
+      { type: 'fill_blank', sentence: 'Hold the pick between _____ and index finger with only a small tip exposed.', options: ['thumb', 'middle', 'ring', 'pinky'], correctAnswer: 0, explanation: 'Thumb and index give a stable grip; too much pick sticking out causes flapping and noise.' },
+      { type: 'multiple_choice', question: 'Why avoid a "death grip" on the pick?', options: ['It sounds better', 'Tension tires your hand and can make tone harsh', 'Picks break instantly', 'You cannot strum'], correctAnswer: 1, explanation: 'Firm but relaxed control beats squeezing as hard as possible.' },
+      { type: 'multiple_choice', question: 'What is a pick (plectrum) used for?', options: ['Tuning only', 'Striking or brushing the strings', 'Replacing frets', 'Muting the neck'], correctAnswer: 1, explanation: 'The pick transfers energy to the strings for strums and single notes.' }
+    ]
+  },
+  'Picking One String at a Time': {
+    title: 'Picking One String at a Time',
+    items: [
+      { type: 'multiple_choice', question: 'For clean single-string picking, what works better than huge arm swings?', options: ['Only using the elbow', 'Small, precise wrist movements', 'Plucking with the fretting hand only', 'Ignoring string spacing'], correctAnswer: 1, explanation: 'Small wrist motions help you aim at one string without hitting neighbors.' },
+      { type: 'fill_blank', sentence: 'Resting your palm or pinky on the body or bridge for stability is called _____ the hand.', options: ['planting', 'sliding', 'barring', 'hammering'], correctAnswer: 0, explanation: 'Planting gives a reference so your pick returns to the same place each stroke.' },
+      { type: 'multiple_choice', question: 'Picking one string at a time is the path from strumming chords to:', options: ['Only tuning', 'Melodies, riffs, and solos', 'Removing strings', 'Capo use'], correctAnswer: 1, explanation: 'Single-note accuracy unlocks melodic playing.' }
+    ]
+  },
+  'Alternate Picking': {
+    title: 'Alternate Picking',
+    items: [
+      { type: 'fill_blank', sentence: 'Alternate picking means alternating _____ and upstrokes.', options: ['downstrokes', 'slides', 'hammers', 'rests'], correctAnswer: 0, explanation: 'Down-up-down-up keeps the hand efficient and is standard for scales and fast lines.' },
+      { type: 'multiple_choice', question: 'Why alternate instead of only downstrokes for many notes in a row?', options: ['Downstrokes are illegal', 'It is often faster and keeps the hand in continuous motion', 'Upstrokes are silent', 'It changes the guitar tuning'], correctAnswer: 1, explanation: 'Each stroke sets up the next; constant direction changes reduce wasted motion.' },
+      { type: 'multiple_choice', question: 'Alternate picking is especially useful for:', options: ['Only open chords', 'Scales, riffs, and solos', 'Changing strings on the headstock', 'Reading TAB only'], correctAnswer: 1, explanation: 'It is the default engine for single-note lines on guitar.' }
+    ]
+  },
+  'Fixing String Buzz': {
+    title: 'Fixing String Buzz',
+    items: [
+      { type: 'multiple_choice', question: 'Buzz often happens when you press too far from the fret. Where should you press?', options: ['On top of the fret wire', 'Just behind the fret wire', 'Halfway between frets', 'Past the 12th fret only'], correctAnswer: 1, explanation: 'Close to the fret minimizes buzz and needed pressure.' },
+      { type: 'fill_blank', sentence: 'Use your _____ tip, not the soft pad, for a clear note.', options: ['finger', 'palm', 'knuckle', 'nail'], correctAnswer: 0, explanation: 'The fingertip gives a small, precise contact point.' },
+      { type: 'multiple_choice', question: 'String buzz is best described as:', options: ['A pleasant effect', 'A rattling or fuzzy sound from poor contact with the fret', 'Normal tuning drift', 'Only caused by picks'], correctAnswer: 1, explanation: 'Clean contact at the fret ends the string cleanly; buzz means something is off in pressure or placement.' }
+    ]
+  },
+  'Fixing Muted Strings': {
+    title: 'Fixing Muted Strings',
+    items: [
+      { type: 'multiple_choice', question: 'Accidentally muted strings in a chord are often fixed by:', options: ['Flattening all fingers across the neck', 'Arching fingers so only fingertips touch', 'Pressing with the palm on all strings', 'Removing the thumb'], correctAnswer: 1, explanation: 'An arched hand keeps neighboring strings free to vibrate.' },
+      { type: 'fill_blank', sentence: 'Keep knuckles bent and pointing away from the neck so fingers do not _____ adjacent strings.', options: ['touch', 'strengthen', 'tune', 'paint'], correctAnswer: 0, explanation: 'Collateral contact is the usual cause of dead notes in chords.' },
+      { type: 'multiple_choice', question: 'A "dead" string in a chord usually means:', options: ['It is louder than the rest', 'It does not ring clearly—often touched by another finger', 'It is the only correct string', 'It is always string 1'], correctAnswer: 1, explanation: 'Diagnose by playing each string alone while holding the shape.' }
+    ]
+  },
+  'The Chord Check': {
+    title: 'The Chord Check',
+    items: [
+      { type: 'multiple_choice', question: 'What is the chord check?', options: ['Tune with a capo', 'Play each string one at a time while holding the chord', 'Only strum down', 'Remove all fingers'], correctAnswer: 1, explanation: 'You hear which string buzzes, mutes, or rings so you can adjust.' },
+      { type: 'fill_blank', sentence: 'If one string buzzes during the check, move that finger closer to the _____ .', options: ['fret', 'bridge', 'headstock', 'sound hole'], correctAnswer: 0, explanation: 'Proximity to the fret wire usually fixes buzz.' },
+      { type: 'multiple_choice', question: 'When should you use the chord check?', options: ['Never', 'When learning any new chord shape', 'Only on barre chords after a year', 'Only on electric guitar'], correctAnswer: 1, explanation: 'It builds the habit of clean, intentional notes from the start.' }
+    ]
+  },
+  'Practice: Em, A, and D': {
+    title: 'Practice: Em, A, and D',
+    items: [
+      { type: 'multiple_choice', question: 'This practice session focuses on which chords?', options: ['G, C, F', 'Em, A, and D', 'Only power chords', 'Barre chords only'], correctAnswer: 1, explanation: 'You reinforce the shapes from the unit with the chord recognizer.' },
+      { type: 'multiple_choice', question: 'Why use the chord recognizer here?', options: ['To replace tuning', 'To verify each chord is clear and correctly recognized', 'To change your strings', 'To read standard notation'], correctAnswer: 1, explanation: 'Feedback helps you hear and fix problems before moving on.' },
+      { type: 'fill_blank', sentence: 'Smooth switching between Em, A, and D is the bridge from single chords to playing _____.', options: ['songs', 'scales', 'harmonics', 'feedback'], correctAnswer: 0, explanation: 'Real music is chord sequences in time.' }
+    ]
+  },
+  'Fingers Have Names': {
+    title: 'Fingers Have Names',
+    items: [
+      { type: 'fill_blank', sentence: 'In fingerpicking notation, the thumb is _____.', options: ['p', 'i', 'm', 'a'], correctAnswer: 0, explanation: 'p = pulgar (thumb), i = index, m = middle, a = ring.' },
+      { type: 'multiple_choice', question: 'Which finger is "i"?', options: ['Thumb', 'Index', 'Ring', 'Pinky'], correctAnswer: 1, explanation: 'i = index; m = middle; a = ring.' },
+      { type: 'multiple_choice', question: 'The picking-hand pinky usually:', options: ['Plucks string 6 fastest', 'Rests on the guitar for stability instead of plucking', 'Replaces the thumb', 'Tunes the guitar'], correctAnswer: 1, explanation: 'Classical and folk technique often anchors the hand with the pinky side or palm.' }
+    ]
+  },
+  'Thumb on Bass Strings': {
+    title: 'Thumb on Bass Strings',
+    items: [
+      { type: 'multiple_choice', question: 'Which strings are the "bass" strings in standard numbering?', options: ['1, 2, 3', '4, 5, 6', 'Only 6', 'Only 1'], correctAnswer: 1, explanation: 'Strings 6, 5, and 4 (E, A, D) are the bass side; the thumb usually plays them.' },
+      { type: 'fill_blank', sentence: 'The thumb typically plucks bass strings with a motion away from the _____ .', options: ['palm', 'fretboard', 'pick', 'capo'], correctAnswer: 0, explanation: 'Thumb moves downward through the bass strings, away from the palm.' },
+      { type: 'multiple_choice', question: 'The "root" of a chord is:', options: ['Always the thinnest string', 'The note the chord is named after and often played on the bass side', 'The pick', 'The capo fret'], correctAnswer: 1, explanation: 'The thumb often plays the root on the 6th or 5th string in patterns.' }
+    ]
+  },
+  'Fingers on Treble Strings': {
+    title: 'Fingers on Treble Strings',
+    items: [
+      { type: 'multiple_choice', question: 'Treble strings 3, 2, 1 are typically plucked by:', options: ['Thumb only', 'Index, middle, and ring (i, m, a)', 'Only the pinky', 'The fretting hand thumb'], correctAnswer: 1, explanation: 'i on 3, m on 2, a on 1 is a common assignment.' },
+      { type: 'fill_blank', sentence: 'Treble fingers often pluck _____ , toward the palm, while the thumb plucks bass downward.', options: ['upward', 'sideways', 'downward only', 'never'], correctAnswer: 0, explanation: 'Opposite directions help separate voices and timing.' },
+      { type: 'multiple_choice', question: 'String 1 is:', options: ['The thickest string', 'The thinnest, highest-pitched string', 'Always muted', 'The bass E'], correctAnswer: 1, explanation: 'Numbering runs thin = 1, thick = 6.' }
+    ]
+  },
+  'Hammer-Ons': {
+    title: 'Hammer-Ons',
+    items: [
+      { type: 'fill_blank', sentence: 'A hammer-on sounds a higher note on the same string with _____ picking again.', options: ['without', 'double', 'slow', 'muted'], correctAnswer: 0, explanation: 'You pick once, then hammer a finger onto a higher fret so the string keeps vibrating.' },
+      { type: 'multiple_choice', question: 'Hammer-ons add:', options: ['Only volume', 'Smooth legato connections between notes', 'Open tuning', 'Capo placement'], correctAnswer: 1, explanation: 'They let you play more notes per pick stroke.' },
+      { type: 'multiple_choice', question: '"Higher" fret means:', options: ['Toward the headstock', 'Toward the body (larger fret numbers)', 'Only fret 1', 'Muted only'], correctAnswer: 1, explanation: 'Higher fret number = shorter string = higher pitch.' }
+    ]
+  },
+  'Pull-Offs': {
+    title: 'Pull-Offs',
+    items: [
+      { type: 'multiple_choice', question: 'A pull-off starts from:', options: ['An open string only', 'Two fingers on the same string; pick the higher note then pull off to the lower', 'A barre only', 'The pick alone'], correctAnswer: 1, explanation: 'The lower note must already be fretted or open; the snap-off restarts vibration.' },
+      { type: 'fill_blank', sentence: 'Pull-offs pair with hammer-ons for _____ (smooth) playing.', options: ['legato', 'staccato', 'palm-muted', 'slide'], correctAnswer: 0, explanation: 'Legato means connected notes with fewer picks.' },
+      { type: 'multiple_choice', question: 'Compared to a hammer-on, a pull-off:', options: ['Is identical', 'Goes to a lower pitch on the same string without a new pick', 'Only works on bass', 'Requires a capo'], correctAnswer: 1, explanation: 'Opposite direction of finger action, same idea of extra notes per stroke.' }
+    ]
+  },
+  'Slides': {
+    title: 'Slides',
+    items: [
+      { type: 'multiple_choice', question: 'In a slide you:', options: ['Lift and repluck every fret', 'Keep finger pressure and glide along the string to a new fret', 'Only use open strings', 'Stop the string'], correctAnswer: 1, explanation: 'Continuous contact lets pitch glide between notes.' },
+      { type: 'fill_blank', sentence: 'Sliding "up" the neck means moving toward the _____ (higher frets).', options: ['body', 'headstock', 'nut', 'tuner'], correctAnswer: 0, explanation: 'Higher frets are closer to the body.' },
+      { type: 'multiple_choice', question: 'Slides are useful for:', options: ['Only classical music', 'Vocal, expressive connections between notes', 'Breaking strings', 'Tuning'], correctAnswer: 1, explanation: 'They connect melody notes smoothly.' }
+    ]
+  },
+  'Basic Bends': {
+    title: 'Basic Bends',
+    items: [
+      { type: 'multiple_choice', question: 'A string bend raises pitch by:', options: ['Loosening the string only', 'Stretching the string sideways after fretting', 'Capo only', 'Muting'], correctAnswer: 1, explanation: 'Increased tension raises the frequency.' },
+      { type: 'fill_blank', sentence: 'Use supporting fingers behind the fretting finger to help _____ the string.', options: ['push', 'cut', 'ignore', 'detune'], correctAnswer: 0, explanation: 'Shared strength keeps bends in tune and reduces strain.' },
+      { type: 'multiple_choice', question: 'A small bend that matches the next half step is called:', options: ['A whole-step bend only', 'A half-step bend', 'A rest', 'Harmonics'], correctAnswer: 1, explanation: 'Start small and match pitch by ear.' }
+    ]
+  },
+  'What Is a Barre Chord?': {
+    title: 'What Is a Barre Chord?',
+    items: [
+      { type: 'fill_blank', sentence: 'A barre uses the index finger like a moveable _____ across all strings at one fret.', options: ['nut', 'pick', 'slide', 'capo'], correctAnswer: 0, explanation: 'The nut is the fixed end at the headstock; the barre replaces it at any fret.' },
+      { type: 'multiple_choice', question: 'Why are barre chords powerful?', options: ['They only work on string 1', 'The same shape moved along the neck gives many different chords', 'They remove the need to tune', 'They replace all open chords'], correctAnswer: 1, explanation: 'One shape + barre = chords in every key.' },
+      { type: 'multiple_choice', question: 'Barre chords build on shapes you know from:', options: ['Only piano', 'Open E and Em (and similar) moved up with the index barre', 'Harmonics only', 'Fingerpicking only'], correctAnswer: 1, explanation: 'F major is essentially E major moved up one fret with a barre at 1.' }
+    ]
+  },
+  'Building Barre Strength': {
+    title: 'Building Barre Strength',
+    items: [
+      { type: 'multiple_choice', question: 'When checking a barre, you should:', options: ['Only strum once ever', 'Pluck each string and fix buzz with index angle and pressure', 'Avoid the first three frets', 'Never use the thumb'], correctAnswer: 1, explanation: 'Per-string clarity shows whether the barre is even.' },
+      { type: 'fill_blank', sentence: 'Lower frets (1–3) often feel _____ because the string is farther from the fretboard.', options: ['harder', 'easier', 'impossible', 'tuned'], correctAnswer: 0, explanation: 'More pressure and technique are needed; improvement takes consistent practice.' },
+      { type: 'multiple_choice', question: 'Building barre strength is:', options: ['Instant for everyone', 'A process that can take weeks of short daily practice', 'Only for electric guitar', 'Not related to pressure'], correctAnswer: 1, explanation: 'Patience and repetition train the hand.' }
+    ]
   }
 };
 
@@ -414,6 +657,318 @@ export const theoryContent: Record<string, LessonContent> = {
       { type: 'multiple_choice', question: 'On the A string, what note is at fret 2?', options: ['B', 'A#', 'C', 'C#'], correctAnswer: 0, explanation: 'A string: open A, 1=A#, 2=B. So fret 2 is B. The A string gives you the roots for A-shaped barre chords.' },
       { type: 'fill_blank', sentence: 'Knowing the notes on the E and A strings helps you find the _____ of barre chords and moveable shapes.', options: ['root', 'fifth', 'third', 'octave'], correctAnswer: 0, explanation: 'Barre chords use the low E or A string as the root. If you know the notes on those strings, you can name and place any barre chord.' }
     ]
+  },
+  'What Is TAB?': {
+    title: 'What Is TAB?',
+    items: [
+      {
+        type: 'multiple_choice',
+        question: 'In standard guitar TAB, the bottom line of the staff usually represents:',
+        options: ['The thinnest string (high E)', 'The thickest string (low E)', 'The capo only', 'Pick direction'],
+        correctAnswer: 1,
+        explanation:
+          'Six lines = six strings: top line = thin high E (string 1); bottom line = thick low E (string 6). That vertical order is flipped compared to glancing down at the strings in your lap.',
+      },
+      {
+        type: 'multiple_choice',
+        question:
+          'Compared to glancing down at your guitar in playing position, standard TAB lines are arranged so that:',
+        options: [
+          'The thinnest (highest-pitch) string is on the top line and the thickest (lowest-pitch) string is on the bottom line—so the page is flipped versus the up-down you see in your lap.',
+          'The string closest to your face always appears on the top line of TAB.',
+          'TAB lines are not tied to specific strings.',
+          'Only the middle two strings appear in TAB.',
+        ],
+        correctAnswer: 0,
+        explanation:
+          'TAB reads like a front-facing diagram: high E up top, low E on the bottom. That is different from the vertical stack you see when you look down at the neck.',
+      },
+      { type: 'fill_blank', sentence: 'A _____ on a TAB line tells you which fret to press on that string.', options: ['number', 'letter', 'dot', 'star'], correctAnswer: 0, explanation: '0 = open string; other numbers = fret to press.' },
+      {
+        type: 'multiple_choice',
+        question: 'The top line of standard TAB corresponds to which string?',
+        options: ['String 1 (thinnest, high E)', 'String 6 (thickest, low E)', 'Only the D string', 'Muted strings only'],
+        correctAnswer: 0,
+        explanation: 'Line 1 from the top = string 1, the high E.',
+      },
+      {
+        type: 'multiple_choice',
+        question: 'TAB is especially useful because it shows:',
+        options: ['Only tempo', 'Exactly where to play on the neck (string + fret)', 'Only chord symbols with no strings', 'Standard drum notation only'],
+        correctAnswer: 1,
+        explanation: 'Tablature maps directly to strings and frets.',
+      },
+      {
+        type: 'multiple_choice',
+        question: 'In TAB, a column of numbers stacked on several lines at once usually means:',
+        options: ['Ignore those strings', 'Play those strings at those frets together (often a chord)', 'Play from bottom to top only', 'The song is in drop tuning'],
+        correctAnswer: 1,
+        explanation: 'Vertical alignment = simultaneous notes—often a chord shape.',
+      },
+      {
+        type: 'multiple_choice',
+        question: 'The digit 0 on a TAB line means:',
+        options: ['Mute that string', 'Play that string open (no fret pressed)', 'Rest for a beat', 'Use harmonics only'],
+        correctAnswer: 1,
+        explanation: 'Zero marks the open string.',
+      },
+      {
+        type: 'fill_blank',
+        sentence: 'TAB is a type of _____ that uses lines for strings and digits for frets.',
+        options: ['notation', 'tuning chart', 'pick gauge', 'strap length'],
+        correctAnswer: 0,
+        explanation: 'Tablature is a notation system for fretted instruments.',
+      },
+      {
+        type: 'multiple_choice',
+        question: 'Why is TAB so common for guitar online?',
+        options: [
+          'It replaces learning chords',
+          'It shows finger placement without needing to read standard notation first',
+          'It only works for bass',
+          'It hides which string to use',
+        ],
+        correctAnswer: 1,
+        explanation: 'You can follow charts quickly once you know how the lines map to strings.',
+      },
+      {
+        type: 'multiple_choice',
+        question: 'Standard TAB assumes:',
+        options: [
+          'A four-string instrument',
+          'Six strings in standard tuning unless the chart says otherwise',
+          'No numbers are allowed',
+          'Only downstrokes',
+        ],
+        correctAnswer: 1,
+        explanation: 'Most guitar TAB is written for six strings in E-A-D-G-B-E unless noted.',
+      },
+    ]
+  },
+  'Reading Fret Numbers': {
+    title: 'Reading Fret Numbers',
+    items: [
+      { type: 'fill_blank', sentence: 'In TAB, _____ means play the string open (no fret pressed).', options: ['0', '1', 'x', '12'], correctAnswer: 0, explanation: 'Zero is the open string; other numbers are frets.' },
+      { type: 'multiple_choice', question: 'Numbers stacked in a column across lines mean:', options: ['Ignore those strings', 'Play those strings at those frets at the same time (a chord)', 'Only pick the top line', 'Rest for a measure'], correctAnswer: 1, explanation: 'Vertical alignment = simultaneous notes.' },
+      { type: 'multiple_choice', question: 'TAB fret numbers refer to:', options: ['Finger numbers only', 'Fret positions on the named string', 'Volume levels', 'Pick thickness'], correctAnswer: 1, explanation: 'Each line is a string; the digit is the fret.' }
+    ]
+  },
+  'TAB Symbols': {
+    title: 'TAB Symbols',
+    items: [
+      { type: 'multiple_choice', question: 'In TAB, "h" commonly means:', options: ['Harmonics only', 'Hammer-on', 'Hold forever', 'High capo'], correctAnswer: 1, explanation: 'h connects two frets on one string without a second pick.' },
+      { type: 'multiple_choice', question: '"p" between two fret numbers usually means:', options: ['Pause', 'Pull-off', 'Palm mute', 'Piano'], correctAnswer: 1, explanation: 'Pull-off snaps from a higher fretted note to a lower one.' },
+      { type: 'fill_blank', sentence: 'Symbols like / or \\ often indicate a _____ between frets.', options: ['slide', 'rest', 'bend', 'tap'], correctAnswer: 0, explanation: 'Slides connect pitches smoothly along the string.' },
+      { type: 'multiple_choice', question: '"b" in TAB often marks:', options: ['A barre chord chart', 'A bend', 'A bass clef', 'A break'], correctAnswer: 1, explanation: 'Bends raise pitch after the note is struck.' }
+    ]
+  },
+  'Reading Real TAB': {
+    title: 'Reading Real TAB',
+    items: [
+      { type: 'multiple_choice', question: 'When reading a full TAB, you combine:', options: ['Only down strums', 'String lines, fret numbers, rhythm (if shown), and technique symbols', 'Capo position only', 'Pick brand'], correctAnswer: 1, explanation: 'Real charts mix single notes, chords, and articulations.' },
+      { type: 'fill_blank', sentence: 'TAB tells you _____ to play; rhythm notation or listening tells you when.', options: ['where', 'why', 'who', 'if'], correctAnswer: 0, explanation: 'TAB is pitch/position-first; timing may come from standard notation, chord charts, or your ear.' },
+      { type: 'multiple_choice', question: 'Why learn TAB early in theory?', options: ['To avoid ever learning chords', 'To unlock thousands of song charts online', 'TAB replaces tuning', 'TAB is only for bass'], correctAnswer: 1, explanation: 'It is the most common guitar notation on the web.' }
+    ]
+  },
+  'Beats and Tempo': {
+    title: 'Beats and Tempo',
+    items: [
+      { type: 'fill_blank', sentence: 'Tempo is how _____ the beat goes, often measured in BPM.', options: ['fast', 'loud', 'high', 'sharp'], correctAnswer: 0, explanation: 'BPM = beats per minute; higher BPM = faster pulse.' },
+      { type: 'multiple_choice', question: 'The beat is best described as:', options: ['A chord symbol', 'The steady pulse you feel (1-2-3-4…)', 'Only the melody', 'The guitar brand'], correctAnswer: 1, explanation: 'Everything in rhythm aligns to the beat.' },
+      { type: 'multiple_choice', question: '60 BPM means:', options: ['Sixty bars per minute', 'About one beat per second', 'Sixty strings', 'Sixty frets'], correctAnswer: 1, explanation: 'Each beat lasts one second on average at 60 BPM.' }
+    ]
+  },
+  'Counting 4/4 Time': {
+    title: 'Counting 4/4 Time',
+    items: [
+      { type: 'multiple_choice', question: 'In 4/4 time, each measure has:', options: ['Three beats', 'Four beats', 'Five beats', 'No beats'], correctAnswer: 1, explanation: 'Count 1-2-3-4, repeat; that is one bar in four-four.' },
+      { type: 'fill_blank', sentence: 'Beat _____ is often the strongest downbeat in the bar.', options: ['1', '4', 'and', '0'], correctAnswer: 0, explanation: 'Downbeats anchor chord changes and strums.' },
+      { type: 'multiple_choice', question: 'Why count out loud with music?', options: ['It is only for drummers', 'It locks your playing to the measure and helps you hear form', 'It replaces practice', 'It changes the key'], correctAnswer: 1, explanation: 'Counting builds internal time.' }
+    ]
+  },
+  'Note Lengths': {
+    title: 'Note Lengths',
+    items: [
+      { type: 'multiple_choice', question: 'In 4/4, a whole note lasts:', options: ['One beat', 'The whole measure (four beats)', 'Half a beat', 'Twelve beats'], correctAnswer: 1, explanation: 'Whole note = four quarter beats in 4/4.' },
+      { type: 'multiple_choice', question: 'A quarter note in 4/4 equals:', options: ['Four beats', 'One beat', 'Half the whole piece', 'Zero beats'], correctAnswer: 1, explanation: 'Quarter note gets one beat in 4/4.' },
+      { type: 'fill_blank', sentence: 'Two eighth notes fit in _____ quarter-note beat.', options: ['one', 'four', 'zero', 'eight'], correctAnswer: 0, explanation: 'Each eighth is half a beat in 4/4.' }
+    ]
+  },
+  'What Makes a Chord?': {
+    title: 'What Makes a Chord?',
+    items: [
+      { type: 'multiple_choice', question: 'A basic chord in Western music usually needs at least:', options: ['One note', 'Two notes', 'Three different notes', 'Twelve notes'], correctAnswer: 2, explanation: 'Three notes (root, third, fifth) form a triad—the standard chord.' },
+      { type: 'fill_blank', sentence: 'The note that names the chord is the _____.', options: ['root', 'fifth', 'octave', 'tempo'], correctAnswer: 0, explanation: 'C major is built from C as the foundation.' },
+      { type: 'multiple_choice', question: 'Root, third, and fifth refer to:', options: ['Pick directions', 'Scale steps above the root', 'String numbers only', 'Tuning pegs'], correctAnswer: 1, explanation: 'They are intervals from the chord root within the scale.' }
+    ]
+  },
+  'Reading Chord Names': {
+    title: 'Reading Chord Names',
+    items: [
+      { type: 'multiple_choice', question: 'In "Am", the letter A is the:', options: ['Third', 'Root', 'Seventh', 'Tempo'], correctAnswer: 1, explanation: 'The letter names the root note.' },
+      { type: 'multiple_choice', question: '"C7" typically indicates:', options: ['C major with no extra notes', 'A C chord with a dominant seventh added', 'Seven C chords at once', 'Capo 7'], correctAnswer: 1, explanation: '7 adds a specific seventh interval—often bluesy or tense.' },
+      { type: 'fill_blank', sentence: '_____ after the root letter means major seventh (e.g. Cmaj7).', options: ['maj7', 'm', 'dim', 'sus'], correctAnswer: 0, explanation: 'maj7 is different from plain 7 (dominant).' }
+    ]
+  },
+  'Common Chord Progressions': {
+    title: 'Common Chord Progressions',
+    items: [
+      { type: 'multiple_choice', question: 'A chord progression is:', options: ['A single chord held forever', 'The sequence of chords in a song', 'Only strum direction', 'The guitar strap length'], correctAnswer: 1, explanation: 'Songs move through chords in order; that order is the progression.' },
+      { type: 'multiple_choice', question: 'Roman numerals (I, IV, V, vi) help because:', options: ['They are decorative', 'The same pattern works in any key once you know the scale', 'They replace chord shapes', 'They mean pick speed'], correctAnswer: 1, explanation: 'Numbers describe function, not just one key.' },
+      { type: 'fill_blank', sentence: 'I–V–vi–IV is one of the most common _____ in pop music.', options: ['patterns', 'tunings', 'picks', 'straps'], correctAnswer: 0, explanation: 'It appears in countless hits in different keys.' }
+    ]
+  },
+  'The Major Scale': {
+    title: 'The Major Scale',
+    items: [
+      { type: 'fill_blank', sentence: 'The major scale has _____ different notes before repeating the root at the octave.', options: ['7', '5', '12', '3'], correctAnswer: 0, explanation: 'Do Re Mi Fa Sol La Ti (then Do again).' },
+      { type: 'multiple_choice', question: 'The major scale pattern of whole and half steps is the same:', options: ['Only in C', 'Starting from any root note', 'Only on bass', 'Only in TAB'], correctAnswer: 1, explanation: 'Transposing keeps the W-W-H-W-W-W-H pattern.' },
+      { type: 'multiple_choice', question: 'Major scales are the basis for:', options: ['Only drums', 'Major chords and most melodies in major keys', 'Tuning pegs', 'Capo placement only'], correctAnswer: 1, explanation: 'Chords and melodies draw from scale notes.' }
+    ]
+  },
+  'The Minor Scale': {
+    title: 'The Minor Scale',
+    items: [
+      { type: 'multiple_choice', question: 'Natural minor differs from major mainly by:', options: ['Number of strings', 'Its pattern of whole and half steps (darker third and sixth, etc.)', 'Using only open strings', 'Having no root'], correctAnswer: 1, explanation: 'Different interval pattern gives the minor sound.' },
+      { type: 'multiple_choice', question: 'Relative minor shares:', options: ['No notes with its relative major', 'The same seven notes as its relative major, different tonic', 'Only the pick', 'Only power chords'], correctAnswer: 1, explanation: 'C major and A minor use the same notes; the center note changes.' },
+      { type: 'fill_blank', sentence: 'In a major key, the relative minor starts on the _____ scale degree.', options: ['6th', '1st', '4th', '7th'], correctAnswer: 0, explanation: 'Example: A minor is relative to C major.' }
+    ]
+  },
+  'The Pentatonic Scale': {
+    title: 'The Pentatonic Scale',
+    items: [
+      { type: 'fill_blank', sentence: 'Penta means _____, so the pentatonic scale has five notes per octave.', options: ['five', 'seven', 'twelve', 'two'], correctAnswer: 0, explanation: 'Five notes chosen from the major or minor scale.' },
+      { type: 'multiple_choice', question: 'Minor pentatonic is widely used for:', options: ['Classical counterpoint only', 'Rock, blues, and country solos', 'Tuning', 'Reading bass clef'], correctAnswer: 1, explanation: 'It is forgiving and melodic on guitar.' },
+      { type: 'multiple_choice', question: 'Why does pentatonic often "always work"?', options: ['It has no notes', 'Leaving out two scale degrees reduces clashes over many chords', 'It is only one string', 'It replaces chords'], correctAnswer: 1, explanation: 'Fewer notes = fewer wrong choices in many progressions.' }
+    ]
+  },
+  'What Is a Key?': {
+    title: 'What Is a Key?',
+    items: [
+      { type: 'multiple_choice', question: 'The key of a song is roughly:', options: ['The pick thickness', 'The harmonic home—the scale and chord that feel resolved', 'The strap length', 'The number of frets'], correctAnswer: 1, explanation: 'The tonic chord feels like "home."' },
+      { type: 'fill_blank', sentence: 'Most notes and chords in a song come from the _____ of the key.', options: ['scale', 'bridge', 'nut', 'pick'], correctAnswer: 0, explanation: 'The key defines which pitches fit best.' },
+      { type: 'multiple_choice', question: 'Knowing the key helps you:', options: ['Avoid ever using a capo', 'Choose scales, chords, and capo positions that fit the song', 'Remove strings', 'Mute everything'], correctAnswer: 1, explanation: 'It is a map for improvisation and accompaniment.' }
+    ]
+  },
+  'Finding the Key': {
+    title: 'Finding the Key',
+    items: [
+      { type: 'multiple_choice', question: 'A simple ear strategy for key is to notice:', options: ['Only the fastest note', 'Which chord feels like "home" at cadences or section ends', 'The pick color', 'The lightest string'], correctAnswer: 1, explanation: 'Resolution points often reveal the tonic.' },
+      { type: 'fill_blank', sentence: 'If G major feels like home, the key is likely G _____ .', options: ['major', 'minor', 'diminished', 'suspended'], correctAnswer: 0, explanation: 'Major vs minor still matters; listen for bright vs dark center.' },
+      { type: 'multiple_choice', question: 'The root of the home chord often matches:', options: ['The key name', 'Only the thinnest string', 'The bridge pin', 'The pick angle'], correctAnswer: 0, explanation: 'Key of E centers on E (usually E major or E minor context).' }
+    ]
+  },
+  'Chords in a Key': {
+    title: 'Chords in a Key',
+    items: [
+      { type: 'multiple_choice', question: 'Diatonic chords are built from:', options: ['Random frets', 'Only the notes of the key scale', 'Drum beats', 'Open strings only'], correctAnswer: 1, explanation: 'They use only scale tones stacked in thirds.' },
+      { type: 'multiple_choice', question: 'In C major, common diatonic chords include:', options: ['Only C', 'C, Dm, Em, F, G, Am, Bdim', 'Only power chords', 'No minor chords'], correctAnswer: 1, explanation: 'Each scale step gets a chord quality in the major key.' },
+      { type: 'fill_blank', sentence: 'Songs in one key mostly use chords from that key\'s _____, which is why certain progressions sound "right."', options: ['family', 'case', 'pick', 'strap'], correctAnswer: 0, explanation: 'Shared scale keeps harmony coherent.' }
+    ]
+  },
+  'Using a Capo to Change Keys': {
+    title: 'Using a Capo to Change Keys',
+    items: [
+      { type: 'multiple_choice', question: 'A capo:', options: ['Cuts strings', 'Shortens all strings at once, raising pitch like a moveable nut', 'Replaces the bridge', 'Only works on bass'], correctAnswer: 1, explanation: 'It transposes open shapes without new fingerings.' },
+      { type: 'fill_blank', sentence: 'Capo at fret 2 with a G shape sounds _____ higher than open G.', options: ['two half steps', 'one octave', 'zero', 'twelve half steps'], correctAnswer: 0, explanation: 'Each fret is a half step for every string.' },
+      { type: 'multiple_choice', question: 'Capos are especially useful when:', options: ['You never want open chords', 'A singer needs a different key but you want easy shapes', 'You remove frets', 'You only play harmonics'], correctAnswer: 1, explanation: 'Same grips, new key center.' }
+    ]
+  },
+  'Notes on String 6 (Low E)': {
+    title: 'Notes on String 6 (Low E)',
+    items: [
+      { type: 'fill_blank', sentence: 'Open string 6 is _____.', options: ['E', 'A', 'D', 'G'], correctAnswer: 0, explanation: 'Standard tuning low E is the 6th string.' },
+      { type: 'multiple_choice', question: 'Fret 5 on the low E string is:', options: ['F', 'A', 'G', 'B'], correctAnswer: 1, explanation: 'E F F# G G# A — fret 5 is A, matching the open A string pitch class.' },
+      { type: 'multiple_choice', question: 'Why memorize string 6 notes?', options: ['They are unused', 'E-shape barre roots and bass lines use this string constantly', 'Only for violin', 'TAB never uses string 6'], correctAnswer: 1, explanation: 'The root on string 6 names many barre chords.' }
+    ]
+  },
+  'Notes on String 5 (A)': {
+    title: 'Notes on String 5 (A)',
+    items: [
+      { type: 'multiple_choice', question: 'Open string 5 is:', options: ['E', 'A', 'D', 'B'], correctAnswer: 1, explanation: 'Fifth string is A in standard tuning.' },
+      { type: 'fill_blank', sentence: 'A-shaped barre chords use string _____ for the root.', options: ['5', '1', '3', '6'], correctAnswer: 0, explanation: 'The barre across five strings with root on A is a core shape.' },
+      { type: 'multiple_choice', question: 'Knowing strings 5 and 6 together lets you:', options: ['Avoid all barres', 'Find roots for most common barre and power-chord shapes', 'Tune without a tuner', 'Remove the nut'], correctAnswer: 1, explanation: 'Two strings cover the majority of movable roots.' }
+    ]
+  },
+  'The Octave Shapes': {
+    title: 'The Octave Shapes',
+    items: [
+      { type: 'multiple_choice', question: 'Octave shapes help you:', options: ['Break strings', 'Find the same note name in different places on the neck', 'Only play open chords', 'Read drum tabs'], correctAnswer: 1, explanation: 'They reduce brute-force memorization of every fret.' },
+      { type: 'multiple_choice', question: 'The same pitch on guitar can appear on:', options: ['Only one string', 'Multiple strings and frets', 'Only fret 0', 'Only the bridge'], correctAnswer: 1, explanation: 'The layout is redundant by design.' },
+      { type: 'fill_blank', sentence: 'Octave shapes connect the _____ you already know on strings 6 and 5 to the rest of the neck.', options: ['roots', 'picks', 'straps', 'nuts'], correctAnswer: 0, explanation: 'You map familiar roots through the pattern library.' }
+    ]
+  },
+  'Finding Notes Quickly': {
+    title: 'Finding Notes Quickly',
+    items: [
+      { type: 'multiple_choice', question: 'Fret 12 on any string is:', options: ['Always silent', 'The same note as the open string, one octave higher', 'Always F', 'The capo'], correctAnswer: 1, explanation: 'Half string length = double frequency = octave.' },
+      { type: 'multiple_choice', question: 'On most strings, fret 5 matches:', options: ['The next thinner string open (except G to B)', 'The bridge', 'Only harmonics', 'No pattern'], correctAnswer: 0, explanation: 'Landmarks like 5 and 12 speed navigation.' },
+      { type: 'fill_blank', sentence: 'Landmarks turn the fretboard into a _____ you can use in real time.', options: ['map', 'pick', 'song', 'loop'], correctAnswer: 0, explanation: 'Reference points beat memorizing every dot blindly.' }
+    ]
+  },
+  'Intervals: The Building Blocks': {
+    title: 'Intervals: The Building Blocks',
+    items: [
+      { type: 'fill_blank', sentence: 'On guitar, one fret equals one _____ step.', options: ['half', 'whole', 'double', 'quarter'], correctAnswer: 0, explanation: 'Half step = semitone = one fret.' },
+      { type: 'multiple_choice', question: 'A major third above the root is how many half steps?', options: ['3', '4', '7', '12'], correctAnswer: 1, explanation: 'Major third = 4 half steps; perfect fifth = 7.' },
+      { type: 'multiple_choice', question: 'Intervals matter because:', options: ['They are only for piano', 'They explain how chords and scales are built from any root', 'They replace TAB', 'They tune the guitar'], correctAnswer: 1, explanation: 'Stack intervals → chords; walk them → scales.' }
+    ]
+  },
+  'Building Major Chords': {
+    title: 'Building Major Chords',
+    items: [
+      { type: 'multiple_choice', question: 'A major triad is:', options: ['Root + minor third + fifth', 'Root + major third + perfect fifth', 'Root only', 'Root + two random notes'], correctAnswer: 1, explanation: 'Major third = 4 half steps up; fifth = 7 half steps up from root.' },
+      { type: 'fill_blank', sentence: 'C major uses the notes C, E, and _____.', options: ['G', 'F', 'A', 'B'], correctAnswer: 0, explanation: 'Root C, major third E, fifth G.' },
+      { type: 'multiple_choice', question: 'On guitar, a chord shape may double notes, but the harmony is still defined by:', options: ['Pick color', 'The unique triad tones present', 'Strap length', 'How many picks you own'], correctAnswer: 1, explanation: 'Doubling reinforces sound; the chord quality comes from R-3-5.' }
+    ]
+  },
+  'Building Minor Chords': {
+    title: 'Building Minor Chords',
+    items: [
+      { type: 'multiple_choice', question: 'Minor triad vs major on the same root:', options: ['Same third', 'Minor third is one half step lower than major third', 'No fifth', 'Different instrument'], correctAnswer: 1, explanation: 'Lower the third by one semitone: major → minor.' },
+      { type: 'fill_blank', sentence: 'A minor = A, _____, E.', options: ['C', 'C#', 'D', 'F'], correctAnswer: 0, explanation: 'Minor third C; fifth E.' },
+      { type: 'multiple_choice', question: 'The fifth in a minor triad compared to major on the same root:', options: ['Always tritone', 'Still a perfect fifth (7 half steps from root)', 'Missing', 'Octave only'], correctAnswer: 1, explanation: 'Only the third quality changes in basic minor/major pairs.' }
+    ]
+  },
+  'Seventh Chords': {
+    title: 'Seventh Chords',
+    items: [
+      { type: 'multiple_choice', question: 'Dominant 7 (e.g. G7) adds:', options: ['Only the root again', 'A seventh interval that creates tension toward the tonic', 'A drum beat', 'Capo 7'], correctAnswer: 1, explanation: 'The b7 pulls toward resolution in major key harmony.' },
+      { type: 'multiple_choice', question: 'Major 7 chords (e.g. Cmaj7) tend to sound:', options: ['Only dissonant', 'Smooth or jazzy compared to plain major', 'Like power chords', 'Muted'], correctAnswer: 1, explanation: 'Natural 7 on a major triad is a different color than dominant 7.' },
+      { type: 'fill_blank', sentence: '_____7 as in "Cm7" means minor triad plus minor seventh.', options: ['m', 'maj', 'dim', 'sus'], correctAnswer: 0, explanation: 'Symbol m7 = minor seventh chord.' }
+    ]
+  },
+  'Why Use Numbers?': {
+    title: 'Why Use Numbers?',
+    items: [
+      { type: 'multiple_choice', question: 'The number system describes progressions:', options: ['Only in C major', 'In any key using scale degrees (1 = tonic chord)', 'Without any chords', 'Only for drums'], correctAnswer: 1, explanation: '1-5-6-4 is a pattern; letter names change with key.' },
+      { type: 'fill_blank', sentence: 'Numbers help you transpose because the _____ stays the same while chord letters change.', options: ['pattern', 'guitar', 'pick', 'strap'], correctAnswer: 0, explanation: 'Functional relationships are portable.' },
+      { type: 'multiple_choice', question: 'Nashville-style numbers are useful for:', options: ['Hiding the song', 'Quick communication and on-the-fly key changes with a band', 'Replacing practice', 'Reading bass TAB only'], correctAnswer: 1, explanation: 'Pros use numerals to move fast.' }
+    ]
+  },
+  'The 7 Chords in a Key': {
+    title: 'The 7 Chords in a Key',
+    items: [
+      { type: 'multiple_choice', question: 'In major, Roman I is usually:', options: ['Minor', 'Major', 'Diminished only', 'Suspended'], correctAnswer: 1, explanation: 'Tonic major chord in major key.' },
+      { type: 'multiple_choice', question: 'Lowercase ii, iii, vi in a major key mean:', options: ['Major chords', 'Minor chords built on those degrees', 'Power chords only', 'Rests'], correctAnswer: 1, explanation: 'Case shows quality in Roman numeral analysis.' },
+      { type: 'fill_blank', sentence: 'In C major, vi is typically _____ minor.', options: ['A', 'D', 'E', 'G'], correctAnswer: 0, explanation: 'Sixth degree of C major is A; chord is Am.' }
+    ]
+  },
+  'Common Number Progressions': {
+    title: 'Common Number Progressions',
+    items: [
+      { type: 'multiple_choice', question: 'I–V–vi–IV is:', options: ['Rare', 'One of the most common pop progressions', 'Only jazz', 'Only open strings'], correctAnswer: 1, explanation: 'Same numerals, many hit songs in different keys.' },
+      { type: 'multiple_choice', question: 'ii–V–I is strongly associated with:', options: ['Only punk', 'Jazz and classical cadential resolution', 'Tuning', 'Palm muting'], correctAnswer: 1, explanation: 'Two chord leads to five chord leads to one.' },
+      { type: 'fill_blank', sentence: 'Recognizing progressions by _____ trains your ear for any key.', options: ['numbers', 'picks', 'brands', 'straps'], correctAnswer: 0, explanation: 'You hear function, not just letter names.' }
+    ]
+  },
+  'Transposing with Numbers': {
+    title: 'Transposing with Numbers',
+    items: [
+      { type: 'multiple_choice', question: 'To transpose with numbers you:', options: ['Change the pattern for each key', 'Keep the numerals and map them to the new key roots', 'Remove the capo', 'Only play string 1'], correctAnswer: 1, explanation: '1-4-5 in G is G-C-D; in Eb it is Eb-Ab-Bb.' },
+      { type: 'fill_blank', sentence: 'The numerals stay the same; only the _____ names change.', options: ['chord', 'pick', 'strap', 'fret wire'], correctAnswer: 0, explanation: 'That is the power of the system.' },
+      { type: 'multiple_choice', question: 'Transposing is essential when:', options: ['Strings never change', 'A vocalist needs a different key or you join a jam in a new center', 'You only use a metronome', 'You read TAB only'], correctAnswer: 1, explanation: 'Flexibility is a professional skill.' }
+    ]
   }
 };
 
@@ -422,13 +977,16 @@ export const theoryContent: Record<string, LessonContent> = {
 // =============================================================================
 
 export function getContentByTitle(title: string): LessonContent | null {
-  if (techniqueContent[title]) return techniqueContent[title];
-  if (theoryContent[title]) return theoryContent[title];
-  const allContent = { ...techniqueContent, ...theoryContent };
-  for (const key of Object.keys(allContent)) {
-    if (key.toLowerCase().includes(title.toLowerCase()) || title.toLowerCase().includes(key.toLowerCase())) {
-      return allContent[key];
-    }
+  const t = title.trim();
+  if (!t) return null;
+  if (techniqueContent[t]) return techniqueContent[t];
+  if (theoryContent[t]) return theoryContent[t];
+  const lower = t.toLowerCase();
+  for (const key of Object.keys(techniqueContent)) {
+    if (key.toLowerCase() === lower) return techniqueContent[key];
+  }
+  for (const key of Object.keys(theoryContent)) {
+    if (key.toLowerCase() === lower) return theoryContent[key];
   }
   return null;
 }
@@ -472,11 +1030,135 @@ export function shuffleQuizItemOptions(item: QuizItem): QuizItem {
     if (newIndex === -1) return item;
     return { ...item, options: opts, correctAnswer: newIndex };
   }
-  const correct = item.options[item.correctAnswer];
-  const opts = shuffleArray([...item.options]);
-  const newIndex = opts.indexOf(correct);
-  if (newIndex === -1) return item;
-  return { ...item, options: opts, correctAnswer: newIndex };
+  if (item.type === 'fill_blank' || item.type === 'drag_blank') {
+    const correct = item.options[item.correctAnswer];
+    const opts = shuffleArray([...item.options]);
+    const newIndex = opts.indexOf(correct);
+    if (newIndex === -1) return item;
+    return { ...item, options: opts, correctAnswer: newIndex };
+  }
+  return item;
+}
+
+function cloneQuizItem(item: QuizItem): QuizItem {
+  return JSON.parse(JSON.stringify(item)) as QuizItem;
+}
+
+/** Technique/theory quiz length (one round; pool is enriched from the lesson text when needed). */
+export const TECHNIQUE_THEORY_QUIZ_PRIMARY = 14;
+export const TECHNIQUE_THEORY_QUIZ_REPETITION = 0;
+export const TECHNIQUE_THEORY_QUIZ_TOTAL =
+  TECHNIQUE_THEORY_QUIZ_PRIMARY + TECHNIQUE_THEORY_QUIZ_REPETITION;
+
+/** Adds a drag_blank twin for every fill_blank so sessions can vary interaction without duplicating authored copy. */
+export function expandQuizPoolWithDragVariants(items: QuizItem[]): QuizItem[] {
+  const out: QuizItem[] = [];
+  for (const item of items) {
+    out.push(cloneQuizItem(item));
+    if (item.type === 'fill_blank') {
+      const fb = item as FillBlankItem;
+      out.push({
+        type: 'drag_blank',
+        sentence: fb.sentence,
+        options: [...fb.options],
+        correctAnswer: fb.correctAnswer,
+        explanation: fb.explanation,
+      });
+    }
+  }
+  return out;
+}
+
+/** Same conceptual question whether shown as fill_blank or drag_blank (avoid back-to-back duplicate). */
+export function quizStemKey(it: QuizItem): string {
+  if (it.type === 'multiple_choice') return `mc:${(it as MultipleChoiceItem).question}`;
+  const s = it.type === 'fill_blank' ? (it as FillBlankItem).sentence : (it as DragBlankItem).sentence;
+  return `s:${s}`;
+}
+
+/**
+ * Dedupe by stem, then add lesson-derived questions until there are at least `minStems` unique stems
+ * (uses the journey description via createFallbackContent).
+ */
+export function enrichLessonQuizBaseToMinStems(
+  baseItems: QuizItem[],
+  title: string,
+  description: string,
+  minStems: number,
+): QuizItem[] {
+  const seen = new Set<string>();
+  const out: QuizItem[] = [];
+  for (const it of baseItems) {
+    const k = quizStemKey(it);
+    if (seen.has(k)) continue;
+    seen.add(k);
+    out.push(cloneQuizItem(it));
+  }
+  if (out.length >= minStems) return out;
+  const extra = createFallbackContent(title, description).items;
+  for (const it of extra) {
+    if (out.length >= minStems) break;
+    const k = quizStemKey(it);
+    if (seen.has(k)) continue;
+    seen.add(k);
+    out.push(cloneQuizItem(it));
+  }
+  return out;
+}
+
+/**
+ * Build a 14-question session from an expanded pool, avoiding back-to-back same stem.
+ * When the authored set is small, the pool is grown with questions tied to the lesson description.
+ * Ensures a solid mix of drag_blank interactions (not only tap-to-choose fill_blank).
+ */
+export function buildTechniqueTheoryQuizSequence(
+  baseItems: QuizItem[],
+  lessonTitle?: string,
+  lessonDescription?: string,
+): QuizItem[] {
+  if (!baseItems.length) return [];
+  const title = (lessonTitle ?? '').trim() || 'Lesson';
+  const desc =
+    (lessonDescription ?? '').trim() || 'This topic covers essential guitar concepts.';
+  const enriched = enrichLessonQuizBaseToMinStems(baseItems, title, desc, TECHNIQUE_THEORY_QUIZ_TOTAL);
+  const pool = expandQuizPoolWithDragVariants(enriched.map(cloneQuizItem));
+  const target = TECHNIQUE_THEORY_QUIZ_TOTAL;
+  const stream: QuizItem[] = [];
+  for (let r = 0; r < 12; r++) {
+    stream.push(...shuffleArray(pool.map(cloneQuizItem)));
+  }
+  const out: QuizItem[] = [];
+  for (const raw of stream) {
+    if (out.length >= target) break;
+    const stem = quizStemKey(raw);
+    if (out.length > 0 && quizStemKey(out[out.length - 1]) === stem) continue;
+    out.push(shuffleQuizItemOptions(cloneQuizItem(raw)));
+  }
+  let pad = 0;
+  while (out.length < target) {
+    out.push(shuffleQuizItemOptions(cloneQuizItem(pool[pad % pool.length])));
+    pad++;
+  }
+  const trimmed = out.slice(0, target);
+  const minDrag = Math.max(4, Math.round(target * 0.36));
+  let dragCount = trimmed.filter((x) => x.type === 'drag_blank').length;
+  const fillIdx = trimmed
+    .map((x, i) => (x.type === 'fill_blank' ? i : -1))
+    .filter((i) => i >= 0);
+  shuffleArray(fillIdx);
+  for (const i of fillIdx) {
+    if (dragCount >= minDrag) break;
+    const it = trimmed[i] as FillBlankItem;
+    trimmed[i] = {
+      type: 'drag_blank',
+      sentence: it.sentence,
+      options: [...it.options],
+      correctAnswer: it.correctAnswer,
+      explanation: it.explanation,
+    };
+    dragCount++;
+  }
+  return trimmed;
 }
 
 /** Build lesson-specific, in-depth quiz from description. Questions and wrong options are derived from the actual text; no generic one-size-fits-all shortcuts. */
@@ -517,13 +1199,21 @@ export function createFallbackContent(title: string, description: string): Lesso
     return wrong.slice(0, count);
   }
 
-  // 1) Primary: one question per meaningful sentence — "What does this lesson say or recommend about [topic]?" with THAT sentence as correct
+  // 1) Primary: one MC per meaningful sentence — each stem names the lesson title so quizzes feel specific.
+  const safeTitle = title.trim() || 'this lesson';
   const questionStems = [
-    `What does this lesson specifically state or recommend about ${topic}?`,
-    `According to this lesson, which of the following is true or recommended?`,
-    `Which of these does the lesson describe or advise?`,
+    `For "${safeTitle}", which statement matches what the lesson says?`,
+    `In the lesson "${safeTitle}", which of these is accurate?`,
+    `According to "${safeTitle}", which description fits the lesson?`,
+    `Which line reflects what "${safeTitle}" teaches?`,
+    `After "${safeTitle}", which of these would the lesson agree with?`,
+    `Which option best summarizes a point from "${safeTitle}"?`,
+    `Which claim aligns with "${safeTitle}"?`,
+    `Which of these echoes "${safeTitle}"?`,
+    `For "${safeTitle}", pick the statement the lesson supports.`,
+    `Which answer fits the ideas in "${safeTitle}"?`,
   ];
-  for (let i = 0; i < factPool.length && items.length < 8; i++) {
+  for (let i = 0; i < factPool.length && items.length < 10; i++) {
     const correct = factPool[i];
     if (usedForCorrect.has(i) || correct.length < 25) continue;
     const wrong = wrongOptionsFor(correct, 3);
@@ -534,37 +1224,98 @@ export function createFallbackContent(title: string, description: string): Lesso
   }
 
   // 2) Concept questions only when the description explicitly uses that concept — phrased using lesson context
-  if (items.length < 6 && lowerDesc.includes('barre') && (lowerDesc.includes('index') || lowerDesc.includes('across'))) {
+  if (items.length < 10 && lowerDesc.includes('barre') && (lowerDesc.includes('index') || lowerDesc.includes('across'))) {
     const opts = ['Index finger', 'Middle finger', 'Ring finger', 'Pinky'];
     const correctIdx = opts.indexOf('Index finger');
     if (correctIdx >= 0) items.push({ type: 'multiple_choice', question: `In the context of ${title}, which finger is used to barre across the strings?`, options: opts, correctAnswer: correctIdx, explanation: fullExplanation });
   }
-  if (items.length < 6 && (lowerDesc.includes('behind the fret') || lowerDesc.includes('right behind'))) {
+  if (items.length < 10 && (lowerDesc.includes('behind the fret') || lowerDesc.includes('right behind'))) {
     const correct = 'Just behind the fret wire';
     const opts = [correct, 'In the middle between two frets', 'On top of the fret wire', 'Near the nut'];
     items.push({ type: 'multiple_choice', question: `Where does this lesson say you should press the string to get a clear note?`, options: opts, correctAnswer: opts.indexOf(correct), explanation: fullExplanation });
   }
-  if (items.length < 6 && lowerDesc.includes('half step') && lowerDesc.includes('fret')) {
+  if (items.length < 10 && lowerDesc.includes('half step') && lowerDesc.includes('fret')) {
     const opts = ['half', 'whole', 'octave', 'tone'];
     items.push({ type: 'fill_blank', sentence: `This lesson refers to moving one fret as one _____ step.`, options: opts, correctAnswer: opts.indexOf('half'), explanation: fullExplanation });
   }
-  if (items.length < 6 && lowerDesc.includes('root') && (lowerDesc.includes('chord') || lowerDesc.includes('name'))) {
+  if (items.length < 10 && lowerDesc.includes('root') && (lowerDesc.includes('chord') || lowerDesc.includes('name'))) {
     const opts = ['The root note', 'The third', 'The fifth', 'The seventh'];
     items.push({ type: 'multiple_choice', question: `According to this lesson, which note gives the chord its name?`, options: opts, correctAnswer: opts.indexOf('The root note'), explanation: fullExplanation });
   }
-  if (items.length < 6 && (lowerDesc.includes('metronome') || lowerDesc.includes('count') && lowerDesc.includes('beat'))) {
+  if (items.length < 10 && (lowerDesc.includes('metronome') || (lowerDesc.includes('count') && lowerDesc.includes('beat')))) {
     const correct = 'Practice with a metronome and count out loud';
     const opts = [correct, 'Play as fast as possible', 'Ignore the beat', 'Practice only once a week'];
     items.push({ type: 'multiple_choice', question: `What does this lesson recommend for improving timing?`, options: opts, correctAnswer: opts.indexOf(correct), explanation: fullExplanation });
   }
-  if (items.length < 6 && (lowerDesc.includes('move the shape') || lowerDesc.includes('movable')) && lowerDesc.includes('fret')) {
+  if (items.length < 10 && (lowerDesc.includes('move the shape') || lowerDesc.includes('movable')) && lowerDesc.includes('fret')) {
     const correct = 'The key (pitch) of the chord changes';
     const opts = [correct, 'The chord becomes minor', 'The number of strings changes', 'Nothing changes'];
     items.push({ type: 'multiple_choice', question: `When you move the same chord shape to a different fret, what does this lesson say changes?`, options: opts, correctAnswer: opts.indexOf(correct), explanation: fullExplanation });
   }
 
+  if (items.length < 10 && lowerDesc.includes('thumb') && (lowerDesc.includes('neck') || lowerDesc.includes('fret'))) {
+    const correct = 'Support the neck and relax the fretting hand';
+    const opts = [
+      correct,
+      'Squeeze the neck as hard as possible',
+      'Point the thumb away from the neck at all times',
+      'Remove the thumb completely for every chord',
+    ];
+    items.push({
+      type: 'multiple_choice',
+      question: `About "${safeTitle}" and thumb placement, which does the lesson favor?`,
+      options: opts,
+      correctAnswer: opts.indexOf(correct),
+      explanation: fullExplanation,
+    });
+  }
+  if (items.length < 10 && (lowerDesc.includes('pick') || lowerDesc.includes('plectrum'))) {
+    const correct = 'A stable grip with a little tip showing';
+    const opts = [correct, 'Hold only with two fingers loosely', 'Grip at the very tip only', 'Do not use a pick at all'];
+    items.push({
+      type: 'multiple_choice',
+      question: `For "${safeTitle}", which pick approach sounds most like typical lesson advice?`,
+      options: opts,
+      correctAnswer: opts.indexOf(correct),
+      explanation: fullExplanation,
+    });
+  }
+  if (items.length < 10 && (lowerDesc.includes('strum') || lowerDesc.includes('strumming'))) {
+    const correct = 'Smooth motion through the strings you mean to sound';
+    const opts = [correct, 'Only hit string 1', 'Stop at the first string every time', 'Avoid the sound hole entirely'];
+    items.push({
+      type: 'multiple_choice',
+      question: `Which strumming idea fits "${safeTitle}" best?`,
+      options: opts,
+      correctAnswer: opts.indexOf(correct),
+      explanation: fullExplanation,
+    });
+  }
+  if (items.length < 10 && (lowerDesc.includes('tension') || lowerDesc.includes('relax'))) {
+    const correct = 'Stay relaxed; tension slows you down and causes pain';
+    const opts = [correct, 'Grip harder for speed', 'Lock every joint', 'Only relax after the song ends'];
+    items.push({
+      type: 'multiple_choice',
+      question: `What does "${safeTitle}" imply about tension in your hands or arms?`,
+      options: opts,
+      correctAnswer: opts.indexOf(correct),
+      explanation: fullExplanation,
+    });
+  }
+  if (items.length < 10 && (lowerDesc.includes('posture') || lowerDesc.includes('sit') || lowerDesc.includes('hold your guitar'))) {
+    const correct = 'Comfortable position you can sustain without strain';
+    const opts = [correct, 'Hunch far over the guitar', 'Stand on one foot only', 'Ignore how the guitar rests on your body'];
+    items.push({
+      type: 'multiple_choice',
+      question: `For "${safeTitle}", which goal matches how lessons usually frame posture?`,
+      options: opts,
+      correctAnswer: opts.indexOf(correct),
+      explanation: fullExplanation,
+    });
+  }
+
   // 3) Fill-blank from a specific sentence (lesson-specific) — use single-word options
-  if (items.length < 6 && factPool.length > 0) {
+  if (items.length < 10 && factPool.length > 0) {
     const first = factPool[0];
     const words = first.split(/\s+/).filter(w => w.length > 2);
     const fillWord = words.find(w => w.length > 3 && !/^(the|and|for|with|from|this|that|your|when|where|which|should|does|will|have|been|being|practice|lesson)$/i.test(w));
@@ -579,8 +1330,8 @@ export function createFallbackContent(title: string, description: string): Lesso
   }
 
   // 4) Fallback if we still have too few items
-  if (items.length < 4 && factPool.length > 0) {
-    for (let i = 0; i < factPool.length && items.length < 6; i++) {
+  if (items.length < 6 && factPool.length > 0) {
+    for (let i = 0; i < factPool.length && items.length < 10; i++) {
       if (usedForCorrect.has(i)) continue;
       const correct = factPool[i];
       const wrong = wrongOptionsFor(correct, 3);
@@ -593,7 +1344,17 @@ export function createFallbackContent(title: string, description: string): Lesso
     const wrong = wrongOptionsFor(first, 3);
     items.push({ type: 'multiple_choice', question: `What does the lesson "${title}" emphasize?`, options: [first, ...wrong], correctAnswer: 0, explanation: fullExplanation });
   }
-  return { title, items: items.slice(0, 8) };
+  return { title, items: items.slice(0, 10) };
+}
+
+/** Quiz length for a lesson — matches technique/theory session length. */
+export function getLessonQuizItemCount(lessonTitle: string, lessonDescription: string): number {
+  const desc = lessonDescription?.trim() || 'This topic covers essential guitar concepts.';
+  let content: LessonContent | null = getContentByTitle(lessonTitle);
+  if (content?.items?.length) return TECHNIQUE_THEORY_QUIZ_TOTAL;
+  if (content?.quiz?.length) return TECHNIQUE_THEORY_QUIZ_TOTAL;
+  content = createFallbackContent(lessonTitle, desc);
+  return content.items?.length ? TECHNIQUE_THEORY_QUIZ_TOTAL : 0;
 }
 
 /** Lesson titles that map to chord practice (SongPractice). Includes novice and all level-specific chord lessons so the practice popup applies across levels. */
@@ -622,6 +1383,7 @@ export const LESSON_PRACTICE_CHORDS: Record<string, string[]> = {
   'A Minor and E Major': ['Am', 'E'],
   'B7 and Dominant 7ths': ['B7', 'E', 'A'],
   'Full Open Chord Set': ['G', 'D', 'Em', 'C'],
+  'Open Chords: Final Review': ['G', 'D', 'Em', 'C', 'Am', 'E', 'B7'],
   'Learning the Progression': ['G', 'C', 'Em', 'D'],
   'Playing Through': ['G', 'D', 'Em', 'C'],
   // Elementary
@@ -654,6 +1416,36 @@ export function getPracticeChordsForLesson(lessonTitle: string): string[] | null
 }
 
 /**
+ * Chords for the "practice" session when the lesson isn't in LESSON_PRACTICE_CHORDS.
+ * Maps posture / non-chord topics to a concrete shape you can hold while applying the idea.
+ */
+export function getPracticeChordsOrPhysicalFallback(lessonTitle: string, lessonDescription = ''): string[] {
+  const mapped = getPracticeChordsForLesson(lessonTitle);
+  if (mapped?.length) return mapped;
+  const text = `${lessonTitle} ${lessonDescription}`.toLowerCase();
+  if (
+    /\b(posture|how to hold|holding the|guitar position|sitting|standing|strap|comfort|anatomy|wrist|thumb behind|neck angle)\b/.test(
+      text
+    )
+  ) {
+    return ['E'];
+  }
+  if (/\b(strum|downstroke|upstroke|pattern|pick(ing)?|plectrum|mute strings)\b/.test(text)) {
+    return ['Em', 'A'];
+  }
+  if (/\b(scale|interval|fretboard|finger|stretch|warm[- ]?up|dexterity)\b/.test(text)) {
+    return ['Am'];
+  }
+  if (/\b(rhythm|tempo|beat|time signature|count|metronome)\b/.test(text)) {
+    return ['Em', 'D'];
+  }
+  if (/\b(note|pitch|octave|half step|whole step|key signature|circle of fifths|theory)\b/.test(text)) {
+    return ['C', 'G'];
+  }
+  return ['Em'];
+}
+
+/**
  * Audit: which lessons have explicit quiz content vs fallback, and which have SongPractice (chord practice popup).
  * Use this to verify every technique/theory quiz has its own specific questions and chord lessons have practice popup.
  *
@@ -661,9 +1453,10 @@ export function getPracticeChordsForLesson(lessonTitle: string): string[] | null
  * - explicitTheoryTitles: lesson titles that have their own quiz items in theoryContent (topic-specific).
  * - practiceChordTitles: lesson titles that open the chord practice popup (SongPractice) after quiz; add here for chord lessons.
  *
- * Lessons not in explicit* get questions from createFallbackContent(description). To give a lesson its own questions,
- * add an entry to techniqueContent or theoryContent in this file. To add chord practice after a lesson, add the
- * lesson title to LESSON_PRACTICE_CHORDS (and optionally set practiceChords on the lesson in learning-journey*.ts).
+ * Lessons not in explicit* get questions from createFallbackContent(description). Sessions use
+ * enrichLessonQuizBaseToMinStems so pools reach 10 unique stems (lesson text + fallback). To give a lesson its own
+ * questions, add an entry to techniqueContent or theoryContent in this file. To add chord practice after a lesson,
+ * add the lesson title to LESSON_PRACTICE_CHORDS (and optionally set practiceChords on the lesson in learning-journey*.ts).
  */
 export function getQuizAndPracticeAudit(): {
   explicitTechniqueTitles: string[];

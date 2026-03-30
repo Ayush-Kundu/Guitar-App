@@ -563,15 +563,62 @@ export const techniquePath: Unit[] = [
 // =============================================================================
 
 export const theoryPath: Unit[] = [
-  // UNIT 1: The Basics
+  // UNIT 1 (first): Reading Guitar TAB — learn to read tabs before heavy theory
+  {
+    id: 'theory-unit-3',
+    number: 1,
+    title: 'Reading Guitar TAB',
+    subtitle: 'The easy way to read guitar music',
+    description: 'TAB (tablature) shows you exactly where to put your fingers. Start here so you can follow song charts while you build the rest of your theory.',
+    icon: '📖',
+    prerequisiteUnits: [],
+    lessons: [
+      {
+        id: 'theory-3-1',
+        title: 'What Is TAB?',
+        subtitle: '6 lines = 6 strings',
+        description: 'TAB (tablature) is a way to write guitar music that shows exactly where to put your fingers—no need to read standard sheet music. We assume you have never seen TAB. It uses 6 horizontal lines, one for each string. The bottom line = your thickest string (low E, string 6); the top line = your thinnest (high E, string 1). That up-down order on the page is flipped compared to glancing down at the strings in your lap—think of TAB like a front-facing diagram. Numbers written on the lines tell you which fret to press: "0" means play the string open (no finger). TAB is the most common way to learn songs online; understanding it from zero opens up thousands of songs.',
+        estimatedTime: '10 min',
+        type: 'theory'
+      },
+      {
+        id: 'theory-3-2',
+        title: 'Reading Fret Numbers',
+        subtitle: '0 means open, 3 means fret 3',
+        description: 'In TAB, every number on a line is a "fret number"—which fret to press on that string. "0" means do not press any fret; play the string "open." "3" means press that string at fret 3. When several numbers appear in a vertical column (one per line), you play those strings at those frets at the same time—that is a chord. So TAB tells you both single-note lines and chord shapes. We assume you know what a fret is; this lesson is the bridge from "what is TAB?" to actually reading and playing from zero.',
+        estimatedTime: '10 min',
+        type: 'theory',
+        quizRequired: true
+      },
+      {
+        id: 'theory-3-3',
+        title: 'TAB Symbols',
+        subtitle: 'h = hammer, p = pull, / = slide, b = bend',
+        description: 'TAB can include symbols for techniques, not just fret numbers. Common ones: "h" = hammer-on (sound a higher note without picking again), "p" = pull-off (sound a lower note by pulling a finger off), "/" or "\\" = slide (glide from one fret to another), "b" = bend (push the string to raise the pitch), "v" or "~" = vibrato (waver the pitch slightly). We assume you have seen basic TAB; these symbols tell you how to play the notes—smooth, bent, or vibrating—so you can read real tabs from zero to hero.',
+        estimatedTime: '10 min',
+        type: 'theory'
+      },
+      {
+        id: 'theory-3-4',
+        title: 'Reading Real TAB',
+        subtitle: 'Let\'s read a simple song',
+        description: 'This lesson ties everything together: we read through a simple song in TAB form. You will see single notes (one number per string), chord shapes (stacked numbers), and possibly technique symbols (h, p, /, b, etc.). We assume you know how to read fret numbers and what the lines mean; now we apply it to a real song so you can learn any song you find online. From zero to hero, reading real TAB is the skill that unlocks the whole repertoire.',
+        estimatedTime: '15 min',
+        type: 'theory',
+        quizRequired: true
+      }
+    ]
+  },
+
+  // UNIT 2: The Basics
   {
     id: 'theory-unit-1',
-    number: 1,
+    number: 2,
     title: 'Understanding Your Guitar',
     subtitle: 'Know your instrument inside and out',
     description: 'Before learning music theory, let\'s understand the guitar itself - its parts, how it makes sound, and basic musical concepts.',
     icon: '🎸',
-    prerequisiteUnits: [],
+    prerequisiteUnits: ['theory-unit-3'],
     lessons: [
       {
         id: 'theory-1-1',
@@ -610,10 +657,10 @@ export const theoryPath: Unit[] = [
     ]
   },
 
-  // UNIT 2: Notes and the Musical Alphabet
+  // UNIT 3: Notes and the Musical Alphabet
   {
     id: 'theory-unit-2',
-    number: 2,
+    number: 3,
     title: 'Notes and the Musical Alphabet',
     subtitle: 'The building blocks of all music',
     description: 'Learn the 12 notes that make up all Western music and how they\'re organized on the guitar.',
@@ -657,53 +704,6 @@ export const theoryPath: Unit[] = [
     ]
   },
 
-  // UNIT 3: Reading Music - TAB
-  {
-    id: 'theory-unit-3',
-    number: 3,
-    title: 'Reading Guitar TAB',
-    subtitle: 'The easy way to read guitar music',
-    description: 'TAB (tablature) shows you exactly where to put your fingers. It\'s much easier than standard notation!',
-    icon: '📖',
-    prerequisiteUnits: ['theory-unit-2'],
-    lessons: [
-      {
-        id: 'theory-3-1',
-        title: 'What Is TAB?',
-        subtitle: '6 lines = 6 strings',
-        description: 'TAB (tablature) is a way to write guitar music that shows exactly where to put your fingers—no need to read standard sheet music. We assume you have never seen TAB. It uses 6 horizontal lines, one for each string. The bottom line = your thickest string (low E, string 6); the top line = your thinnest (high E, string 1). So the lines look like the strings from your point of view. Numbers written on the lines tell you which fret to press: "0" means play the string open (no finger). TAB is the most common way to learn songs online; understanding it from zero opens up thousands of songs.',
-        estimatedTime: '10 min',
-        type: 'theory'
-      },
-      {
-        id: 'theory-3-2',
-        title: 'Reading Fret Numbers',
-        subtitle: '0 means open, 3 means fret 3',
-        description: 'In TAB, every number on a line is a "fret number"—which fret to press on that string. "0" means do not press any fret; play the string "open." "3" means press that string at fret 3. When several numbers appear in a vertical column (one per line), you play those strings at those frets at the same time—that is a chord. So TAB tells you both single-note lines and chord shapes. We assume you know what a fret is; this lesson is the bridge from "what is TAB?" to actually reading and playing from zero.',
-        estimatedTime: '10 min',
-        type: 'theory',
-        quizRequired: true
-      },
-      {
-        id: 'theory-3-3',
-        title: 'TAB Symbols',
-        subtitle: 'h = hammer, p = pull, / = slide, b = bend',
-        description: 'TAB can include symbols for techniques, not just fret numbers. Common ones: "h" = hammer-on (sound a higher note without picking again), "p" = pull-off (sound a lower note by pulling a finger off), "/" or "\\" = slide (glide from one fret to another), "b" = bend (push the string to raise the pitch), "v" or "~" = vibrato (waver the pitch slightly). We assume you have seen basic TAB; these symbols tell you how to play the notes—smooth, bent, or vibrating—so you can read real tabs from zero to hero.',
-        estimatedTime: '10 min',
-        type: 'theory'
-      },
-      {
-        id: 'theory-3-4',
-        title: 'Reading Real TAB',
-        subtitle: 'Let\'s read a simple song',
-        description: 'This lesson ties everything together: we read through a simple song in TAB form. You will see single notes (one number per string), chord shapes (stacked numbers), and possibly technique symbols (h, p, /, b, etc.). We assume you know how to read fret numbers and what the lines mean; now we apply it to a real song so you can learn any song you find online. From zero to hero, reading real TAB is the skill that unlocks the whole repertoire.',
-        estimatedTime: '15 min',
-        type: 'theory',
-        quizRequired: true
-      }
-    ]
-  },
-
   // UNIT 4: Rhythm Basics
   {
     id: 'theory-unit-4',
@@ -712,7 +712,7 @@ export const theoryPath: Unit[] = [
     subtitle: 'Understanding timing and beats',
     description: 'Music isn\'t just notes - it\'s when you play them! Learn about rhythm, tempo, and time signatures.',
     icon: '⏱️',
-    prerequisiteUnits: ['theory-unit-3'],
+    prerequisiteUnits: ['theory-unit-2'],
     lessons: [
       {
         id: 'theory-4-1',

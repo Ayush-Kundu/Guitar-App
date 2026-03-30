@@ -49,9 +49,36 @@ const DialogOverlay = React.forwardRef<
 
 DialogOverlay.displayName = "DialogOverlay";
 
+/** Full-viewport sheet: no border radius, for practice/quiz flows. */
+const DialogContentFullscreen = React.forwardRef<
+  React.ElementRef<typeof DialogPrimitive.Content>,
+  React.ComponentPropsWithoutRef<typeof DialogPrimitive.Content>
+>(({ className, children, ...props }, ref) => {
+  return (
+    <DialogPortal data-slot="dialog-portal">
+      <DialogOverlay className="bg-black/60" />
+      <DialogPrimitive.Content
+        ref={ref}
+        data-slot="dialog-content-fullscreen"
+        style={{ width: "100%", maxWidth: "none" }}
+        className={cn(
+          "bg-background data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 fixed inset-0 z-50 flex flex-col rounded-none border-0 p-0 shadow-none duration-200 overflow-hidden h-[100dvh] max-h-[100dvh]",
+          className,
+        )}
+        {...props}
+      >
+        {children}
+      </DialogPrimitive.Content>
+    </DialogPortal>
+  );
+});
+
+DialogContentFullscreen.displayName = "DialogContentFullscreen";
+
 function DialogContent({
   className,
   children,
+  style,
   ...props
 }: React.ComponentProps<typeof DialogPrimitive.Content>) {
   return (
@@ -59,7 +86,7 @@ function DialogContent({
       <DialogOverlay />
       <DialogPrimitive.Content
         data-slot="dialog-content"
-        style={{ width: 'calc(100% - 1.5rem)', maxWidth: '32rem', ...props.style }}
+        style={{ width: 'calc(100% - 1.5rem)', maxWidth: '32rem', ...style }}
         className={cn(
           "bg-background data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 fixed top-[50%] left-[50%] z-50 grid translate-x-[-50%] translate-y-[-50%] gap-4 rounded-lg border p-6 shadow-lg duration-200",
           className,
@@ -125,6 +152,7 @@ export {
   Dialog,
   DialogClose,
   DialogContent,
+  DialogContentFullscreen,
   DialogDescription,
   DialogFooter,
   DialogHeader,
