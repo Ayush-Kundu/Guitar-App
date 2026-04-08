@@ -997,7 +997,7 @@ export function ensureMinQuizItems(content: LessonContent): LessonContent {
 }
 
 /** Truncate option text for display only if very long (avoid UI cut-off); keep explanations full. */
-function optionText(text: string, maxLen: number = 280): string {
+function optionText(text: string, maxLen: number = 120): string {
   const t = text.trim();
   if (t.length <= maxLen) return t.endsWith('.') || t.endsWith('?') || t.endsWith('!') ? t : t + '.';
   return t.slice(0, maxLen - 3).trim() + '…';
@@ -1044,26 +1044,56 @@ function cloneQuizItem(item: QuizItem): QuizItem {
   return JSON.parse(JSON.stringify(item)) as QuizItem;
 }
 
-/** Technique/theory quiz length (one round; pool is enriched from the lesson text when needed). */
-export const TECHNIQUE_THEORY_QUIZ_PRIMARY = 14;
+/** Technique/theory quiz length — 10 unique questions per session (no repeated stems). */
+export const TECHNIQUE_THEORY_QUIZ_PRIMARY = 10;
 export const TECHNIQUE_THEORY_QUIZ_REPETITION = 0;
 export const TECHNIQUE_THEORY_QUIZ_TOTAL =
   TECHNIQUE_THEORY_QUIZ_PRIMARY + TECHNIQUE_THEORY_QUIZ_REPETITION;
 
-/** Adds a drag_blank twin for every fill_blank so sessions can vary interaction without duplicating authored copy. */
+const MAX_OPTION_DISPLAY_CHARS = 72;
+
+/** Shorten option text for quiz choices (readability on small screens). */
+export function truncateQuizOption(text: string, maxLen = MAX_OPTION_DISPLAY_CHARS): string {
+  const t = text.replace(/\s+/g, ' ').trim();
+  if (t.length <= maxLen) return t;
+  return t.slice(0, maxLen - 1).trim() + '…';
+}
+
+/** Drag-and-drop is only meaningful if the blank is a substantive word/phrase (not articles, etc.). */
+export function isSubstantiveDragAnswer(text: string): boolean {
+  const raw = text.trim();
+  if (raw.length < 3) return false;
+  const stop = new Set([
+    'the', 'a', 'an', 'and', 'or', 'but', 'to', 'of', 'in', 'on', 'at', 'it', 'is', 'as', 'be', 'so', 'if',
+    'we', 'you', 'he', 'she', 'they', 'for', 'with', 'from', 'by', 'not', 'are', 'was', 'were', 'has', 'had',
+    'have', 'do', 'does', 'did', 'will', 'can', 'may', 'might', 'must', 'should', 'could', 'would', 'this',
+    'that', 'these', 'those', 'than', 'then', 'too', 'also', 'only', 'just', 'very', 'into', 'onto', 'off',
+    'up', 'no', 'yes', 'or', 'nor', 'yet',
+  ]);
+  const tokens = raw.split(/\s+/).map((w) => w.replace(/[^a-zA-Z0-9+#]/g, '').toLowerCase()).filter(Boolean);
+  if (tokens.length === 0) return false;
+  if (tokens.length === 1 && stop.has(tokens[0])) return false;
+  if (tokens.every((t) => stop.has(t) || t.length < 2)) return false;
+  return true;
+}
+
+/** Optional drag_blank twin only when the correct blank is substantive (skip “the”, “a”, etc.). */
 export function expandQuizPoolWithDragVariants(items: QuizItem[]): QuizItem[] {
   const out: QuizItem[] = [];
   for (const item of items) {
     out.push(cloneQuizItem(item));
     if (item.type === 'fill_blank') {
       const fb = item as FillBlankItem;
-      out.push({
-        type: 'drag_blank',
-        sentence: fb.sentence,
-        options: [...fb.options],
-        correctAnswer: fb.correctAnswer,
-        explanation: fb.explanation,
-      });
+      const ans = fb.options[fb.correctAnswer];
+      if (isSubstantiveDragAnswer(ans)) {
+        out.push({
+          type: 'drag_blank',
+          sentence: fb.sentence,
+          options: [...fb.options],
+          correctAnswer: fb.correctAnswer,
+          explanation: fb.explanation,
+        });
+      }
     }
   }
   return out;
@@ -1107,9 +1137,8 @@ export function enrichLessonQuizBaseToMinStems(
 }
 
 /**
- * Build a 14-question session from an expanded pool, avoiding back-to-back same stem.
- * When the authored set is small, the pool is grown with questions tied to the lesson description.
- * Ensures a solid mix of drag_blank interactions (not only tap-to-choose fill_blank).
+ * Build a 10-question session: every question has a unique stem (no repeats).
+ * Drag blanks only for substantive answers; mix enforced without duplicating stems.
  */
 export function buildTechniqueTheoryQuizSequence(
   baseItems: QuizItem[],
@@ -1120,45 +1149,98 @@ export function buildTechniqueTheoryQuizSequence(
   const title = (lessonTitle ?? '').trim() || 'Lesson';
   const desc =
     (lessonDescription ?? '').trim() || 'This topic covers essential guitar concepts.';
-  const enriched = enrichLessonQuizBaseToMinStems(baseItems, title, desc, TECHNIQUE_THEORY_QUIZ_TOTAL);
-  const pool = expandQuizPoolWithDragVariants(enriched.map(cloneQuizItem));
   const target = TECHNIQUE_THEORY_QUIZ_TOTAL;
-  const stream: QuizItem[] = [];
-  for (let r = 0; r < 12; r++) {
-    stream.push(...shuffleArray(pool.map(cloneQuizItem)));
+  const enriched = enrichLessonQuizBaseToMinStems(baseItems, title, desc, Math.max(target, 16));
+  const pool = expandQuizPoolWithDragVariants(enriched.map(cloneQuizItem));
+
+  const byStem = new Map<string, QuizItem[]>();
+  for (const it of pool) {
+    const k = quizStemKey(it);
+    if (!byStem.has(k)) byStem.set(k, []);
+    byStem.get(k)!.push(cloneQuizItem(it));
   }
-  const out: QuizItem[] = [];
-  for (const raw of stream) {
+
+  const candidates: QuizItem[] = [];
+  for (const group of byStem.values()) {
+    const choice = group[Math.floor(Math.random() * group.length)];
+    candidates.push(cloneQuizItem(choice));
+  }
+  shuffleArray(candidates);
+
+  let out: QuizItem[] = [];
+  const usedStems = new Set<string>();
+  for (const it of candidates) {
     if (out.length >= target) break;
-    const stem = quizStemKey(raw);
-    if (out.length > 0 && quizStemKey(out[out.length - 1]) === stem) continue;
-    out.push(shuffleQuizItemOptions(cloneQuizItem(raw)));
+    const k = quizStemKey(it);
+    if (usedStems.has(k)) continue;
+    usedStems.add(k);
+    out.push(shuffleQuizItemOptions(cloneQuizItem(it)));
   }
-  let pad = 0;
-  while (out.length < target) {
-    out.push(shuffleQuizItemOptions(cloneQuizItem(pool[pad % pool.length])));
-    pad++;
+
+  if (out.length < target) {
+    const fallback = createFallbackContent(title, desc).items;
+    for (const it of shuffleArray([...fallback])) {
+      if (out.length >= target) break;
+      const k = quizStemKey(it);
+      if (usedStems.has(k)) continue;
+      usedStems.add(k);
+      out.push(shuffleQuizItemOptions(cloneQuizItem(it)));
+    }
   }
-  const trimmed = out.slice(0, target);
-  const minDrag = Math.max(4, Math.round(target * 0.36));
-  let dragCount = trimmed.filter((x) => x.type === 'drag_blank').length;
-  const fillIdx = trimmed
-    .map((x, i) => (x.type === 'fill_blank' ? i : -1))
-    .filter((i) => i >= 0);
+
+  for (let pass = 0; pass < 8 && out.length >= 2; pass++) {
+    let swapped = false;
+    for (let i = 1; i < out.length; i++) {
+      if (quizStemKey(out[i]) !== quizStemKey(out[i - 1])) continue;
+      for (let j = i + 1; j < out.length; j++) {
+        if (quizStemKey(out[j]) !== quizStemKey(out[i - 1])) {
+          [out[i], out[j]] = [out[j], out[i]];
+          swapped = true;
+          break;
+        }
+      }
+    }
+    if (!swapped) break;
+  }
+
+  out = out.slice(0, target);
+  const minDrag = Math.max(2, Math.round(out.length * 0.25));
+  let dragCount = out.filter((x) => x.type === 'drag_blank').length;
+  const fillIdx = out.map((x, i) => (x.type === 'fill_blank' ? i : -1)).filter((i) => i >= 0);
   shuffleArray(fillIdx);
   for (const i of fillIdx) {
     if (dragCount >= minDrag) break;
-    const it = trimmed[i] as FillBlankItem;
-    trimmed[i] = {
+    const fb = out[i] as FillBlankItem;
+    if (!isSubstantiveDragAnswer(fb.options[fb.correctAnswer])) continue;
+    out[i] = {
       type: 'drag_blank',
-      sentence: it.sentence,
-      options: [...it.options],
-      correctAnswer: it.correctAnswer,
-      explanation: it.explanation,
+      sentence: fb.sentence,
+      options: [...fb.options],
+      correctAnswer: fb.correctAnswer,
+      explanation: fb.explanation,
     };
     dragCount++;
   }
-  return trimmed;
+
+  return out.map((x) => {
+    const shuffled = shuffleQuizItemOptions(cloneQuizItem(x));
+    if (shuffled.type === 'multiple_choice') {
+      const mc = shuffled as MultipleChoiceItem;
+      return {
+        ...mc,
+        question: mc.question,
+        options: mc.options.map((o) => truncateQuizOption(o)),
+      };
+    }
+    if (shuffled.type === 'fill_blank' || shuffled.type === 'drag_blank') {
+      const b = shuffled as FillBlankItem;
+      return {
+        ...b,
+        options: b.options.map((o) => truncateQuizOption(o)),
+      };
+    }
+    return shuffled;
+  });
 }
 
 /** Build lesson-specific, in-depth quiz from description. Questions and wrong options are derived from the actual text; no generic one-size-fits-all shortcuts. */
@@ -1314,18 +1396,27 @@ export function createFallbackContent(title: string, description: string): Lesso
     });
   }
 
-  // 3) Fill-blank from a specific sentence (lesson-specific) — use single-word options
+  // 3) Fill-blank from a specific sentence — only substantive words (not articles / glue words)
   if (items.length < 10 && factPool.length > 0) {
     const first = factPool[0];
-    const words = first.split(/\s+/).filter(w => w.length > 2);
-    const fillWord = words.find(w => w.length > 3 && !/^(the|and|for|with|from|this|that|your|when|where|which|should|does|will|have|been|being|practice|lesson)$/i.test(w));
+    const words = first.split(/\s+/).map((w) => w.replace(/[.,!?;:)"'\]]+$/g, '')).filter(Boolean);
+    const fillWord = words.find((w) => isSubstantiveDragAnswer(w) && w.replace(/[^a-zA-Z]/g, '').length >= 4);
     if (fillWord && first.length > 40) {
       const blanked = first.replace(new RegExp(fillWord.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'i'), '_____');
-      const wrongWords = ['whole', 'octave', 'tone', 'finger', 'hand', 'speed', 'beat', 'chord', 'note', 'key'].filter(w => w.toLowerCase() !== fillWord.toLowerCase()).slice(0, 3);
+      const wrongWords = ['whole', 'octave', 'tone', 'finger', 'hand', 'speed', 'beat', 'chord', 'note', 'key']
+        .filter((w) => w.toLowerCase() !== fillWord.toLowerCase())
+        .slice(0, 3);
       const opts = [fillWord, ...wrongWords];
       const uniq = [...new Set(opts)].slice(0, 4);
       const correctIdx = uniq.indexOf(fillWord);
-      if (correctIdx >= 0 && blanked.includes('_____')) items.push({ type: 'fill_blank', sentence: blanked, options: uniq, correctAnswer: correctIdx, explanation: fullExplanation });
+      if (correctIdx >= 0 && blanked.includes('_____'))
+        items.push({
+          type: 'fill_blank',
+          sentence: blanked,
+          options: uniq.map((o) => truncateQuizOption(o, 48)),
+          correctAnswer: correctIdx,
+          explanation: fullExplanation,
+        });
     }
   }
 

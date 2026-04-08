@@ -7,7 +7,13 @@ interface CircularProgressProps {
   className?: string;
   showPercentage?: boolean;
   color?: string;
+  /** Optional second color to create a gradient along the progress arc */
+  gradientToColor?: string;
+  /** @deprecated Track ring borders removed — prop ignored */
+  trackBorder?: boolean;
 }
+
+let gradientIdCounter = 0;
 
 export function CircularProgress({
   value,
@@ -15,12 +21,17 @@ export function CircularProgress({
   strokeWidth = 8,
   className = '',
   showPercentage = true,
-  color = '#f97316' // orange-500
+  color = '#f97316',
+  gradientToColor,
+  trackBorder: _trackBorder = false,
 }: CircularProgressProps) {
   const radius = (size - strokeWidth) / 2;
   const circumference = radius * 2 * Math.PI;
   const strokeDasharray = circumference;
   const strokeDashoffset = circumference - (value / 100) * circumference;
+
+  const [gradientId] = React.useState(() => `cp-grad-${++gradientIdCounter}`);
+  const useGradient = !!gradientToColor;
 
   return (
     <div className={`relative inline-flex items-center justify-center ${className}`}>
@@ -29,6 +40,15 @@ export function CircularProgress({
         height={size}
         className="transform -rotate-90"
       >
+        {useGradient && (
+          <defs>
+            <linearGradient id={gradientId} x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" stopColor={color} />
+              <stop offset="100%" stopColor={gradientToColor} />
+            </linearGradient>
+          </defs>
+        )}
+
         {/* Background circle */}
         <circle
           cx={size / 2}
@@ -39,12 +59,13 @@ export function CircularProgress({
           fill="transparent"
           className="text-gray-200 dark:text-gray-700"
         />
+
         {/* Progress circle */}
         <circle
           cx={size / 2}
           cy={size / 2}
           r={radius}
-          stroke={color}
+          stroke={useGradient ? `url(#${gradientId})` : color}
           strokeWidth={strokeWidth}
           fill="transparent"
           strokeLinecap="round"

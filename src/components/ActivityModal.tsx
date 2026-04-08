@@ -23,6 +23,7 @@ import {
   buildTechniqueTheoryQuizSequence,
   TECHNIQUE_THEORY_QUIZ_TOTAL,
   quizStemKey,
+  truncateQuizOption,
   LessonContent,
   QuizItem,
   MultipleChoiceItem,
@@ -114,6 +115,8 @@ export function ActivityModal({
   const retryAppendedRef = useRef(false);
   const totalQuizItemsRef = useRef(0);
   const modalWasOpenRef = useRef(false);
+  /** Technique/theory: brief pause after entering quiz before showing questions (animations sync). */
+  const [quizUiReady, setQuizUiReady] = useState(true);
 
   const getLessonContent = (): LessonContent => {
     const name = activityData?.name || activityData?.data?.name || '';
@@ -201,8 +204,7 @@ export function ActivityModal({
       const cloned = items.map(cloneQuizItemLocal);
       setSessionItems(cloned);
       mainQuizLengthRef.current = cloned.length;
-      setPhase('quiz');
-      quizStartTimeRef.current = Date.now();
+      setPhase('intro');
     } else {
       setSessionItems([]);
       if (justOpened) {
@@ -210,6 +212,16 @@ export function ActivityModal({
       }
     }
   }, [isOpen, isTechniqueTheory, items, quizBuildKey]);
+
+  useEffect(() => {
+    if (phase !== 'quiz' || !isTechniqueTheory) {
+      setQuizUiReady(true);
+      return;
+    }
+    setQuizUiReady(false);
+    const t = window.setTimeout(() => setQuizUiReady(true), 1000);
+    return () => window.clearTimeout(t);
+  }, [phase, isTechniqueTheory]);
 
   const isTechnique = activityType === 'practice';
   const themeColor = isTechnique ? 'rgb(249, 115, 22)' : 'rgb(59, 130, 246)';
@@ -286,13 +298,13 @@ export function ActivityModal({
       playCorrect();
       setCorrectAnswers(prev => prev + 1);
       setShowCorrectAnimation(true);
-      setTimeout(() => setShowCorrectAnimation(false), 800);
+      setTimeout(() => setShowCorrectAnimation(false), 1000);
       setProgressGreenOverlay(true);
       setProgressNudge(true);
       window.setTimeout(() => {
         setProgressGreenOverlay(false);
         setProgressNudge(false);
-      }, 1200);
+      }, 1800);
       if (isTechniqueTheory) {
         setConsecutiveCorrect(prev => {
           const next = prev + 1;
@@ -454,11 +466,20 @@ export function ActivityModal({
   const renderIntro = () => {
     const estimatedTime = activityData?.estimatedTime || activityData?.data?.estimatedTime || '';
     if (isTechniqueTheory && hasItems) {
+      const topicBlurb = getDescription().trim();
       return (
         <div className="flex-1 flex flex-col justify-center min-h-0 px-4 py-8">
           <h2 className="text-xl font-bold text-gray-800 dark:text-gray-100 mb-2" style={{ fontFamily: font }}>
             {getActivityTitle()}
           </h2>
+          {topicBlurb ? (
+            <p
+              className="text-sm text-gray-700 dark:text-gray-200 leading-relaxed mb-4 rounded-xl px-3 py-3 border border-gray-200/80 dark:border-slate-600/60 bg-white/50 dark:bg-slate-900/40"
+              style={{ fontFamily: font }}
+            >
+              {topicBlurb}
+            </p>
+          ) : null}
           <p className="text-sm text-gray-600 dark:text-gray-300 leading-relaxed mb-4" style={{ fontFamily: font }}>
             {TECHNIQUE_THEORY_QUIZ_TOTAL} questions — multiple choice, tap-to-fill, and <span className="font-semibold">drag-and-drop</span> into the sentence. Order and mix change each run.
             Every <span className="font-semibold">4 correct in a row</span> raises your streak tier (shown as ×2, ×3…). You always earn <span className="font-semibold">1 point per correct</span> at the end; your <span className="font-semibold">highest tier adds that many extra points</span> (e.g. tier 3 → +3 pts). Resets after a miss.
@@ -562,6 +583,7 @@ export function ActivityModal({
           ? peakTier
           : 0
         : 0;
+    const belowPointsThreshold = isTechniqueTheory && hasItems && earnedPoints === 0;
 
     const finishPrimary = () => {
       if (isTechniqueTheory && hasItems) {
@@ -621,12 +643,12 @@ export function ActivityModal({
               </div>
             </div>
 
-            <div className={`flex gap-3 pt-1 ${hasMistakes ? 'items-stretch' : ''}`}>
-              {hasMistakes && (
+            <div className={`flex gap-3 pt-1 ${hasMistakes || belowPointsThreshold ? 'items-stretch' : ''}`}>
+              {(hasMistakes || belowPointsThreshold) && (
                 <button
                   type="button"
                   onClick={() => handleRetry()}
-                  className="flex-1 flex items-center justify-center gap-2 rounded-lg text-sm font-semibold transition-all hover:scale-[1.01] active:scale-[0.99]"
+                  className={`flex items-center justify-center gap-2 rounded-lg text-sm font-semibold transition-all hover:scale-[1.01] active:scale-[0.99] ${belowPointsThreshold ? 'w-full flex-1' : 'flex-1'}`}
                   style={{
                     backgroundColor: themeBg,
                     borderBottom: `2px solid ${themeBorderLight}`,
@@ -641,32 +663,34 @@ export function ActivityModal({
                   Retry quiz
                 </button>
               )}
-              <button
-                type="button"
-                onClick={finishPrimary}
-                className={`flex items-center justify-center gap-2 rounded-lg text-sm font-bold transition-all hover:scale-[1.01] active:scale-[0.99] ${hasMistakes ? 'flex-1' : 'w-full'}`}
-                style={{
-                  backgroundColor: isPassing ? 'rgba(34, 197, 94, 0.15)' : themeBg,
-                  borderBottom: isPassing ? '2px solid rgb(74, 222, 128)' : `2px solid ${themeBorderLight}`,
-                  color: isPassing ? 'rgb(22, 101, 52)' : themeColor,
-                  fontFamily: font,
-                  minHeight: 52,
-                  paddingTop: 14,
-                  paddingBottom: 14,
-                }}
-              >
-                {isPassing ? (
-                  <>
-                    <Trophy className="w-4 h-4 text-green-600 fill-green-600" />
-                    Done
-                  </>
-                ) : (
-                  <>
-                    <Trophy className="w-4 h-4 shrink-0" style={{ color: themeColor }} />
-                    Complete lesson
-                  </>
-                )}
-              </button>
+              {!belowPointsThreshold ? (
+                <button
+                  type="button"
+                  onClick={finishPrimary}
+                  className={`flex items-center justify-center gap-2 rounded-lg text-sm font-bold transition-all hover:scale-[1.01] active:scale-[0.99] ${hasMistakes ? 'flex-1' : 'w-full'}`}
+                  style={{
+                    backgroundColor: isPassing ? 'rgba(34, 197, 94, 0.15)' : themeBg,
+                    borderBottom: isPassing ? '2px solid rgb(74, 222, 128)' : `2px solid ${themeBorderLight}`,
+                    color: isPassing ? 'rgb(22, 101, 52)' : themeColor,
+                    fontFamily: font,
+                    minHeight: 52,
+                    paddingTop: 14,
+                    paddingBottom: 14,
+                  }}
+                >
+                  {isPassing ? (
+                    <>
+                      <Trophy className="w-4 h-4 text-green-600 fill-green-600" />
+                      Done
+                    </>
+                  ) : (
+                    <>
+                      <Trophy className="w-4 h-4 shrink-0" style={{ color: themeColor }} />
+                      Complete lesson
+                    </>
+                  )}
+                </button>
+              ) : null}
             </div>
           </div>
         </div>
@@ -789,9 +813,10 @@ export function ActivityModal({
     const stepDoneProg = Boolean(
       showResult && selectedAnswer !== null && currentItem && selectedAnswer === ciProg,
     );
+    const quizLen = isTechniqueTheory ? quizItems.length : items.length;
     const progressPct = Math.min(
       100,
-      ((currentItemIndex + (stepDoneProg ? 1 : 0)) / Math.max(1, items.length)) * 100,
+      ((currentItemIndex + (stepDoneProg ? 1 : 0)) / Math.max(1, quizLen)) * 100,
     );
 
     const DRAG_SLOT_W = 86;
@@ -834,10 +859,10 @@ export function ActivityModal({
             };
       const slotLabel = showResult
         ? selectedAnswer === correctAnswer
-          ? options[selectedAnswer!]
-          : options[correctAnswer]
+          ? truncateQuizOption(options[selectedAnswer!])
+          : truncateQuizOption(options[correctAnswer])
         : selectedAnswer !== null
-          ? options[selectedAnswer]
+          ? truncateQuizOption(options[selectedAnswer])
           : interactive && liftedOptionIdx !== null
             ? '· drop ·'
             : '?';
@@ -915,10 +940,30 @@ export function ActivityModal({
       );
     };
 
+    if (isTechniqueTheory && !quizUiReady) {
+      return (
+        <div className="flex-1 flex flex-col items-center justify-center min-h-[45vh] px-4" style={{ fontFamily: font }}>
+          <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Get ready…</p>
+        </div>
+      );
+    }
+
     return (
-      <div className="flex-1 flex flex-col min-h-0 overflow-hidden pt-1 pb-4">
+      <div className="flex-1 flex flex-col min-h-0 overflow-visible pt-1 pb-4 relative isolate">
+        {isTechniqueTheory && quizUiReady ? (
+          <img
+            src={quizMascotSrc}
+            alt=""
+            className="pointer-events-none select-none fixed left-1/2 -translate-x-1/2 z-[70] w-[min(300px,82vw)] object-contain opacity-[0.92] drop-shadow-md"
+            style={{ top: 'max(12vh, 88px)', maxHeight: 'min(220px, 26vh)' }}
+            draggable={false}
+          />
+        ) : null}
         {isTechniqueTheory ? (
-          <div className="backdrop-blur-sm rounded-2xl px-4 py-3 mb-4 shadow-md" style={cardStyle}>
+          <div
+            className="backdrop-blur-sm rounded-2xl px-4 py-3 mb-4 shadow-md relative z-[25] overflow-visible"
+            style={cardStyle}
+          >
             <div className="flex items-center justify-between gap-2 mb-3">
               <div
                 className="flex flex-wrap items-center gap-2 text-xs font-semibold text-gray-600 dark:text-gray-400"
@@ -943,7 +988,7 @@ export function ActivityModal({
               ) : null}
             </div>
             <div
-              className="h-5 w-full rounded-full overflow-hidden"
+              className="h-5 w-full rounded-full overflow-visible py-1 -my-1"
               style={{
                 border: '2.5px solid rgb(237, 237, 237)',
                 backgroundColor: 'rgb(241, 245, 249)',
@@ -951,26 +996,26 @@ export function ActivityModal({
             >
               <div
                 className={cn(
-                  'h-full rounded-full transition-[width] duration-[480ms] ease-out relative overflow-hidden',
+                  'h-full rounded-full transition-[width] duration-[900ms] ease-out relative overflow-visible min-h-[12px]',
                   progressNudge && 'quiz-progress-fill--nudge',
                 )}
                 style={{ width: `${progressPct}%` }}
               >
                 <div
                   className={cn(
-                    'absolute inset-0 rounded-full',
+                    'absolute inset-0 rounded-full overflow-visible',
                     rewardMultiplier >= 3 &&
                       (isTechnique ? 'quiz-progress-fill--pulse-warm' : 'quiz-progress-fill--pulse-cool'),
                   )}
                   style={rewardMultiplier >= 3 ? undefined : { background: themeFillGradient }}
                 />
                 <div
-                  className="absolute inset-0 rounded-full pointer-events-none"
+                  className="absolute inset-0 rounded-full pointer-events-none overflow-visible"
                   style={{
                     background: greenFillGradient,
                     opacity: progressGreenOverlay ? 1 : 0,
-                    boxShadow: progressGreenOverlay ? '0 0 14px rgba(34, 197, 94, 0.35)' : undefined,
-                    transition: 'opacity 1.65s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 1.65s cubic-bezier(0.4, 0, 0.2, 1)',
+                    boxShadow: progressGreenOverlay ? '0 0 18px rgba(34, 197, 94, 0.45)' : undefined,
+                    transition: 'opacity 2.2s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 2.2s cubic-bezier(0.4, 0, 0.2, 1)',
                   }}
                 />
               </div>
@@ -982,7 +1027,7 @@ export function ActivityModal({
 
         {/* Question card */}
         <div 
-          className={`backdrop-blur-sm rounded-2xl px-4 sm:px-6 py-4 mb-4 shadow-md transition-all duration-300 ${
+          className={`relative z-[18] backdrop-blur-sm rounded-2xl px-4 sm:px-6 py-4 mb-4 shadow-md transition-all duration-300 ${
             showCorrectAnimation ? 'ring-2 ring-emerald-400/60 ring-offset-1' : 
             showWrongAnimation ? 'ring-2 ring-red-400/60 ring-offset-1' : ''
           }`}
@@ -1018,7 +1063,11 @@ export function ActivityModal({
         </div>
 
         {/* Options: list (MC / fill / review) or draggable chips (drag_blank, active) */}
-        <div ref={optionsRef} className="flex-1 overflow-y-auto min-h-0" style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+        <div
+          ref={optionsRef}
+          className="relative z-[18] flex-1 overflow-y-auto min-h-0"
+          style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}
+        >
           {isDragBlank && !showResult ? (
             <div className="flex flex-wrap justify-center gap-2 pb-1 w-full">
               {options.map((option, idx) => (
@@ -1060,7 +1109,9 @@ export function ActivityModal({
                     boxSizing: 'border-box',
                   }}
                 >
-                  <span className="line-clamp-2 leading-tight px-0.5 pointer-events-none">{option}</span>
+                  <span className="line-clamp-2 leading-tight px-0.5 pointer-events-none">
+                    {truncateQuizOption(option)}
+                  </span>
                 </div>
               ))}
             </div>
@@ -1114,7 +1165,7 @@ export function ActivityModal({
                     fontFamily: font,
                     lineHeight: 1.4
                   }}>
-                    {option}
+                    {truncateQuizOption(option)}
                   </span>
                 </div>
               );
@@ -1124,7 +1175,7 @@ export function ActivityModal({
 
         {/* Bottom: explanation + continue - TechniqueTheory style */}
         {showResult && (
-          <div className="flex-shrink-0 mt-4 flex flex-col gap-3">
+          <div className="relative z-[18] flex-shrink-0 mt-4 flex flex-col gap-3">
             <div 
               className="backdrop-blur-sm rounded-xl px-4 py-3 shadow-sm"
               style={{ 
@@ -1155,7 +1206,7 @@ export function ActivityModal({
               className="flex items-center justify-center gap-2 w-full py-3 rounded-xl text-sm font-bold cursor-pointer transition-transform hover:scale-[1.01] active:scale-[0.99]"
               style={{ backgroundColor: themeBg, borderBottom: `2px solid ${themeBorderLight}`, color: themeColor, fontFamily: font }}
             >
-              {currentItemIndex < items.length - 1 ? 'Continue' : 'See Results'}
+              {currentItemIndex < quizLen - 1 ? 'Continue' : 'See Results'}
               <ChevronRight className="w-4 h-4" />
             </div>
           </div>
@@ -1174,7 +1225,11 @@ export function ActivityModal({
 
         <div
           className={`flex flex-col px-4 sm:px-6 py-4 safe-area-top ${
-            isTechniqueTheory || phase !== 'results' ? 'flex-1 min-h-0 overflow-hidden' : ''
+            isTechniqueTheory && phase === 'quiz'
+              ? 'flex-1 min-h-0 overflow-x-visible overflow-y-auto'
+              : isTechniqueTheory || phase !== 'results'
+                ? 'flex-1 min-h-0 overflow-hidden'
+                : ''
           }`}
         >
         
@@ -1242,7 +1297,9 @@ export function ActivityModal({
     <Dialog open={isOpen} onOpenChange={onClose}>
       {isTechniqueTheory ? (
         <DialogContentFullscreen
-          className={`p-0 overflow-hidden flex flex-col bg-gradient-to-br ${gradientClass} dark:from-gray-950 dark:via-slate-900 dark:to-gray-900`}
+          className={`p-0 flex flex-col bg-gradient-to-br ${gradientClass} dark:from-gray-950 dark:via-slate-900 dark:to-gray-900 ${
+            phase === 'quiz' ? 'overflow-x-visible overflow-y-auto' : 'overflow-hidden'
+          }`}
           aria-describedby={undefined}
         >
           {modalInner}

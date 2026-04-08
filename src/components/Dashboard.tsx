@@ -763,65 +763,83 @@ export function Dashboard({ onSectionChange }: DashboardProps) {
         {/* Beats says — below today’s goals & My Songs */}
         <DashboardBeatsSaysBlock user={user} progressData={progressData} onSectionChange={onSectionChange} />
 
-        {/* Technique and Theory — same accent fills as TechniqueTheory.tsx (technique / theory tabs) */}
-        <div className="mb-8">
-          <div className="backdrop-blur-sm rounded-2xl p-6 shadow-sm hover:shadow-md transition-all bg-white/50 dark:bg-slate-900/50">
-            <div className="grid grid-cols-2 gap-8">
-              <div
-                onClick={() => onSectionChange('technique')}
-                className="cursor-pointer hover:opacity-90 transition-opacity"
-              >
-                <div className="flex flex-col items-center">
-                  <h2 className="text-lg font-semibold mb-1" style={{ color: 'rgb(249, 115, 22)' }}>
-                    Technique
-                  </h2>
-                  <p className="text-lg font-bold mb-4" style={{ color: 'rgb(249, 115, 22)' }}>
-                    {calculateTechniqueProgress()}%
-                  </p>
-                  <div className="relative">
-                    <CircularProgress
-                      value={calculateTechniqueProgress()}
-                      size={140}
-                      strokeWidth={12}
-                      color="rgb(249, 115, 22)"
+        {/* Technique and Theory — two cards, Beats-style 1px border + thicker soft bottom (TechniqueTheory tab colors) */}
+        <div className="mb-8 grid grid-cols-2 gap-3 sm:gap-4">
+          <div
+            role="button"
+            tabIndex={0}
+            onClick={() => onSectionChange('technique')}
+            onKeyDown={e => {
+              if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                onSectionChange('technique');
+              }
+            }}
+            className={cn(
+              'rounded-2xl p-4 sm:p-5 shadow-sm backdrop-blur-sm transition-all cursor-pointer',
+              'border border-orange-400/30 dark:border-orange-400/35',
+              'bg-orange-50/70 dark:bg-orange-950/25 hover:bg-orange-50/90 dark:hover:bg-orange-950/35',
+            )}
+            style={{ borderBottom: '5px solid rgba(249, 115, 22, 0.38)' }}
+          >
+            <div className="flex flex-col items-center">
+              <h2 className="text-lg font-semibold mb-1" style={{ color: 'rgb(249, 115, 22)' }}>
+                Technique
+              </h2>
+              <p className="text-lg font-bold mb-4" style={{ color: 'rgb(249, 115, 22)' }}>
+                {calculateTechniqueProgress()}%
+              </p>
+              <div className="relative">
+                <CircularProgress
+                  value={calculateTechniqueProgress()}
+                  size={140}
+                  strokeWidth={12}
+                  color="rgb(249, 115, 22)"
+                  gradientToColor="rgb(251, 191, 36)"
                       showPercentage={false}
-                    />
-                    <div className="absolute inset-0 flex items-center justify-center">
-                      <Hand className="w-12 h-12" style={{ color: 'rgb(249, 115, 22)' }} />
-                    </div>
-                  </div>
+                />
+                <div className="absolute inset-0 flex items-center justify-center">
+                  <Hand className="w-12 h-12" style={{ color: 'rgb(249, 115, 22)' }} />
                 </div>
               </div>
+            </div>
+          </div>
 
-              <div
-                onClick={() => onSectionChange('theory')}
-                className="cursor-pointer hover:opacity-90 transition-opacity"
-              >
-                <div className="flex flex-col items-center">
-                  <h2
-                    className="text-lg font-semibold mb-1 text-blue-600 dark:text-blue-400"
-                    style={{ color: 'rgb(59, 130, 246)' }}
-                  >
-                    Theory
-                  </h2>
-                  <p
-                    className="text-lg font-bold mb-4 text-blue-600 dark:text-blue-400"
-                    style={{ color: 'rgb(59, 130, 246)' }}
-                  >
-                    {calculateTheoryProgress()}%
-                  </p>
-                  <div className="relative">
-                    <CircularProgress
-                      value={calculateTheoryProgress()}
-                      size={140}
-                      strokeWidth={12}
-                      color="rgb(59, 130, 246)"
+          <div
+            role="button"
+            tabIndex={0}
+            onClick={() => onSectionChange('theory')}
+            onKeyDown={e => {
+              if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                onSectionChange('theory');
+              }
+            }}
+            className={cn(
+              'rounded-2xl p-4 sm:p-5 shadow-sm backdrop-blur-sm transition-all cursor-pointer',
+              'border border-blue-400/30 dark:border-blue-400/35',
+              'bg-blue-50/70 dark:bg-blue-950/30 hover:bg-blue-50/90 dark:hover:bg-blue-950/40',
+            )}
+            style={{ borderBottom: '5px solid rgba(59, 130, 246, 0.38)' }}
+          >
+            <div className="flex flex-col items-center">
+              <h2 className="text-lg font-semibold mb-1" style={{ color: 'rgb(59, 130, 246)' }}>
+                Theory
+              </h2>
+              <p className="text-lg font-bold mb-4" style={{ color: 'rgb(59, 130, 246)' }}>
+                {calculateTheoryProgress()}%
+              </p>
+              <div className="relative">
+                <CircularProgress
+                  value={calculateTheoryProgress()}
+                  size={140}
+                  strokeWidth={12}
+                  color="rgb(59, 130, 246)"
+                  gradientToColor="rgb(147, 197, 253)"
                       showPercentage={false}
-                    />
-                    <div className="absolute inset-0 flex items-center justify-center">
-                      <Brain className="w-12 h-12" style={{ color: 'rgb(59, 130, 246)' }} />
-                    </div>
-                  </div>
+                />
+                <div className="absolute inset-0 flex items-center justify-center">
+                  <Brain className="w-12 h-12" style={{ color: 'rgb(59, 130, 246)' }} />
                 </div>
               </div>
             </div>
