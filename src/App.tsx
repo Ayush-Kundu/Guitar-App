@@ -25,16 +25,10 @@ function AppContent() {
   const [activeSection, setActiveSection] = React.useState("dashboard");
   const [showIntro, setShowIntro] = React.useState(false);
   const [beatsPopupDismissed, setBeatsPopupDismissed] = React.useState(false);
-  const [beatsExplainerOpen, setBeatsExplainerOpen] = React.useState(false);
   const [celebration, setCelebration] = React.useState<CelebrationPayload | null>(null);
   const clearCelebration = React.useCallback(() => setCelebration(null), []);
 
-  const beatsExplainerKey = React.useMemo(() => {
-    if (!user?.id) return null;
-    return `strummy-beats-explainer-shown-${user.id}`;
-  }, [user?.id]);
-
-  // Intro (guitar intro + coach's board) only first time
+  // Intro (first time)
   React.useEffect(() => {
     if (user) setShowIntro(shouldShowIntro(user.id));
   }, [user]);
@@ -174,41 +168,11 @@ function AppContent() {
         {celebration ? (
           <CelebrationOverlay payload={celebration} onDone={clearCelebration} />
         ) : null}
-        {beatsExplainerOpen && (
-          <div className="fixed left-0 right-0 z-40 px-3 safe-area-bottom" style={{ bottom: '64px' }}>
-            <div
-              className="w-full max-w-md mx-auto rounded-xl p-3 shadow-sm border-2 border-gray-200 dark:border-slate-600 bg-white/95 dark:bg-slate-800/95"
-              role="dialog"
-              aria-label="Beats says help"
-            >
-              <div className="flex items-start gap-2">
-                <div className="flex-1 min-w-0">
-                  <p className="text-xs font-bold text-gray-900 dark:text-gray-100 m-0">Beats says</p>
-                  <p className="text-xs text-gray-600 dark:text-gray-300 leading-snug m-0 mt-1">
-                    Your daily guide. Tap it to jump to the right tab and do the next step for today.
-                  </p>
-                </div>
-                <button
-                  type="button"
-                  onClick={() => {
-                    try {
-                      if (beatsExplainerKey) localStorage.setItem(beatsExplainerKey, 'true');
-                    } catch (_) {}
-                    setBeatsExplainerOpen(false);
-                  }}
-                  className="flex-shrink-0 py-1 px-2 rounded-lg text-xs font-medium border-2 border-gray-200 dark:border-slate-600 text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-slate-700/80"
-                >
-                  Got it
-                </button>
-              </div>
-            </div>
-          </div>
-        )}
         <FooterNavigation
           activeSection={activeSection}
           onSectionChange={handleSectionChange}
         />
-        {/* Intro: guitar basics + coach's board (only first time) */}
+        {/* Intro: Beats says, guitar basics, optional Learn Guitar Basics (first time) */}
         {showIntro && user && (
           <NoviceIntro
             isOpen={true}
@@ -217,13 +181,6 @@ function AppContent() {
               markIntroDone(user.id);
               setShowIntro(false);
               handleSectionChange('dashboard');
-              try {
-                if (beatsExplainerKey && localStorage.getItem(beatsExplainerKey) !== 'true') {
-                  setBeatsExplainerOpen(true);
-                }
-              } catch (_) {
-                setBeatsExplainerOpen(true);
-              }
             }}
             onStartLearnGuitarBasics={() => {
               markIntroDone(user.id);
@@ -234,13 +191,6 @@ function AppContent() {
                   window.dispatchEvent(new CustomEvent('strummy-request-open-guitar-basics'));
                 } catch (_) {}
               });
-              try {
-                if (beatsExplainerKey && localStorage.getItem(beatsExplainerKey) !== 'true') {
-                  setBeatsExplainerOpen(true);
-                }
-              } catch (_) {
-                setBeatsExplainerOpen(true);
-              }
             }}
             onGoToSongs={() => handleSectionChange('songs')}
             onNavigate={handleSectionChange}

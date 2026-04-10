@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useUser, MUSIC_THEMES } from '../contexts/UserContext';
 import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
 import { Button } from './ui/button';
@@ -22,6 +22,16 @@ export function Auth() {
     level: 'novice' as const,
     musicPreferences: [] as string[]
   });
+
+  useEffect(() => {
+    try {
+      const msg = sessionStorage.getItem('strummy-oauth-error');
+      if (msg) {
+        sessionStorage.removeItem('strummy-oauth-error');
+        setError(msg);
+      }
+    } catch (_) {}
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -284,6 +294,7 @@ export function Auth() {
                       id="email"
                       type="email"
                       placeholder="Enter your email"
+                      autoComplete="email"
                       value={formData.email}
                       onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                       required
@@ -296,6 +307,7 @@ export function Auth() {
                       id="password"
                       type="password"
                       placeholder="Enter your password"
+                      autoComplete={isSignUp ? "new-password" : "current-password"}
                       value={formData.password}
                       onChange={(e) => setFormData({ ...formData, password: e.target.value })}
                       required

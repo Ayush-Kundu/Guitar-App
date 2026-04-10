@@ -11,7 +11,7 @@ import {
   getWeeklyGoals,
   getPracticeStreak,
 } from '../utils/progressStorage';
-import { createClient } from '@supabase/supabase-js';
+import { supabase } from '../lib/supabase';
 import { Dialog, DialogContent, DialogContentFullscreen, DialogHeader, DialogTitle } from './ui/dialog';
 import { ScrollArea } from './ui/scroll-area';
 import guitarContent from '../data/guitar-content.json';
@@ -45,10 +45,6 @@ import goldImage from '../assets/image2.png';
 import silverImage from '../assets/image3.png';
 import diamondImage from '../assets/image4.png';
 
-// Initialize Supabase client
-const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || '';
-const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY || '';
-const supabase = supabaseUrl && supabaseAnonKey ? createClient(supabaseUrl, supabaseAnonKey) : null;
 
 // Leaderboard user type
 interface LeaderboardUser {

@@ -3,22 +3,12 @@ import guitarContent from '../data/guitar-content';
 import { getTechniquePath, getTheoryPath } from '../data/learning-journey';
 import { websocketService, WebSocketMessage } from '../utils/websocket';
 import { createLocalPost } from '../api/local-posts';
-import { createClient } from '@supabase/supabase-js';
+import { type Session } from '@supabase/supabase-js';
 import { loadProgress, getSelectedSongs, getAllSongProgress, loadProgressFromSupabase, syncFullProgressToSupabase } from '../utils/progressStorage';
-import { capacitorStorage } from '../utils/capacitorStorage';
 import { playAchievementPoints } from '../utils/soundEffects';
+import { supabase } from '../lib/supabase';
 
-// Fix these lines to use Vite environment variables
-const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
-const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
-export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
-  auth: {
-    storage: capacitorStorage,
-    autoRefreshToken: true,
-    persistSession: true,
-    detectSessionInUrl: false,
-  },
-});
+export { supabase };
 
 // Export the function to fetch users from Supabase
 export const fetchUsersFromSupabase = async () => {
@@ -544,31 +534,31 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
   // Save to localStorage whenever data changes (backup for offline mode)
   useEffect(() => {
     if (typeof window !== 'undefined' && friends.length > 0) {
-      localStorage.setItem('guitarAppFriends', JSON.stringify(friends));
+      try { localStorage.setItem('guitarAppFriends', JSON.stringify(friends)); } catch (_) { /* quota exceeded */ }
     }
   }, [friends]);
 
   useEffect(() => {
     if (typeof window !== 'undefined' && friendRequests.length > 0) {
-      localStorage.setItem('guitarAppFriendRequests', JSON.stringify(friendRequests));
+      try { localStorage.setItem('guitarAppFriendRequests', JSON.stringify(friendRequests)); } catch (_) { /* quota exceeded */ }
     }
   }, [friendRequests]);
 
   useEffect(() => {
     if (typeof window !== 'undefined' && chats.length > 0) {
-      localStorage.setItem('guitarAppChats', JSON.stringify(chats));
+      try { localStorage.setItem('guitarAppChats', JSON.stringify(chats)); } catch (_) { /* quota exceeded */ }
     }
   }, [chats]);
 
   useEffect(() => {
     if (typeof window !== 'undefined' && messages.length > 0) {
-      localStorage.setItem('guitarAppMessages', JSON.stringify(messages));
+      try { localStorage.setItem('guitarAppMessages', JSON.stringify(messages)); } catch (_) { /* quota exceeded */ }
     }
   }, [messages]);
 
   useEffect(() => {
     if (typeof window !== 'undefined' && communityPosts.length > 0) {
-      localStorage.setItem('guitarAppCommunityPosts', JSON.stringify(communityPosts));
+      try { localStorage.setItem('guitarAppCommunityPosts', JSON.stringify(communityPosts)); } catch (_) { /* quota exceeded */ }
     }
   }, [communityPosts]);
 
@@ -1465,18 +1455,28 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
         return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
       }
     } catch (e) {
+      // crypto.subtle not available
     }
-    
-    // Fallback: simple hash function for non-secure contexts
-    // This is less secure but allows the app to function
-    let hash = 0;
-    const str = password + 'strummy_salt_2024';
-    for (let i = 0; i < str.length; i++) {
-      const char = str.charCodeAt(i);
-      hash = ((hash << 5) - hash) + char;
-      hash = hash & hash; // Convert to 32bit integer
+
+    // Fallback: multi-round FNV-1a-based hash for non-secure contexts
+    // Produces a 64-char hex string by running 4 independent rounds with different seeds
+    const fnv1a = (str: string, seed: number): number => {
+      let h = 0x811c9dc5 ^ seed;
+      for (let i = 0; i < str.length; i++) {
+        h ^= str.charCodeAt(i);
+        h = Math.imul(h, 0x01000193);
+      }
+      return h >>> 0;
+    };
+    const salted = password + 'strummy_salt_2024';
+    const parts: string[] = [];
+    for (let round = 0; round < 4; round++) {
+      const input = round === 0 ? salted : parts[round - 1] + salted;
+      const h1 = fnv1a(input, round * 0x12345);
+      const h2 = fnv1a(input + String(h1), round * 0x67890);
+      parts.push(h1.toString(16).padStart(8, '0') + h2.toString(16).padStart(8, '0'));
     }
-    return Math.abs(hash).toString(16).padStart(32, '0');
+    return parts.join('');
   };
 
   // Generate a UUID for new users
@@ -1699,7 +1699,8 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
     setIsLoading(true);
     
     try {
-      
+      await supabase.auth.signOut();
+
       // Query profiles table by email
       const { data: profile, error: profileError } = await supabase
           .from('profiles')
@@ -1775,15 +1776,17 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
-  // Google Sign-In using Supabase Auth OAuth
+  // Google Sign-In using Supabase Auth OAuth — only links to an existing `profiles` row by email (no auto-registration).
   const signInWithGoogle = async () => {
     setIsLoading(true);
 
     try {
-      const { data, error } = await supabase.auth.signInWithOAuth({
+      const redirectTo =
+        typeof window !== 'undefined' ? `${window.location.origin}${window.location.pathname || '/'}` : undefined;
+      const { error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
-          redirectTo: window.location.origin,
+          redirectTo,
           skipBrowserRedirect: false,
         },
       });
@@ -1791,138 +1794,124 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
       if (error) {
         throw new Error(`Google sign-in failed: ${error.message}`);
       }
-
-      // The OAuth flow will redirect the browser, so we don't need to do anything else here.
-      // The auth state listener below will handle the callback.
     } catch (error: any) {
       setIsLoading(false);
       throw error;
     }
   };
 
-  // Listen for Supabase Auth state changes (handles Google OAuth callback)
-  useEffect(() => {
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
-      if (event === 'SIGNED_IN' && session?.user) {
-        const googleUser = session.user;
-        const email = googleUser.email?.toLowerCase();
-        const name = googleUser.user_metadata?.full_name || googleUser.user_metadata?.name || email?.split('@')[0] || 'User';
+  /** Load app User from `profiles` when Google OAuth session exists; email must match an existing profile row. */
+  const applyProfileFromGoogleSession = async (session: Session) => {
+    const authUser = session.user;
+    const email = authUser.email?.toLowerCase();
+    const googleName =
+      authUser.user_metadata?.full_name || authUser.user_metadata?.name || email?.split('@')[0] || 'User';
+    const isGoogle =
+      authUser.app_metadata?.provider === 'google' ||
+      (authUser.identities ?? []).some((id) => id.provider === 'google');
 
-        if (!email) {
-          setIsLoading(false);
-          return;
-        }
+    if (!email || !isGoogle) {
+      setIsLoading(false);
+      return;
+    }
 
+    try {
+      const { data: existingProfile, error: profileError } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('email', email)
+        .maybeSingle();
+
+      if (profileError) {
+        console.error('Profile lookup (Google):', profileError);
         try {
-          // Check if a profile already exists for this email
-          const { data: existingProfile } = await supabase
-            .from('profiles')
-            .select('*')
-            .eq('email', email)
-            .single();
+          sessionStorage.setItem(
+            'strummy-oauth-error',
+            'Could not verify your account. Try again or sign in with email and password.',
+          );
+        } catch (_) {}
+        await supabase.auth.signOut();
+        setIsLoading(false);
+        return;
+      }
 
-          if (existingProfile) {
-            // Existing user — sign them in
-            const userData: User = {
-              id: existingProfile.user_id,
-              name: existingProfile.username || name,
-              email: existingProfile.email || email,
-              level: existingProfile.guitar_level || 'beginner',
-              musicPreferences: [
-                existingProfile.style_1 || 'rock',
-                existingProfile.style_2 || 'pop',
-                existingProfile.style_3 || 'blues'
-              ],
-              practiceStreak: existingProfile.streak || 0,
-              songsMastered: 0,
-              chordsLearned: 0,
-              hoursThisWeek: 0,
-              totalPoints: existingProfile.points || 0,
-              totalCoins: 0,
-              weeklyPoints: 0,
-              levelProgress: 0,
-              joinDate: new Date().toISOString(),
-              createdAt: new Date().toISOString(),
-              avatar: '🎸',
-              username: existingProfile.username || name,
-              isOnline: true
-            };
+      if (!existingProfile) {
+        try {
+          sessionStorage.setItem(
+            'strummy-oauth-error',
+            'No Strummy account found for this Google email. Sign up with email and password first, then you can use Google next time with the same email.',
+          );
+        } catch (_) {}
+        await supabase.auth.signOut();
+        setIsLoading(false);
+        return;
+      }
 
-            try {
-              const lp = loadProgress(existingProfile.user_id);
-              userData.totalCoins = typeof lp.totalCoins === 'number' ? lp.totalCoins : 0;
-              userData.totalPoints = typeof lp.totalPoints === 'number' ? lp.totalPoints : userData.totalPoints;
-            } catch (_) {}
+      const userData: User = {
+        id: existingProfile.user_id,
+        name: existingProfile.username || googleName,
+        email: existingProfile.email || email,
+        level: existingProfile.guitar_level || 'beginner',
+        musicPreferences: [
+          existingProfile.style_1 || 'rock',
+          existingProfile.style_2 || 'pop',
+          existingProfile.style_3 || 'blues',
+        ],
+        practiceStreak: existingProfile.streak || 0,
+        songsMastered: 0,
+        chordsLearned: 0,
+        hoursThisWeek: 0,
+        totalPoints: existingProfile.points || 0,
+        totalCoins: 0,
+        weeklyPoints: 0,
+        levelProgress: 0,
+        joinDate: new Date().toISOString(),
+        createdAt: new Date().toISOString(),
+        avatar: '🎸',
+        username: existingProfile.username || googleName,
+        isOnline: true,
+      };
 
-            setUser(userData);
-            if (typeof window !== 'undefined') {
-              localStorage.setItem('guitarAppUser', JSON.stringify(userData));
-              localStorage.setItem('guitarAppSession', JSON.stringify({ userId: existingProfile.user_id, email }));
-            }
+      try {
+        const lp = loadProgress(existingProfile.user_id);
+        userData.totalCoins = typeof lp.totalCoins === 'number' ? lp.totalCoins : 0;
+        userData.totalPoints = typeof lp.totalPoints === 'number' ? lp.totalPoints : userData.totalPoints;
+      } catch (_) {}
 
-            const cloudProgress = await loadProgressFromSupabase(existingProfile.user_id);
-          } else {
-            // New user — create a profile
-            const userId = generateUserId();
+      setUser(userData);
+      if (typeof window !== 'undefined') {
+        localStorage.setItem('guitarAppUser', JSON.stringify(userData));
+        localStorage.setItem(
+          'guitarAppSession',
+          JSON.stringify({ userId: existingProfile.user_id, email }),
+        );
+      }
 
-            const profileData = {
-              user_id: userId,
-              email: email,
-              password_hash: '', // No password for Google OAuth users
-              username: name,
-              guitar_level: 'beginner',
-              style_1: 'rock',
-              style_2: 'pop',
-              style_3: 'blues',
-              points: 0,
-              compete_level: 'Bronze I',
-              streak: 0,
-              auth_provider: 'google'
-            };
+      await loadProgressFromSupabase(existingProfile.user_id);
+    } catch (err) {
+      console.error('Error handling Google sign-in:', err);
+      try {
+        sessionStorage.setItem('strummy-oauth-error', 'Something went wrong signing in with Google. Please try again.');
+      } catch (_) {}
+      await supabase.auth.signOut();
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
-            const { error: insertError } = await supabase
-              .from('profiles')
-              .insert([profileData])
-              .select();
+  // Google OAuth callback + restore session on load (INITIAL_SESSION)
+  useEffect(() => {
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange(async (event, session) => {
+      if (!session?.user) return;
+      const isGoogle =
+        session.user.app_metadata?.provider === 'google' ||
+        (session.user.identities ?? []).some((id) => id.provider === 'google');
+      if (!isGoogle) return;
 
-            if (insertError) {
-              console.error('Failed to create Google profile:', insertError);
-              setIsLoading(false);
-              return;
-            }
-
-            const newUser: User = {
-              id: userId,
-              name: name,
-              email: email,
-              level: 'beginner',
-              musicPreferences: ['rock', 'pop', 'blues'],
-              practiceStreak: 0,
-              songsMastered: 0,
-              chordsLearned: 0,
-              hoursThisWeek: 0,
-              totalPoints: 0,
-              totalCoins: 0,
-              weeklyPoints: 0,
-              levelProgress: 0,
-              joinDate: new Date().toISOString(),
-              createdAt: new Date().toISOString(),
-              username: name,
-              avatar: '🎸',
-              isOnline: true
-            };
-
-            setUser(newUser);
-            if (typeof window !== 'undefined') {
-              localStorage.setItem('guitarAppUser', JSON.stringify(newUser));
-              localStorage.setItem('guitarAppSession', JSON.stringify({ userId, email }));
-            }
-          }
-        } catch (err) {
-          console.error('Error handling Google sign-in callback:', err);
-        } finally {
-          setIsLoading(false);
-        }
+      if (event === 'SIGNED_IN' || event === 'INITIAL_SESSION') {
+        await applyProfileFromGoogleSession(session);
       }
     });
 
@@ -1938,6 +1927,8 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
       if (user) {
         await syncFullProgressToSupabase(user.id);
       }
+
+      await supabase.auth.signOut();
       
       // Disconnect WebSocket
       websocketService.disconnect();

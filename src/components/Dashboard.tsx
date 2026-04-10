@@ -639,6 +639,7 @@ export function Dashboard({ onSectionChange }: DashboardProps) {
           </div>
         </div>
 
+
         {/* Level progress — goals shell + original SkillProgressBar content */}
         <button
           type="button"
