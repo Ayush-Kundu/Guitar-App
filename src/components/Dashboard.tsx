@@ -764,7 +764,7 @@ export function Dashboard({ onSectionChange }: DashboardProps) {
         {/* Beats says — below today’s goals & My Songs */}
         <DashboardBeatsSaysBlock user={user} progressData={progressData} onSectionChange={onSectionChange} />
 
-        {/* Technique and Theory — two cards, Beats-style 1px border + thicker soft bottom (TechniqueTheory tab colors) */}
+        {/* Technique and Theory — same frosted shell as Today's Goals */}
         <div className="mb-8 grid grid-cols-2 gap-3 sm:gap-4">
           <div
             role="button"
@@ -778,10 +778,8 @@ export function Dashboard({ onSectionChange }: DashboardProps) {
             }}
             className={cn(
               'rounded-2xl p-4 sm:p-5 shadow-sm backdrop-blur-sm transition-all cursor-pointer',
-              'border border-orange-400/30 dark:border-orange-400/35',
-              'bg-orange-50/70 dark:bg-orange-950/25 hover:bg-orange-50/90 dark:hover:bg-orange-950/35',
+              'bg-white/50 dark:bg-slate-900/50 hover:shadow-md',
             )}
-            style={{ borderBottom: '5px solid rgba(249, 115, 22, 0.38)' }}
           >
             <div className="flex flex-col items-center">
               <h2 className="text-lg font-semibold mb-1" style={{ color: 'rgb(249, 115, 22)' }}>
@@ -818,10 +816,8 @@ export function Dashboard({ onSectionChange }: DashboardProps) {
             }}
             className={cn(
               'rounded-2xl p-4 sm:p-5 shadow-sm backdrop-blur-sm transition-all cursor-pointer',
-              'border border-blue-400/30 dark:border-blue-400/35',
-              'bg-blue-50/70 dark:bg-blue-950/30 hover:bg-blue-50/90 dark:hover:bg-blue-950/40',
+              'bg-white/50 dark:bg-slate-900/50 hover:shadow-md',
             )}
-            style={{ borderBottom: '5px solid rgba(59, 130, 246, 0.38)' }}
           >
             <div className="flex flex-col items-center">
               <h2 className="text-lg font-semibold mb-1" style={{ color: 'rgb(59, 130, 246)' }}>
