@@ -7,8 +7,22 @@ import { type Session } from '@supabase/supabase-js';
 import { loadProgress, getSelectedSongs, getAllSongProgress, loadProgressFromSupabase, syncFullProgressToSupabase } from '../utils/progressStorage';
 import { playAchievementPoints } from '../utils/soundEffects';
 import { supabase } from '../lib/supabase';
+import { textViolatesContentPolicy } from '../utils/contentModeration';
+import { fetchIpAllowedForApp, requestServerBanForContentViolation } from '../utils/moderationClient';
 
 export { supabase };
+
+/**
+ * OAuth redirect URL — must match a Supabase Auth "Redirect URL" entry exactly.
+ * Uses a trailing slash so it matches `http://localhost:3001/` (Vite port) consistently.
+ * Override with VITE_AUTH_REDIRECT_URL if needed (e.g. production URL in preview builds).
+ */
+function getOAuthRedirectTo(): string | undefined {
+  if (typeof window === 'undefined') return undefined;
+  const fromEnv = import.meta.env.VITE_AUTH_REDIRECT_URL?.trim();
+  if (fromEnv) return fromEnv;
+  return `${window.location.origin}/`;
+}
 
 // Export the function to fetch users from Supabase
 export const fetchUsersFromSupabase = async () => {
@@ -1597,7 +1611,23 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
-  // Updated signup function - stores credentials directly in profiles table
+  const applyContentPolicyViolation = async (offendingText: string) => {
+    const u = user;
+    if (!u) return;
+    try {
+      await requestServerBanForContentViolation({ id: u.id, email: u.email }, offendingText);
+    } catch {
+      /* still sign out locally */
+    }
+    try {
+      sessionStorage.setItem(
+        'strummy-oauth-error',
+        'Your account was removed for violating community guidelines.',
+      );
+    } catch (_) {}
+    await signOut();
+  };
+
   const signUp = async (userData: Partial<User> & { password: string }) => {
     setIsLoading(true);
     
@@ -1611,6 +1641,11 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
       // Validate password length
       if (!userData.password || userData.password.length < 6) {
         throw new Error('Password must be at least 6 characters long');
+      }
+
+      const allowedIp = await fetchIpAllowedForApp();
+      if (!allowedIp) {
+        throw new Error('Registration is not available from this network.');
       }
 
       // Check if email already exists
@@ -1699,6 +1734,11 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
     setIsLoading(true);
     
     try {
+      const allowedIp = await fetchIpAllowedForApp();
+      if (!allowedIp) {
+        throw new Error('Sign-in is not available from this network.');
+      }
+
       await supabase.auth.signOut();
 
       // Query profiles table by email
@@ -1781,8 +1821,7 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
     setIsLoading(true);
 
     try {
-      const redirectTo =
-        typeof window !== 'undefined' ? `${window.location.origin}${window.location.pathname || '/'}` : undefined;
+      const redirectTo = getOAuthRedirectTo();
       const { error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
@@ -2885,6 +2924,12 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
   const sendMessage = async (chatId: string, content: string, receiverId?: string): Promise<void> => {
     if (!user) throw new Error('User not logged in');
 
+    const trimmedContent = content.trim();
+    if (textViolatesContentPolicy(trimmedContent)) {
+      await applyContentPolicyViolation(trimmedContent);
+      throw new Error('CONTENT_POLICY_VIOLATION');
+    }
+
     const messageId = `msg_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
     const now = new Date().toISOString();
     
@@ -2908,7 +2953,7 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
       senderId: user.id,
       senderName: user.name,
       senderUsername: user.username!,
-      content: content.trim(),
+      content: trimmedContent,
       timestamp: now,
       type: 'text'
     };
@@ -2922,7 +2967,7 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
         .insert({
           send_user: user.id,           // user_1: the one who sends the message
           receive_user: actualReceiverId, // user_2: the one who receives the message
-          message: content.trim(),       // the message content
+          message: trimmedContent,       // the message content
           created_at: now
         })
         .select();
@@ -2941,7 +2986,7 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
           receive_id: actualReceiverId,
           sender_name: user.name,
           sender_username: user.username || 'unknown',
-          content: content.trim(),
+          content: trimmedContent,
           message_type: 'text',
           created_at: now
         });
@@ -2997,6 +3042,12 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
   const createCommunityPost = async (content: string): Promise<void> => {
     if (!user) throw new Error('User not logged in');
 
+    const trimmedPost = content.trim();
+    if (textViolatesContentPolicy(trimmedPost)) {
+      await applyContentPolicyViolation(trimmedPost);
+      throw new Error('CONTENT_POLICY_VIOLATION');
+    }
+
     const newPost: CommunityPost = {
       id: generateUniqueId('post_'),
       userId: user.id,
@@ -3004,7 +3055,7 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
       username: user.username!,
       userLevel: user.level,
       avatar: user.avatar!,
-      content: content.trim(),
+      content: trimmedPost,
       timestamp: new Date().toISOString(),
       likes: 0,
       comments: 0,
@@ -3020,7 +3071,7 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
         userId: user.id,
         userName: user.name,
         avatar: user.avatar,
-        content: content.trim(),
+        content: trimmedPost,
         timestamp: new Date().toISOString(),
         likes: 0,
         comments: 0,
