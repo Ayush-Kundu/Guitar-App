@@ -1,6 +1,6 @@
 /**
- * Introductory popup: Beats says first, then guitar basics (tab, minutes, you're ready),
- * then optional Learn Guitar Basics. Shown once per novice user.
+ * Introductory popup: guitar basics and tab, daily minutes ("how much will you play?"),
+ * then Beats says, then you're ready, then optional Learn Guitar Basics. Shown once per novice user.
  */
 import React, { useState, useEffect, useMemo } from 'react';
 import { Dialog, DialogContent, DialogTitle } from './ui/dialog';
@@ -95,7 +95,12 @@ export function NoviceIntro({ isOpen, userId, onComplete, onStartLearnGuitarBasi
   const [slideIndex, setSlideIndex] = useState(0);
   const [selectedMinutes, setSelectedMinutes] = useState(30);
 
-  const SLIDES = useMemo(() => [BEATS_INTRO_SLIDE, ...GUITAR_SLIDES, LEARN_BASICS_SLIDE], []);
+  const SLIDES = useMemo(() => {
+    const minutesIdx = GUITAR_SLIDES.findIndex((s) => s.id === 'minutes');
+    const beforeBeats = GUITAR_SLIDES.slice(0, minutesIdx + 1);
+    const afterBeats = GUITAR_SLIDES.slice(minutesIdx + 1);
+    return [...beforeBeats, BEATS_INTRO_SLIDE, ...afterBeats, LEARN_BASICS_SLIDE];
+  }, []);
 
   const slide = SLIDES[slideIndex];
   const isMinutesSlide = slide?.id === 'minutes';
