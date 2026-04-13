@@ -18,7 +18,6 @@ import { supabase } from '../lib/supabase';
 import { isNative } from '../utils/capacitor';
 import { Browser } from '@capacitor/browser';
 import { App as CapacitorApp } from '@capacitor/app';
-import { InAppBrowser } from '@capgo/inappbrowser';
 
 export { supabase, isSupabaseConfigured } from '../lib/supabase';
 
@@ -1858,12 +1857,15 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
         );
       }
 
-      // Native (Capacitor): open Google OAuth inside InAppBrowser (WKWebView on iOS) so we can monitor
-      // URL changes. As soon as the popup navigates to the Supabase-configured Site URL
-      // (e.g. strummy.studio) carrying the OAuth `code` or tokens in the URL, we close the popup
-      // and finish auth inside the app — never showing the web page to the user.
+      // Native (Capacitor): open Google OAuth in SFSafariViewController via @capacitor/browser.
+      // Google blocks embedded WKWebView for OAuth ("access blocked: does not comply with Google's
+      // policies"), so we MUST use SFSafariViewController. That view controller doesn't expose URL
+      // changes to the app — the only way to auto-close it after account selection is for the final
+      // redirect to use the app's custom URL scheme (com.strummyak.app://auth-callback). iOS then
+      // dismisses the popup and hands the URL to `appUrlOpen` where we exchange the code for a
+      // session and look the email up in `profiles`.
       if (isNative()) {
-        await openNativeGoogleOAuth(url);
+        await Browser.open({ url, presentationStyle: 'popover' });
         return;
       }
 
@@ -1874,87 +1876,6 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
       setIsLoading(false);
       throw error;
     }
-  };
-
-  /**
-   * Open `url` in InAppBrowser and resolve once we detect the OAuth callback landing on any URL.
-   * Extracts `code` (PKCE) or `access_token`/`refresh_token` (implicit hash) from the callback URL,
-   * closes the popup immediately, and applies the Supabase session — which triggers
-   * `onAuthStateChange` → `applyProfileFromGoogleSession` to match the Google email against `profiles`.
-   */
-  const openNativeGoogleOAuth = async (url: string): Promise<void> => {
-    let settled = false;
-    const urlSub = await InAppBrowser.addListener('urlChangeEvent', async (event: { url: string }) => {
-      const cbUrl = event?.url || '';
-      if (settled) return;
-
-      // Ignore URLs that don't look like a finished OAuth redirect (still on accounts.google.com, supabase.co/auth/v1/callback, etc.).
-      const hasAuthPayload =
-        /[?&#](code|access_token|refresh_token|error)=/.test(cbUrl) &&
-        !/accounts\.google\.com/.test(cbUrl) &&
-        !/supabase\.co\/auth\/v1\/(authorize|callback)/.test(cbUrl);
-      if (!hasAuthPayload) return;
-
-      settled = true;
-      try {
-        await InAppBrowser.close();
-      } catch (_) {
-        /* already closed */
-      }
-
-      try {
-        const parsed = new URL(cbUrl);
-
-        // Hash-style (implicit flow) — `#access_token=...&refresh_token=...`
-        if (parsed.hash && parsed.hash.includes('access_token=')) {
-          const hashParams = new URLSearchParams(parsed.hash.replace(/^#/, ''));
-          const access_token = hashParams.get('access_token');
-          const refresh_token = hashParams.get('refresh_token');
-          if (access_token && refresh_token) {
-            await supabase.auth.setSession({ access_token, refresh_token });
-            return;
-          }
-        }
-
-        // PKCE — `?code=...`
-        const code = parsed.searchParams.get('code');
-        if (code) {
-          await supabase.auth.exchangeCodeForSession(code);
-          return;
-        }
-
-        // Provider returned `error=...`
-        const providerErr = parsed.searchParams.get('error') || new URLSearchParams(parsed.hash.replace(/^#/, '')).get('error');
-        if (providerErr) {
-          try {
-            sessionStorage.setItem('strummy-oauth-error', `Google sign-in failed: ${providerErr}`);
-          } catch (_) {}
-        }
-      } catch (err) {
-        console.error('OAuth callback parse failed:', err);
-      } finally {
-        setIsLoading(false);
-        urlSub.remove();
-      }
-    });
-
-    // Open the Google OAuth URL. `isPresentAfterPageLoad: false` shows the popup immediately.
-    await InAppBrowser.openWebView({
-      url,
-      title: 'Sign in with Google',
-      isPresentAfterPageLoad: false,
-      showReloadButton: false,
-      closeModal: false,
-    });
-
-    // Also clean up if the user closes the popup themselves without finishing.
-    const closeSub = await InAppBrowser.addListener('closeEvent', () => {
-      if (!settled) {
-        setIsLoading(false);
-      }
-      urlSub.remove();
-      closeSub.remove();
-    });
   };
 
   /** Load app User from `profiles` when Google OAuth session exists; email must match an existing profile row. */
