@@ -54,170 +54,6 @@ const handleError = (error: any, operation: string) => {
   };
 };
 
-// --- Content moderation (keep phrase list aligned with src/utils/contentModeration.ts) ---
-function getClientIp(c: { req: { header: (name: string) => string | undefined } }): string {
-  const forwarded = c.req.header('x-forwarded-for');
-  if (forwarded) {
-    const first = forwarded.split(',')[0]?.trim();
-    if (first) return first;
-  }
-  return c.req.header('cf-connecting-ip')?.trim() || 'unknown';
-}
-
-const SERVER_BLOCKED_PHRASES = [
-  'kys',
-  'kill yourself',
-  'kill urself',
-  'neck yourself',
-  'end yourself',
-  'suicide',
-  'i will kill you',
-  "i'll kill you",
-  'im going to kill you',
-  "i'm going to kill you",
-  'murder you',
-  'rape you',
-  'child porn',
-  'cp link',
-  'terrorist attack',
-  'nazi',
-  'hitler',
-];
-const SERVER_BLOCKED_REGEXES = [
-  /\bn[i1!|]g+[a3@e]*\b/i,
-  /\bf[a@4]g+[o0]+t*\b/i,
-  /\bc[u\*]nt\b/i,
-  /\br[e3]t[a@4]rd\b/i,
-];
-
-function serverNormalizeForScan(text: string): string {
-  return text
-    .toLowerCase()
-    .normalize('NFKD')
-    .replace(/[\u0300-\u036f]/g, '')
-    .replace(/[\s_\-./]+/g, ' ')
-    .replace(/0/g, 'o')
-    .replace(/1/g, 'i')
-    .replace(/3/g, 'e')
-    .replace(/4/g, 'a')
-    .replace(/5/g, 's')
-    .replace(/7/g, 't')
-    .trim();
-}
-
-function serverTextViolatesContentPolicy(text: string): boolean {
-  const raw = text.trim();
-  if (!raw) return false;
-  const norm = serverNormalizeForScan(raw);
-  const collapsed = norm.replace(/\s+/g, '');
-  for (const phrase of SERVER_BLOCKED_PHRASES) {
-    const p = phrase.toLowerCase();
-    if (norm.includes(p) || collapsed.includes(p.replace(/\s+/g, ''))) {
-      return true;
-    }
-  }
-  for (const re of SERVER_BLOCKED_REGEXES) {
-    if (re.test(raw) || re.test(norm)) {
-      return true;
-    }
-  }
-  return false;
-}
-
-async function hashPasswordStrummy(password: string): Promise<string> {
-  const data = new TextEncoder().encode(password + 'strummy_salt_2024');
-  const hashBuffer = await crypto.subtle.digest('SHA-256', data);
-  return Array.from(new Uint8Array(hashBuffer))
-    .map((b) => b.toString(16).padStart(2, '0'))
-    .join('');
-}
-
-async function isIpBanned(ip: string): Promise<boolean> {
-  if (!supabase || !ip || ip === 'unknown') return false;
-  try {
-    const { data, error } = await supabase
-      .from('moderation_banned_ips')
-      .select('ip_normalized')
-      .eq('ip_normalized', ip)
-      .maybeSingle();
-    if (error) return false;
-    return Boolean(data);
-  } catch {
-    return false;
-  }
-}
-
-async function banClientIp(c: { req: { header: (name: string) => string | undefined } }) {
-  if (!supabase) return;
-  const ip = getClientIp(c);
-  if (!ip || ip === 'unknown') return;
-  try {
-    await supabase.from('moderation_banned_ips').upsert(
-      {
-        ip_normalized: ip,
-        reason: 'content_policy_violation',
-        banned_at: new Date().toISOString(),
-      },
-      { onConflict: 'ip_normalized' },
-    );
-  } catch (e) {
-    console.warn('banClientIp', e);
-  }
-}
-
-async function purgeUserCompletely(userId: string) {
-  if (!supabase) return;
-
-  const tryQ = async (label: string, fn: () => Promise<{ error?: { message?: string } | null }>) => {
-    try {
-      const { error } = await fn();
-      if (error) console.warn(`purge ${label}:`, error.message);
-    } catch (e) {
-      console.warn(`purge ${label} threw`, e);
-    }
-  };
-
-  const { data: userChats } = await supabase
-    .from('chats')
-    .select('id')
-    .or(`participant_1.eq.${userId},participant_2.eq.${userId}`);
-
-  const chatIds = (userChats || []).map((r: { id: string }) => r.id).filter(Boolean);
-  if (chatIds.length) {
-    await tryQ('messages by chat', () => supabase.from('messages').delete().in('chat_id', chatIds));
-  }
-
-  await tryQ('friend_messages', () =>
-    supabase.from('friend_messages').delete().or(`send_user.eq.${userId},receive_user.eq.${userId}`)
-  );
-  await tryQ('messages sender', () =>
-    supabase.from('messages').delete().or(`sender_id.eq.${userId},receive_id.eq.${userId}`)
-  );
-  await tryQ('chats', () =>
-    supabase.from('chats').delete().or(`participant_1.eq.${userId},participant_2.eq.${userId}`)
-  );
-  await tryQ('likes', () => supabase.from('likes').delete().eq('user_id', userId));
-  await tryQ('posts', () => supabase.from('posts').delete().eq('user_id', userId));
-  await tryQ('friend_requests', () =>
-    supabase.from('friend_requests').delete().or(`from_user_id.eq.${userId},to_user_id.eq.${userId}`)
-  );
-  await tryQ('friendships', () =>
-    supabase.from('friendships').delete().or(`user_id_1.eq.${userId},user_id_2.eq.${userId}`)
-  );
-  await tryQ('blocked_users', () =>
-    supabase.from('blocked_users').delete().or(`blocker_id.eq.${userId},blocked_id.eq.${userId}`)
-  );
-  await tryQ('user_progress', () => supabase.from('user_progress').delete().eq('user_id', userId));
-  await tryQ('user_data', () => supabase.from('user_data').delete().eq('user_id', userId));
-  await tryQ('profiles', () => supabase.from('profiles').delete().eq('user_id', userId));
-
-  try {
-    await supabase.auth.admin.deleteUser(userId);
-  } catch (e) {
-    console.warn('auth.admin.deleteUser', e);
-  }
-}
-
 // User signup endpoint
 app.post('/signup', async (c) => {
   if (!supabase) {
@@ -232,11 +68,6 @@ app.post('/signup', async (c) => {
     // Validate input
     if (!name || !email || !password || !level || !musicPreferences) {
       return c.json({ error: 'Missing required fields' }, 400);
-    }
-
-    const requesterIp = getClientIp(c);
-    if (await isIpBanned(requesterIp)) {
-      return c.json({ error: 'Registration is not available from this network.' }, 403);
     }
     
     if (!Array.isArray(musicPreferences) || musicPreferences.length !== 3) {
@@ -349,11 +180,6 @@ app.post('/signin', async (c) => {
     
     if (!email || !password) {
       return c.json({ error: 'Email and password are required' }, 400);
-    }
-
-    const signinIp = getClientIp(c);
-    if (await isIpBanned(signinIp)) {
-      return c.json({ error: 'Sign-in is not available from this network.' }, 403);
     }
     
     console.log('Signin request received for:', email);
@@ -486,6 +312,51 @@ app.post('/demo', async (c) => {
     return c.json(handleError(error, 'demo login'), 500);
   }
 });
+
+function getClientIp(c: any): string {
+  const xf = c.req.header('x-forwarded-for');
+  if (xf) return xf.split(',')[0].trim().slice(0, 128);
+  return (
+    c.req.header('cf-connecting-ip') ||
+    c.req.header('x-real-ip') ||
+    'unknown'
+  ).slice(0, 128);
+}
+
+/** Service-role purge of one Strummy user id (profiles, social, progress). */
+async function purgeAllUserDataForId(admin: any, userId: string) {
+  const uid = userId;
+  const run = async (label: string, fn: () => Promise<any>) => {
+    try {
+      await fn();
+    } catch (e) {
+      console.warn(`[moderation] skip ${label}:`, e);
+    }
+  };
+  await run('likes', () => admin.from('likes').delete().eq('user_id', uid));
+  await run('posts', () => admin.from('posts').delete().eq('user_id', uid));
+  await run('friend_messages', () =>
+    admin.from('friend_messages').delete().or(`send_user.eq.${uid},receive_user.eq.${uid}`),
+  );
+  await run('messages', () =>
+    admin.from('messages').delete().or(`sender_id.eq.${uid},receive_id.eq.${uid}`),
+  );
+  await run('friend_requests', () =>
+    admin.from('friend_requests').delete().or(`from_user_id.eq.${uid},to_user_id.eq.${uid}`),
+  );
+  await run('friendships', () =>
+    admin.from('friendships').delete().or(`user_id_1.eq.${uid},user_id_2.eq.${uid}`),
+  );
+  await run('chats', () =>
+    admin.from('chats').delete().or(`participant_1.eq.${uid},participant_2.eq.${uid}`),
+  );
+  await run('blocked_users', () =>
+    admin.from('blocked_users').delete().or(`blocker_id.eq.${uid},blocked_id.eq.${uid}`),
+  );
+  await run('user_progress', () => admin.from('user_progress').delete().eq('user_id', uid));
+  await run('user_data', () => admin.from('user_data').delete().eq('user_id', uid));
+  await run('profiles', () => admin.from('profiles').delete().eq('user_id', uid));
+}
 
 // Protected route helper
 const requireAuth = async (c: any, next: any) => {
@@ -1066,95 +937,93 @@ app.get('/friends/blocked', requireAuth, async (c) => {
   }
 });
 
-/** Public: whether this request's IP is allowed to use the app (signup / sign-in guard). */
-app.get('/moderation/ip-status', async (c) => {
-  if (!supabase) {
-    return c.json({ allowed: true }, 200);
-  }
+// --- Content moderation: IP / device bans + full purge (requires SQL in supabase_moderation_setup.sql) ---
+
+app.get('/moderation/ip-ban-status', async (c) => {
+  if (!supabase) return c.json({ banned: false }, 200);
   try {
     const ip = getClientIp(c);
-    if (!ip || ip === 'unknown') {
-      return c.json({ allowed: true }, 200);
+    const deviceId = (c.req.query('deviceId') || '').toString().slice(0, 128);
+    if (deviceId) {
+      const { data: dev } = await supabase
+        .from('banned_devices')
+        .select('id')
+        .eq('device_id', deviceId)
+        .maybeSingle();
+      if (dev) return c.json({ banned: true, reason: 'device' }, 200);
     }
-    const banned = await isIpBanned(ip);
-    return c.json({ allowed: !banned }, 200);
-  } catch (error) {
-    return c.json({ allowed: true }, 200);
+    if (ip && ip !== 'unknown') {
+      const { data: row } = await supabase
+        .from('banned_ips')
+        .select('id')
+        .eq('ip_raw', ip)
+        .maybeSingle();
+      if (row) return c.json({ banned: true, reason: 'ip' }, 200);
+    }
+    return c.json({ banned: false }, 200);
+  } catch (e) {
+    console.warn('[moderation] ip-ban-status:', e);
+    return c.json({ banned: false }, 200);
   }
 });
 
-/**
- * Purge violator after content policy breach.
- * - With Authorization Bearer: bans JWT subject (must match violation text server-side).
- * - With x-strummy-moderation-secret + userId + email: trusted app path (secret must match MODERATION_SHARED_SECRET).
- * - With email + password: re-verify profile then purge (SHA-256 hash must match profiles.password_hash).
- */
-app.post('/moderation/violation-ban', async (c) => {
-  if (!supabase) {
-    return c.json({ error: 'Service temporarily unavailable' }, 503);
-  }
-
+app.post('/moderation/enforce-violation', requireAuth, async (c) => {
+  if (!supabase) return c.json({ error: 'Service unavailable' }, 503);
   try {
-    const body = await c.req.json().catch(() => ({}));
-    const snippet = typeof body.contentSnippet === 'string' ? body.contentSnippet : '';
-    if (!snippet || !serverTextViolatesContentPolicy(snippet)) {
-      return c.json({ error: 'Invalid request' }, 400);
+    const authUser = c.get('user');
+    const ip = getClientIp(c);
+    let deviceId = '';
+    try {
+      const body = await c.req.json();
+      if (body && typeof body.deviceId === 'string') deviceId = body.deviceId.slice(0, 128);
+    } catch {
+      /* no body */
     }
 
-    const accessToken = c.req.header('Authorization')?.split(' ')[1];
-    const sharedHeader = c.req.header('x-strummy-moderation-secret');
-    const sharedEnv = Deno.env.get('MODERATION_SHARED_SECRET');
-
-    let targetUserId: string | null = null;
-
-    if (accessToken) {
-      const { data: { user }, error } = await supabase.auth.getUser(accessToken);
-      if (error || !user?.id) {
-        return c.json({ error: 'Unauthorized' }, 401);
-      }
-      targetUserId = user.id;
-    } else if (sharedHeader && sharedEnv && sharedHeader === sharedEnv && body.userId && body.email) {
-      const { data: prof, error: pErr } = await supabase
+    const ids = new Set<string>();
+    ids.add(authUser.id);
+    if (authUser.email) {
+      const { data: profs } = await supabase
         .from('profiles')
-        .select('user_id,email')
-        .eq('user_id', body.userId as string)
-        .maybeSingle();
-      if (pErr || !prof) {
-        return c.json({ error: 'Forbidden' }, 403);
+        .select('user_id')
+        .eq('email', String(authUser.email).toLowerCase());
+      for (const p of profs || []) {
+        if (p?.user_id) ids.add(p.user_id);
       }
-      const em = (prof as { email?: string }).email?.toLowerCase();
-      if (!em || em !== String(body.email).toLowerCase()) {
-        return c.json({ error: 'Forbidden' }, 403);
-      }
-      targetUserId = body.userId as string;
-    } else if (body.email && body.password) {
-      const { data: profile, error: profileError } = await supabase
-        .from('profiles')
-        .select('user_id,email,password_hash')
-        .eq('email', String(body.email).toLowerCase())
-        .maybeSingle();
-      if (profileError || !profile) {
-        return c.json({ error: 'Unauthorized' }, 401);
-      }
-      const hash = await hashPasswordStrummy(String(body.password));
-      if ((profile as { password_hash?: string }).password_hash !== hash) {
-        return c.json({ error: 'Unauthorized' }, 401);
-      }
-      targetUserId = (profile as { user_id: string }).user_id;
-    } else {
-      return c.json({ error: 'Unauthorized' }, 401);
     }
 
-    if (!targetUserId) {
-      return c.json({ error: 'Unauthorized' }, 401);
+    for (const id of ids) {
+      await purgeAllUserDataForId(supabase, id);
     }
 
-    await banClientIp(c);
-    await purgeUserCompletely(targetUserId);
+    try {
+      await supabase.from('banned_ips').insert({
+        ip_raw: ip,
+        reason: 'content_moderation',
+      });
+    } catch {
+      /* duplicate IP etc. */
+    }
+    if (deviceId) {
+      try {
+        await supabase.from('banned_devices').insert({
+          device_id: deviceId,
+          reason: 'content_moderation',
+        });
+      } catch {
+        /* duplicate */
+      }
+    }
 
-    return c.json({ success: true, userId: targetUserId }, 200);
+    try {
+      await supabase.auth.admin.deleteUser(authUser.id);
+    } catch (e) {
+      console.warn('[moderation] admin.deleteUser:', e);
+    }
+
+    return c.json({ ok: true }, 200);
   } catch (error) {
-    return c.json(handleError(error, 'moderation violation-ban'), 500);
+    return c.json(handleError(error, 'moderation enforce'), 500);
   }
 });
 

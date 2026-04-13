@@ -253,9 +253,9 @@ const STORAGE_KEY = 'guitarAppProgress';
 
 const getStorageKey = (userId: string) => `${STORAGE_KEY}_${userId}`;
 
-// Debug function - expose to window for debugging
-if (typeof window !== 'undefined') {
-  (window as any).debugGuitarProgress = () => {
+// Debug helper — only registered in dev (avoids looking like an error in production consoles).
+if (typeof window !== 'undefined' && import.meta.env.DEV) {
+  (window as unknown as { debugGuitarProgress?: () => void }).debugGuitarProgress = () => {
     const keys = Object.keys(localStorage).filter(k => k.startsWith(STORAGE_KEY));
     console.log('🔍 All guitar progress keys:', keys);
     keys.forEach(key => {
@@ -263,11 +263,10 @@ if (typeof window !== 'undefined') {
       console.log(`📊 ${key}:`, {
         songs: data.songs,
         selectedSongs: data.selectedSongs,
-        totalPoints: data.totalPoints
+        totalPoints: data.totalPoints,
       });
     });
   };
-  console.log('💡 Debug: Run window.debugGuitarProgress() in console to inspect localStorage');
 }
 
 const getToday = () => new Date().toISOString().split('T')[0];

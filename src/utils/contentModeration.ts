@@ -1,77 +1,76 @@
 /**
- * Community / DM content policy (code-defined patterns).
- * Expand `BLOCKED_PHRASES` and `BLOCKED_REGEXES` as needed; keep server copy in
- * `make-server-4ea82950/index.ts` in sync for trusted-ban verification.
+ * Community / DM text moderation. Tune lists for your standards.
+ * Also reads VITE_MODERATION_EXTRA_TERMS (comma-separated, case-insensitive).
  */
 
-const BLOCKED_PHRASES: string[] = [
-  // Self-harm / violence (abbreviated / common evasions)
-  'kys',
+const NORMALIZE_SEPARATORS = /[\s_*.+\-]+/g;
+
+/** Obvious injection / spam shapes */
+const STRUCTURAL_PATTERNS: RegExp[] = [
+  /<script/i,
+  /javascript:/i,
+  /data:text\/html/i,
+  /on\w+\s*=/i,
+];
+
+/** Harassment / self-harm phrases (add more in EXTRA_TERMS as needed) */
+const DEFAULT_PHRASES: string[] = [
   'kill yourself',
-  'kill urself',
+  'kys',
   'neck yourself',
-  'end yourself',
-  'suicide',
-  // Threats
-  'i will kill you',
-  "i'll kill you",
-  'im going to kill you',
-  "i'm going to kill you",
-  'murder you',
-  'rape you',
-  'child porn',
-  'cp link',
-  'terrorist attack',
-  // Slurs — add further phrases your community rejects (kept minimal here)
-  'nazi',
-  'hitler',
+  'hope you die',
+  'go die',
 ];
 
-/** Obfuscated severe slurs via character-class patterns (extend cautiously). */
-const BLOCKED_REGEXES: RegExp[] = [
-  /\bn[i1!|]g+[a3@e]*\b/i,
-  /\bf[a@4]g+[o0]+t*\b/i,
-  /\bc[u\*]nt\b/i,
-  /\br[e3]t[a@4]rd\b/i,
-];
-
-function normalizeForScan(text: string): string {
-  return text
+function normalizeForMatch(input: string): string {
+  return input
     .toLowerCase()
     .normalize('NFKD')
     .replace(/[\u0300-\u036f]/g, '')
-    .replace(/[\s_\-./]+/g, ' ')
+    .replace(NORMALIZE_SEPARATORS, '')
     .replace(/0/g, 'o')
     .replace(/1/g, 'i')
     .replace(/3/g, 'e')
     .replace(/4/g, 'a')
     .replace(/5/g, 's')
     .replace(/7/g, 't')
-    .trim();
+    .replace(/@/g, 'a');
 }
 
-export function textViolatesContentPolicy(text: string): boolean {
-  const raw = text.trim();
-  if (!raw) return false;
-  const norm = normalizeForScan(raw);
-  const collapsed = norm.replace(/\s+/g, '');
-
-  for (const phrase of BLOCKED_PHRASES) {
-    const p = phrase.toLowerCase();
-    if (norm.includes(p) || collapsed.includes(p.replace(/\s+/g, ''))) {
-      return true;
-    }
-  }
-  for (const re of BLOCKED_REGEXES) {
-    if (re.test(raw) || re.test(norm)) {
-      return true;
-    }
-  }
-  return false;
+function loadExtraTerms(): string[] {
+  const raw = import.meta.env.VITE_MODERATION_EXTRA_TERMS;
+  if (!raw || typeof raw !== 'string') return [];
+  return raw
+    .split(',')
+    .map(s => s.trim().toLowerCase())
+    .filter(Boolean);
 }
 
-export function assertContentAllowed(text: string): void {
-  if (textViolatesContentPolicy(text)) {
-    throw new Error('CONTENT_POLICY_VIOLATION');
+export type ModerationResult = { ok: true } | { ok: false; reason: string };
+
+/**
+ * Returns violation if text matches coded blocklists or env extras.
+ * Does not call the network.
+ */
+export function scanUserGeneratedText(text: string): ModerationResult {
+  const trimmed = (text || '').trim();
+  if (!trimmed) return { ok: true };
+
+  for (const re of STRUCTURAL_PATTERNS) {
+    if (re.test(trimmed)) {
+      return { ok: false, reason: 'disallowed_content' };
+    }
   }
+
+  const collapsed = normalizeForMatch(trimmed);
+  const extras = loadExtraTerms();
+
+  for (const phrase of [...DEFAULT_PHRASES, ...extras]) {
+    const n = normalizeForMatch(phrase);
+    if (n.length >= 2 && collapsed.includes(n)) {
+      return { ok: false, reason: 'policy_violation' };
+    }
+  }
+
+  return { ok: true };
 }

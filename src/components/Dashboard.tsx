@@ -80,6 +80,28 @@ function writeDashSnap(uid: string, s: DashStatSnap) {
   }
 }
 
+/** Lighter wash of the same RGB as the tracker stat pills (streak / min / songs / level / points). */
+function motivatorFromTrackerFill(
+  fill: string,
+  edge: string,
+  icon: string
+): { bg: string; bottom: string; icon: string } {
+  return {
+    bg: `color-mix(in srgb, ${fill} 30%, white)`,
+    bottom: `color-mix(in srgb, ${edge} 38%, white)`,
+    icon,
+  };
+}
+
+const TRACKER_PILL_RGB = {
+  streak: { fill: 'rgb(255, 191, 73)', edge: 'rgb(255, 171, 46)' },
+  minutes: { fill: 'rgb(134, 239, 172)', edge: 'rgb(74, 222, 128)' },
+  songs: { fill: 'rgb(255, 223, 0)', edge: 'rgb(240, 204, 0)' },
+  level: { fill: 'rgb(147, 197, 253)', edge: 'rgb(96, 165, 250)' },
+  points: { fill: 'rgb(216, 180, 254)', edge: 'rgb(192, 132, 252)' },
+  theoryAccent: { fill: 'rgb(251, 207, 232)', edge: 'rgb(244, 114, 182)' },
+} as const;
+
 function AnimatedStatNumber({
   value,
   from,
@@ -173,16 +195,11 @@ function DashboardBeatsSaysBlock({
           <span className="text-[10px] font-medium beats-card-text">Daily</span>
         </div>
       </div>
-      <div className="flex items-start gap-2 mb-3 pr-20">
-        <div className="w-10 h-10 rounded-full overflow-hidden flex-shrink-0 flex items-center justify-center beats-avatar ring-2 ring-[#eb4034]/35 dark:ring-[#ff9a8f]/40">
+      <div className="mb-3 flex items-center gap-3 pr-16 sm:pr-20">
+        <div className="beats-avatar flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-full ring-2 ring-[#eb4034]/35 dark:ring-[#ff9a8f]/40">
           <img src={beatsSaysAvatar} alt="Beats" className="beats-avatar-img" />
         </div>
-        <div className="min-w-0 flex-1">
-          <h3 className="font-semibold text-sm text-[#c42a22] dark:text-[#ff9a8f] m-0 leading-tight">Beats says</h3>
-          <p className="text-[11px] font-medium text-gray-500 dark:text-gray-400 leading-snug mt-1">
-            Your next step today
-          </p>
-        </div>
+        <h3 className="m-0 min-w-0 text-base font-semibold leading-none text-gray-800 dark:text-gray-200">Beats says</h3>
       </div>
       <div
         role="button"
@@ -194,19 +211,180 @@ function DashboardBeatsSaysBlock({
             openBeatsTarget();
           }
         }}
-        className="w-full flex items-center gap-3 text-left py-3 px-3 sm:py-3.5 sm:px-4 rounded-xl cursor-pointer bg-[#eb4034]/[0.07] dark:bg-[#eb4034]/[0.12] border border-[#eb4034]/22 dark:border-[#eb4034]/32 hover:bg-[#eb4034]/[0.11] dark:hover:bg-[#eb4034]/[0.16] transition-colors"
+        className="flex w-full cursor-pointer items-center gap-3 rounded-xl border border-[#eb4034]/22 bg-[#eb4034]/[0.07] px-3 py-3 text-left transition-colors hover:bg-[#eb4034]/[0.11] dark:border-[#eb4034]/32 dark:bg-[#eb4034]/[0.12] dark:hover:bg-[#eb4034]/[0.16] sm:px-4 sm:py-3.5"
       >
-        <p className="flex-1 min-w-0 text-sm font-medium text-gray-600 dark:text-gray-300 m-0 leading-tight pr-1 truncate">
+        <p className="m-0 min-w-0 flex-1 truncate text-sm font-medium leading-tight text-gray-600 dark:text-gray-300">
           {firstStep.line}
         </p>
-        <ChevronRight className="w-5 h-5 flex-shrink-0 text-[#eb4034] dark:text-[#ff9a8f] self-center" aria-hidden />
+        <ChevronRight className="h-5 w-5 flex-shrink-0 self-center text-[#eb4034] dark:text-[#ff9a8f]" aria-hidden />
       </div>
     </div>
   );
 }
 
+type MotivatorKind = 'streak' | 'practice' | 'hours' | 'songs' | 'level' | 'technique' | 'theory';
+
+/** Lighter mixes of the dashboard tracker pill colors (see stat row). Icon color = text color. */
+const MOTIVATOR_PILL: Record<MotivatorKind, { bg: string; bottom: string; icon: string }> = {
+  streak: motivatorFromTrackerFill(TRACKER_PILL_RGB.streak.fill, TRACKER_PILL_RGB.streak.edge, 'rgb(234, 88, 12)'),
+  practice: motivatorFromTrackerFill(TRACKER_PILL_RGB.minutes.fill, TRACKER_PILL_RGB.minutes.edge, 'rgb(21, 128, 61)'),
+  hours: motivatorFromTrackerFill(TRACKER_PILL_RGB.minutes.fill, TRACKER_PILL_RGB.minutes.edge, 'rgb(21, 128, 61)'),
+  songs: motivatorFromTrackerFill(TRACKER_PILL_RGB.songs.fill, TRACKER_PILL_RGB.songs.edge, 'rgb(180, 83, 9)'),
+  level: motivatorFromTrackerFill(TRACKER_PILL_RGB.level.fill, TRACKER_PILL_RGB.level.edge, 'rgb(37, 99, 235)'),
+  technique: motivatorFromTrackerFill(TRACKER_PILL_RGB.points.fill, TRACKER_PILL_RGB.points.edge, 'rgb(109, 40, 217)'),
+  theory: motivatorFromTrackerFill(
+    TRACKER_PILL_RGB.theoryAccent.fill,
+    TRACKER_PILL_RGB.theoryAccent.edge,
+    'rgb(190, 24, 93)',
+  ),
+};
+
+function DashboardTrackerMotivator({
+  user,
+  progressData,
+  displayHours,
+  displayMasteredSongs,
+  getLevelProgressPct,
+  onSectionChange,
+}: {
+  user: NonNullable<ReturnType<typeof useUser>['user']>;
+  progressData: any;
+  displayHours: number;
+  displayMasteredSongs: number;
+  getLevelProgressPct: () => number;
+  onSectionChange: (section: string) => void;
+}) {
+  const today = new Date().toISOString().split('T')[0];
+  const last = (progressData?.lastPracticeDate as string | undefined) || '';
+  const streakNotUpdatedToday = last !== today;
+  const dailyGoal = getDailyPracticeGoal(user.id);
+  const dp = progressData?.dailyProgress?.[today] || {};
+  const totalMin = dp.totalMinutes || 0;
+  const practiceBehind = totalMin < dailyGoal;
+  const levelPct = getLevelProgressPct();
+  const goalsDone = dp.goalsCompleted || [];
+  const techniqueBehind =
+    (dp.techniqueMinutes || 0) < 5 && !goalsDone.includes('technique_lesson_today');
+  const theoryBehind = (dp.theoryMinutes || 0) < 5 && !goalsDone.includes('theory_lesson_today');
+
+  type Row = { kind: MotivatorKind; Icon: typeof Flame; text: string; action?: string };
+  const rows: Row[] = [];
+
+  if (streakNotUpdatedToday) {
+    rows.push({
+      kind: 'streak',
+      Icon: Flame,
+      text: 'Practice today to grow your streak.',
+      action: 'songs',
+    });
+  }
+
+  if (practiceBehind) {
+    rows.push({
+      kind: 'practice',
+      Icon: Timer,
+      text: `${totalMin}/${dailyGoal} min today — keep going.`,
+      action: 'songs',
+    });
+  }
+
+  if (techniqueBehind) {
+    rows.push({
+      kind: 'technique',
+      Icon: Hand,
+      text: "Technique — 5 min or one lesson (Today's Goals).",
+      action: 'technique',
+    });
+  }
+
+  if (theoryBehind) {
+    rows.push({
+      kind: 'theory',
+      Icon: Brain,
+      text: "Theory — 5 min or one lesson (Today's Goals).",
+      action: 'theory',
+    });
+  }
+
+  if (displayHours < 1.5) {
+    rows.push({
+      kind: 'hours',
+      Icon: Timer,
+      text: 'Add more time this week — see Timeline.',
+      action: 'timeline',
+    });
+  }
+
+  if (displayMasteredSongs < 3) {
+    rows.push({
+      kind: 'songs',
+      Icon: Trophy,
+      text: 'Master more songs from your list.',
+      action: 'songs',
+    });
+  }
+
+  if (levelPct < 42) {
+    rows.push({
+      kind: 'level',
+      Icon: Target,
+      text: 'Next level steps — open Progress.',
+      action: 'progress',
+    });
+  }
+
+  const primary = rows[0];
+  if (!primary) return null;
+
+  const pill = MOTIVATOR_PILL[primary.kind];
+  const RowIcon = primary.Icon;
+
+  const open = () => {
+    const section = primary.action || 'dashboard';
+    onSectionChange(section);
+  };
+
+  return (
+    <div
+      role="button"
+      tabIndex={0}
+      onClick={open}
+      onKeyDown={e => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          open();
+        }
+      }}
+      className={cn(
+        'mb-3 flex cursor-pointer items-center justify-between gap-3 rounded-xl border border-stone-200/70 px-3 py-3 outline-none dark:border-slate-600/50',
+        'hover:brightness-[0.99] focus-visible:ring-2 focus-visible:ring-orange-300/50',
+      )}
+      style={{
+        backgroundColor: pill.bg,
+        borderBottom: `3px solid ${pill.bottom}`,
+      }}
+    >
+      <div className="flex min-w-0 flex-1 items-center gap-4">
+        <RowIcon className="h-5 w-5 shrink-0" strokeWidth={2.25} style={{ color: pill.icon }} aria-hidden />
+        <p className="m-0 min-w-0 truncate text-left text-sm font-semibold leading-tight" style={{ color: pill.icon }}>
+          {primary.text}
+        </p>
+      </div>
+      <span className="flex h-5 w-5 shrink-0 items-center justify-center" aria-hidden>
+        <ChevronRight className="h-5 w-5 opacity-90" style={{ color: pill.icon }} />
+      </span>
+    </div>
+  );
+}
+
 export function Dashboard({ onSectionChange }: DashboardProps) {
-  const { user, awardPoints, calculatePointsForActivity, updateUser, getLevelProgressPercentage } = useUser();
+  const {
+    user,
+    awardPoints,
+    calculatePointsForActivity,
+    updateUser,
+    getLevelProgressPercentage,
+  } = useUser();
   const [progressData, setProgressData] = useState<any>(null);
   const [streak, setStreak] = useState(0);
   const [weeklyMinutes, setWeeklyMinutes] = useState(0);
@@ -513,33 +691,34 @@ export function Dashboard({ onSectionChange }: DashboardProps) {
   return (
     <div className="page-content min-h-screen bg-gradient-to-br from-orange-100 via-red-50 to-pink-100 dark:from-gray-900 dark:to-gray-800 p-4">
       <div className="max-w-6xl mx-auto">
-        {/* Welcome Text */}
-        <div className="text-center" style={{ marginTop: '8px', marginBottom: '-30px', position: 'relative', zIndex: 10 }}>
-          <h1 
-            className="text-3xl font-bold"
+        {/* Username sits lower, closer to hero art; image slightly larger */}
+        <div className="-mb-12 w-full text-center sm:-mb-14" style={{ marginTop: '4px' }}>
+          <h1
+            className="relative z-10 m-0 text-3xl font-bold sm:text-4xl"
             style={{
               color: 'rgb(249, 115, 22)',
               fontFamily: '"Comfortaa", "Nunito", "Quicksand", sans-serif',
               letterSpacing: '2px',
-              textShadow: '0 2px 4px rgba(249, 115, 22, 0.2)'
+              textShadow: '0 2px 4px rgba(249, 115, 22, 0.2)',
             }}
           >
             {user.name}!
           </h1>
         </div>
-
-        {/* Colorful Cartoon Friends Image */}
-        <div className="relative flex justify-center" style={{ marginBottom: '-20px' }}>
+        <div
+          className="relative -mt-12 flex w-full justify-center sm:-mt-16"
+          style={{ marginBottom: '-18px' }}
+        >
           <img
             src={charactersHoldingHands}
-            alt="Colorful Cartoon Friends"
-            className="object-contain w-full max-w-lg"
-            style={{ maxHeight: '220px' }}
+            alt=""
+            className="w-full max-w-lg object-contain drop-shadow-lg"
+            style={{ maxHeight: '256px' }}
           />
         </div>
 
         {/* User Stats — single row; no coins pill */}
-        <div className="flex flex-nowrap justify-center items-center gap-2 mb-4 w-full min-w-0 overflow-x-auto pb-1 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
+        <div className="flex flex-nowrap justify-center items-center gap-2 mb-4 mt-1 w-full min-w-0 overflow-x-auto pb-1 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
           <div
             className={cn(
               'flex shrink-0 items-center justify-center px-3 py-1.5 rounded-xl',
@@ -639,6 +818,14 @@ export function Dashboard({ onSectionChange }: DashboardProps) {
           </div>
         </div>
 
+        <DashboardTrackerMotivator
+          user={user}
+          progressData={progressData}
+          displayHours={displayHours}
+          displayMasteredSongs={displayMasteredSongs}
+          getLevelProgressPct={getLevelProgressPercentage}
+          onSectionChange={onSectionChange}
+        />
 
         {/* Level progress — goals shell + original SkillProgressBar content */}
         <button

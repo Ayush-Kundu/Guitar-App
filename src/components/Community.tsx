@@ -96,6 +96,7 @@ export function Community() {
     sendMessage,
     getChatMessages,
     createCommunityPost,
+    enforceOutgoingTextPolicy,
     likeCommunityPost,
     allUsers, // This contains the users from Supabase
     onlineUsers,
@@ -541,7 +542,15 @@ export function Community() {
 
   const handleCreatePost1 = async () => {
     if (!postContent.trim()) return;
-  
+
+    try {
+      await enforceOutgoingTextPolicy(postContent);
+    } catch (e: any) {
+      console.error("Error creating post:", e);
+      alert(e?.message || "This content is not allowed.");
+      return;
+    }
+
     try {
       const res = await fetch("/api/posts", {
         method: "POST",
@@ -598,8 +607,9 @@ export function Community() {
       await sendMessage(selectedChat, messageInput, receiverId);
       
       setMessageInput("");
-    } catch (error) {
+    } catch (error: any) {
       console.error("❌ COMMUNITY: Error sending message:", error);
+      if (error?.message) alert(error.message);
     }
   };
 
@@ -609,8 +619,9 @@ export function Community() {
     try {
       await createCommunityPost(postContent);
       setPostContent("");
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error creating post:", error);
+      if (error?.message) alert(error.message);
     }
   };
 

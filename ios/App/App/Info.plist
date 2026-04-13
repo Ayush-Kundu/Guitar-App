@@ -49,6 +49,17 @@
 	<true/>
 	<key>NSMicrophoneUsageDescription</key>
 	<string>Strummy needs microphone access to detect chords and notes while you play guitar</string>
+	<key>CFBundleURLTypes</key>
+	<array>
+		<dict>
+			<key>CFBundleURLName</key>
+			<string>com.strummyak.app</string>
+			<key>CFBundleURLSchemes</key>
+			<array>
+				<string>com.strummyak.app</string>
+			</array>
+		</dict>
+	</array>
 	<key>NSAppTransportSecurity</key>
 	<dict>
 		<key>NSAllowsArbitraryLoads</key>

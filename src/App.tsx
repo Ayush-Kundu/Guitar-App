@@ -172,7 +172,7 @@ function AppContent() {
           activeSection={activeSection}
           onSectionChange={handleSectionChange}
         />
-        {/* Intro: guitar basics → daily goal → Beats says → optional Learn Guitar Basics (first time) */}
+        {/* Intro: Beats says, guitar basics, optional Learn Guitar Basics (first time) */}
         {showIntro && user && (
           <NoviceIntro
             isOpen={true}

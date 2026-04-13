@@ -247,7 +247,11 @@ body {
   background-color: rgba(40, 40, 65, 0.6) !important;
 }
 
-/* Footer navigation */
+/* Footer navigation — no elevation when content scrolls behind it */
+footer {
+  box-shadow: none !important;
+}
+
 .dark footer {
   background-color: rgba(20, 20, 35, 0.98) !important;
   border-color: rgba(100, 100, 150, 0.2) !important;

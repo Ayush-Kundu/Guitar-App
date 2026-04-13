@@ -1,5 +1,5 @@
 /**
- * Chord Detection — 1:1 port of browser main.js from kundu.dev/c_d
+ * Chord Detection — 1:1 port of browser main.js from the remote c_d WebSocket service (see serverConfig CHORD_DETECTION_WS_URL).
  *
  * This is an EXACT copy of the browser code. The ONLY differences:
  *   1. TypeScript types + React hook wrapper (instead of DOM manipulation)

@@ -1,10 +1,10 @@
 /**
- * Introductory popup: guitar basics and tab, daily minutes ("how much will you play?"),
- * then Beats says, then you're ready, then optional Learn Guitar Basics. Shown once per novice user.
+ * Novice intro: welcome → tab → minutes → Beats says → you're ready.
+ * Continue on the last step opens Learn Guitar Basics and closes the dialog.
  */
 import React, { useState, useEffect, useMemo } from 'react';
 import { Dialog, DialogContent, DialogTitle } from './ui/dialog';
-import { ChevronRight, ChevronLeft, Music, BookOpen, CheckCircle2, Clock, MessageCircle, Check } from 'lucide-react';
+import { ChevronRight, ChevronLeft, Music, BookOpen, CheckCircle2, Clock, MessageCircle } from 'lucide-react';
 import beatsSaysAvatar from '../assets/beats-says-avatar.png';
 import { setDailyPracticeGoal } from '../utils/progressStorage';
 
@@ -34,7 +34,7 @@ const BEATS_INTRO_SLIDE = {
   id: 'beats-intro',
   title: 'Beats says',
   description:
-    "On your Dashboard you'll see Beats says: your in-app coach. Beats watches what you've done today — practice minutes, technique, theory — and suggests the single best next step. Tap the card and Strummy opens the right tab for you. It's like having a trainer who keeps your routine on track and updates every time you practice.",
+    'Dashboard → red Beats says card. Tap it — Strummy jumps to the tab for your next step (Songs, Technique, Theory, …).',
   icon: MessageCircle,
   color: 'rgb(235, 64, 52)',
 };
@@ -73,19 +73,9 @@ const GUITAR_SLIDES = [
     title: "You're Ready",
     icon: CheckCircle2,
     color: 'rgb(249, 115, 22)',
-    bullets: ["When you're set, continue — then you can optionally open Learn Guitar Basics to see where you're at."],
+    bullets: ['Continue opens **Learn Guitar Basics** so you can see where you’re at.'],
   },
 ];
-
-const LEARN_BASICS_SLIDE = {
-  id: 'learn-basics',
-  title: 'Learn Guitar Basics (optional)',
-  icon: BookOpen,
-  color: 'rgb(59, 130, 246)',
-  bullets: [
-    'This is just a quick check to see where you are at — no pressure. You can open it anytime from Songs.',
-  ],
-};
 
 const STRING_LABELS_WIDTH = 48;
 const STRING_NAMES = ['E', 'A', 'D', 'G', 'B', 'e'];
@@ -95,24 +85,28 @@ export function NoviceIntro({ isOpen, userId, onComplete, onStartLearnGuitarBasi
   const [slideIndex, setSlideIndex] = useState(0);
   const [selectedMinutes, setSelectedMinutes] = useState(30);
 
-  const SLIDES = useMemo(() => {
-    const minutesIdx = GUITAR_SLIDES.findIndex((s) => s.id === 'minutes');
-    const beforeBeats = GUITAR_SLIDES.slice(0, minutesIdx + 1);
-    const afterBeats = GUITAR_SLIDES.slice(minutesIdx + 1);
-    return [...beforeBeats, BEATS_INTRO_SLIDE, ...afterBeats, LEARN_BASICS_SLIDE];
-  }, []);
+  /** Minutes → Beats → Ready; Ready finishes intro and opens Learn Guitar Basics. */
+  const SLIDES = useMemo(() => [...GUITAR_SLIDES.slice(0, 3), BEATS_INTRO_SLIDE, ...GUITAR_SLIDES.slice(3)], []);
 
   const slide = SLIDES[slideIndex];
   const isMinutesSlide = slide?.id === 'minutes';
   const isBeatsIntroSlide = slide?.id === 'beats-intro';
-  const isLearnBasicsSlide = slide?.id === 'learn-basics';
+  const isReadySlide = slide?.id === 'ready';
 
   const handleNext = () => {
-    if (slideIndex >= SLIDES.length - 1) {
-      onComplete();
+    if (slideIndex >= SLIDES.length - 1) return;
+    setSlideIndex((i) => i + 1);
+  };
+
+  /** After "You're Ready", open Learn Guitar Basics (parent closes intro + navigates) or just finish. */
+  const handleReadyContinue = () => {
+    if (onStartLearnGuitarBasics) {
+      try {
+        onStartLearnGuitarBasics();
+      } catch (_) {}
       return;
     }
-    setSlideIndex((i) => i + 1);
+    onComplete();
   };
 
   const handleMinutesContinue = () => {
@@ -252,18 +246,15 @@ export function NoviceIntro({ isOpen, userId, onComplete, onStartLearnGuitarBasi
                 <p className="text-gray-600 text-sm leading-relaxed pr-1" style={{ fontFamily: font }}>
                   {BEATS_INTRO_SLIDE.description}
                 </p>
-                <div className="flex flex-col items-center gap-2 mt-5">
+                <div className="flex justify-start mt-4">
                   <div className="rounded-full p-1 ring-4 ring-[#eb4034]/35 shadow-md bg-[#eb4034]/[0.08]">
                     <img
                       src={beatsSaysAvatar}
                       alt=""
-                      className="w-16 h-16 sm:w-20 sm:h-20 rounded-full object-cover object-center"
+                      className="w-20 h-20 sm:w-24 sm:h-24 rounded-full object-cover object-center"
                       draggable={false}
                     />
                   </div>
-                  <p className="text-xs text-center text-gray-500 m-0 max-w-sm" style={{ fontFamily: font }}>
-                    That’s Beats — tap the red card on your Dashboard anytime for your next move.
-                  </p>
                 </div>
               </>
             ) : isMinutesSlide ? (
@@ -291,8 +282,6 @@ export function NoviceIntro({ isOpen, userId, onComplete, onStartLearnGuitarBasi
                   ))}
                 </div>
               </>
-            ) : isLearnBasicsSlide ? (
-              slide.bullets && slide.bullets.length > 0 && renderBullets(slide.bullets)
             ) : (
               <>
                 {'bullets' in slide && slide.bullets && slide.bullets.length > 0 && renderBullets(slide.bullets)}
@@ -302,49 +291,6 @@ export function NoviceIntro({ isOpen, userId, onComplete, onStartLearnGuitarBasi
           </div>
 
           <div className={isMinutesSlide ? 'flex flex-col gap-4 mt-2 min-h-0' : 'flex flex-col gap-3 mt-1 min-h-0'}>
-            {isLearnBasicsSlide && (
-              <div className="flex flex-col gap-3">
-                <div className="flex gap-3 flex-wrap">
-                  <button
-                    type="button"
-                    onClick={handlePrev}
-                    className="flex items-center justify-center gap-1 px-4 py-3 rounded-xl text-sm font-semibold"
-                    style={{ backgroundColor: 'rgba(0,0,0,0.06)', color: 'rgb(75, 85, 99)', fontFamily: font }}
-                  >
-                    <ChevronLeft className="w-4 h-4" /> Back
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      onComplete();
-                    }}
-                    className="flex-1 min-w-[140px] flex items-center justify-center gap-2 py-3 rounded-xl text-sm font-bold"
-                    style={{
-                      backgroundColor: slide.color,
-                      color: 'white',
-                      border: `2px solid ${slide.color}`,
-                      fontFamily: font,
-                    }}
-                  >
-                    Get started <Check className="w-4 h-4" />
-                  </button>
-                </div>
-                {onStartLearnGuitarBasics && (
-                  <button
-                    type="button"
-                    onClick={() => {
-                      onStartLearnGuitarBasics();
-                      onComplete();
-                    }}
-                    className="w-full flex items-center justify-center gap-2 py-3 rounded-xl text-sm font-bold border-2 border-blue-200 bg-blue-50/90 text-blue-800 dark:bg-blue-950/40 dark:border-blue-700 dark:text-blue-100"
-                    style={{ fontFamily: font }}
-                  >
-                    <BookOpen className="w-4 h-4 shrink-0" />
-                    Open Learn Guitar Basics
-                  </button>
-                )}
-              </div>
-            )}
             {isMinutesSlide && (
               <div className="flex gap-3">
                 <button
@@ -365,7 +311,29 @@ export function NoviceIntro({ isOpen, userId, onComplete, onStartLearnGuitarBasi
                 </button>
               </div>
             )}
-            {!isMinutesSlide && !isLearnBasicsSlide && (
+            {!isMinutesSlide && isReadySlide && (
+              <div className="flex gap-3">
+                {slideIndex > 0 && (
+                  <button
+                    type="button"
+                    onClick={handlePrev}
+                    className="flex items-center justify-center gap-1 px-4 py-3 rounded-xl text-sm font-semibold"
+                    style={{ backgroundColor: 'rgba(0,0,0,0.06)', color: 'rgb(75, 85, 99)', fontFamily: font }}
+                  >
+                    <ChevronLeft className="w-4 h-4" /> Back
+                  </button>
+                )}
+                <button
+                  type="button"
+                  onClick={handleReadyContinue}
+                  className="flex-1 flex items-center justify-center gap-2 py-3 rounded-xl text-sm font-bold"
+                  style={{ backgroundColor: 'rgba(249, 115, 22, 0.2)', borderBottom: '3px solid rgb(249, 115, 22)', color: 'rgb(194, 65, 12)', fontFamily: font }}
+                >
+                  Continue <ChevronRight className="w-4 h-4" />
+                </button>
+              </div>
+            )}
+            {!isMinutesSlide && !isReadySlide && (
               <div className="flex gap-3">
                 {slideIndex > 0 && (
                   <button

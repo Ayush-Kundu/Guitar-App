@@ -8,8 +8,8 @@ import { Capacitor } from '@capacitor/core';
 const DEV_SERVER_IP = '192.168.1.196';
 const API_SERVER_PORT = 3001;
 
-// Remote chord detection API at kundu.dev
-const CHORD_DETECTION_WS_URL = 'wss://kundu.dev/c_d/ws';
+// Remote chord detection API at strummy.studio
+const CHORD_DETECTION_WS_URL = 'wss://strummy.studio/c_d/ws';
 
 /**
  * Get the appropriate host for server connections

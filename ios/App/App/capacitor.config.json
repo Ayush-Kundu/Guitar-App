@@ -22,6 +22,8 @@
 		"cleartext": true
 	},
 	"packageClassList": [
+		"AppPlugin",
+		"CAPBrowserPlugin",
 		"FilesystemPlugin",
 		"HapticsPlugin",
 		"LocalNotificationsPlugin",

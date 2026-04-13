@@ -72,7 +72,7 @@ export function FooterNavigation({ activeSection, onSectionChange }: FooterNavig
   ];
 
   return (
-    <footer className="fixed bottom-0 left-0 right-0 z-50 bg-white dark:bg-slate-900 border-t border-gray-200 dark:border-slate-700">
+    <footer className="fixed bottom-0 left-0 right-0 z-50 border-t border-gray-200 bg-white shadow-none dark:border-slate-700 dark:bg-slate-900">
       <div className="max-w-7xl mx-auto px-2 sm:px-4">
         <nav className="grid grid-cols-7 gap-1 py-1.5">
           {navItems.map((item) => (

@@ -299,7 +299,11 @@ export function Settings({ isDarkMode, setIsDarkMode }: SettingsProps) {
                         className="bg-white/60 dark:bg-gray-700/50 border-2 border-gray-200 dark:border-gray-600 dark:text-white rounded-lg"
                       />
                     ) : (
-                      <div className="flex items-center gap-2 p-3 bg-white/40 dark:bg-gray-700/30 rounded-lg" style={{ border: '1px solid rgba(240, 240, 240, 0.8)', borderBottom: '3px solid rgb(240, 240, 240)' }}>
+                      <div
+                        id="name"
+                        className="flex items-center gap-2 p-3 bg-white/40 dark:bg-gray-700/30 rounded-lg"
+                        style={{ border: '1px solid rgba(240, 240, 240, 0.8)', borderBottom: '3px solid rgb(240, 240, 240)' }}
+                      >
                         <User className="w-4 h-4 text-gray-400" />
                         <span className="dark:text-white text-gray-700">{user.name}</span>
                       </div>
@@ -310,7 +314,10 @@ export function Settings({ isDarkMode, setIsDarkMode }: SettingsProps) {
                     <Label htmlFor="level" className="dark:text-gray-200 text-gray-700 text-sm font-medium">Guitar Level</Label>
                     {isEditing ? (
                       <Select value={editData.level} onValueChange={(value) => setEditData(prev => ({ ...prev, level: value }))}>
-                        <SelectTrigger className="bg-white/60 dark:bg-gray-700/50 border-2 border-gray-200 dark:border-gray-600 dark:text-white rounded-lg">
+                        <SelectTrigger
+                          id="level"
+                          className="bg-white/60 dark:bg-gray-700/50 border-2 border-gray-200 dark:border-gray-600 dark:text-white rounded-lg"
+                        >
                           <SelectValue placeholder="Select your guitar level" />
                         </SelectTrigger>
                         <SelectContent className="dark:bg-gray-800 dark:border-gray-700">
@@ -324,7 +331,11 @@ export function Settings({ isDarkMode, setIsDarkMode }: SettingsProps) {
                         </SelectContent>
                       </Select>
                     ) : (
-                      <div className="flex items-center gap-2 p-3 bg-white/40 dark:bg-gray-700/30 rounded-lg" style={{ border: '1px solid rgba(240, 240, 240, 0.8)', borderBottom: '3px solid rgb(240, 240, 240)' }}>
+                      <div
+                        id="level"
+                        className="flex items-center gap-2 p-3 bg-white/40 dark:bg-gray-700/30 rounded-lg"
+                        style={{ border: '1px solid rgba(240, 240, 240, 0.8)', borderBottom: '3px solid rgb(240, 240, 240)' }}
+                      >
                         <Star className="w-4 h-4 text-gray-400" />
                         <span className="capitalize dark:text-white text-gray-700">{user.level}</span>
                       </div>
@@ -333,7 +344,7 @@ export function Settings({ isDarkMode, setIsDarkMode }: SettingsProps) {
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="email" className="dark:text-gray-200 text-gray-700 text-sm font-medium">Email Address</Label>
+                  <p className="dark:text-gray-200 text-gray-700 text-sm font-medium">Email Address</p>
                   <div className="flex items-center gap-2 p-3 bg-white/40 dark:bg-gray-700/30 rounded-lg" style={{ border: '1px solid rgba(240, 240, 240, 0.8)', borderBottom: '3px solid rgb(240, 240, 240)' }}>
                     <Mail className="w-4 h-4 text-gray-400" />
                     <span className="dark:text-white text-gray-700 flex-1">{user.email}</span>
@@ -542,11 +553,14 @@ export function Settings({ isDarkMode, setIsDarkMode }: SettingsProps) {
                   <div className="flex items-center gap-3">
                     {isDarkMode ? <Moon className="w-5 h-5" style={{ color: 'rgb(255, 140, 0)' }} /> : <Sun className="w-5 h-5" style={{ color: 'rgb(255, 140, 0)' }} />}
                     <div>
-                      <Label className="text-gray-600 dark:text-white">Dark Mode</Label>
+                      <Label htmlFor="settings-dark-mode" className="text-gray-600 dark:text-white">
+                        Dark Mode
+                      </Label>
                       <p className="text-sm text-gray-600 dark:text-gray-300">Toggle dark theme</p>
                     </div>
                   </div>
                   <Switch
+                    id="settings-dark-mode"
                     checked={isDarkMode}
                     onCheckedChange={setIsDarkMode}
                     className="data-[state=checked]:bg-orange-500"

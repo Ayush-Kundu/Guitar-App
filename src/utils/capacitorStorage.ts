@@ -8,26 +8,38 @@ import { isNative } from './capacitor';
  */
 export const capacitorStorage = {
   getItem: async (key: string): Promise<string | null> => {
-    if (isNative()) {
-      const { value } = await Preferences.get({ key });
-      return value;
+    try {
+      if (isNative()) {
+        const { value } = await Preferences.get({ key });
+        return value;
+      }
+      return localStorage.getItem(key);
+    } catch {
+      return null;
     }
-    return localStorage.getItem(key);
   },
 
   setItem: async (key: string, value: string): Promise<void> => {
-    if (isNative()) {
-      await Preferences.set({ key, value });
-    } else {
-      localStorage.setItem(key, value);
+    try {
+      if (isNative()) {
+        await Preferences.set({ key, value });
+      } else {
+        localStorage.setItem(key, value);
+      }
+    } catch {
+      /* private mode / quota — auth session may not persist */
     }
   },
 
   removeItem: async (key: string): Promise<void> => {
-    if (isNative()) {
-      await Preferences.remove({ key });
-    } else {
-      localStorage.removeItem(key);
+    try {
+      if (isNative()) {
+        await Preferences.remove({ key });
+      } else {
+        localStorage.removeItem(key);
+      }
+    } catch {
+      /* ignore */
     }
   },
 };

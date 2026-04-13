@@ -5,19 +5,36 @@ import { websocketService, WebSocketMessage } from '../utils/websocket';
 import { createLocalPost } from '../api/local-posts';
 import { type Session } from '@supabase/supabase-js';
 import { loadProgress, getSelectedSongs, getAllSongProgress, loadProgressFromSupabase, syncFullProgressToSupabase } from '../utils/progressStorage';
+import { scanUserGeneratedText } from '../utils/contentModeration';
+import {
+  clearLocalUserState,
+  fetchModerationBanStatus,
+  invokeModerationEnforceEdge,
+  MODERATION_ERR,
+  purgeUserDataBestEffort,
+} from '../utils/moderationPurge';
 import { playAchievementPoints } from '../utils/soundEffects';
 import { supabase } from '../lib/supabase';
-import { textViolatesContentPolicy } from '../utils/contentModeration';
-import { fetchIpAllowedForApp, requestServerBanForContentViolation } from '../utils/moderationClient';
+import { isNative } from '../utils/capacitor';
+import { Browser } from '@capacitor/browser';
+import { App as CapacitorApp } from '@capacitor/app';
 
-export { supabase };
+export { supabase, isSupabaseConfigured } from '../lib/supabase';
 
 /**
- * OAuth redirect URL — must match a Supabase Auth "Redirect URL" entry exactly.
- * Uses a trailing slash so it matches `http://localhost:3001/` (Vite port) consistently.
- * Override with VITE_AUTH_REDIRECT_URL if needed (e.g. production URL in preview builds).
+ * Custom URL scheme used for OAuth callbacks on native (iOS/Android).
+ * Must match an entry in `CFBundleURLSchemes` (iOS Info.plist) and be added to Supabase Auth → Redirect URLs.
+ */
+const NATIVE_OAUTH_REDIRECT = 'com.strummyak.app://auth-callback';
+
+/**
+ * OAuth redirect URL — must match a Supabase Auth redirect allowlist entry exactly (including trailing slash).
+ * Native (Capacitor): uses `com.strummyak.app://auth-callback` so Google can return to the app via custom scheme.
+ * Web: `window.location.origin + "/"` (e.g. `http://localhost:3001/` when using Vite on port 3001).
+ * Set `VITE_AUTH_REDIRECT_URL` for a fixed return URL (e.g. production at `https://strummy.studio/`).
  */
 function getOAuthRedirectTo(): string | undefined {
+  if (isNative()) return NATIVE_OAUTH_REDIRECT;
   if (typeof window === 'undefined') return undefined;
   const fromEnv = import.meta.env.VITE_AUTH_REDIRECT_URL?.trim();
   if (fromEnv) return fromEnv;
@@ -164,6 +181,8 @@ interface UserContextType {
   sendMessage: (chatId: string, content: string) => Promise<void>;
   getChatMessages: (chatId: string) => ChatMessage[];
   createCommunityPost: (content: string) => Promise<void>;
+  /** Throws MODERATION_ERR and removes account if text violates policy. */
+  enforceOutgoingTextPolicy: (text: string) => Promise<void>;
   likeCommunityPost: (postId: string) => void;
   fetchCommunityPosts: () => Promise<void>;
   toggleLikePost: (postId: string) => Promise<void>;
@@ -372,7 +391,14 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
             .single();
           
           if (profile && !error) {
-            
+            const ban = await fetchModerationBanStatus();
+            if (ban.banned) {
+              clearLocalUserState();
+              localStorage.removeItem('guitarAppSession');
+              setIsLoading(false);
+              return;
+            }
+
             // Create user object from profile
           const userData: User = {
               id: profile.user_id,
@@ -1611,23 +1637,7 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
-  const applyContentPolicyViolation = async (offendingText: string) => {
-    const u = user;
-    if (!u) return;
-    try {
-      await requestServerBanForContentViolation({ id: u.id, email: u.email }, offendingText);
-    } catch {
-      /* still sign out locally */
-    }
-    try {
-      sessionStorage.setItem(
-        'strummy-oauth-error',
-        'Your account was removed for violating community guidelines.',
-      );
-    } catch (_) {}
-    await signOut();
-  };
-
+  // Updated signup function - stores credentials directly in profiles table
   const signUp = async (userData: Partial<User> & { password: string }) => {
     setIsLoading(true);
     
@@ -1643,11 +1653,6 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
         throw new Error('Password must be at least 6 characters long');
       }
 
-      const allowedIp = await fetchIpAllowedForApp();
-      if (!allowedIp) {
-        throw new Error('Registration is not available from this network.');
-      }
-
       // Check if email already exists
       const { data: existingUsers, error: checkError } = await supabase
         .from('profiles')
@@ -1659,6 +1664,11 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
 
       if (existingUsers && existingUsers.length > 0) {
         throw new Error('An account with this email already exists. Please sign in instead.');
+      }
+
+      const banSignup = await fetchModerationBanStatus();
+      if (banSignup.banned) {
+        throw new Error('This network location is not allowed to create an account.');
       }
 
       // Generate new user ID and hash password
@@ -1734,11 +1744,6 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
     setIsLoading(true);
     
     try {
-      const allowedIp = await fetchIpAllowedForApp();
-      if (!allowedIp) {
-        throw new Error('Sign-in is not available from this network.');
-      }
-
       await supabase.auth.signOut();
 
       // Query profiles table by email
@@ -1758,6 +1763,11 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
       if (profile.password_hash !== passwordHash) {
         throw new Error('Incorrect email or password.');
         }
+
+      const banSignin = await fetchModerationBanStatus();
+      if (banSignin.banned) {
+        throw new Error('This network location is not allowed to sign in.');
+      }
 
         // Set user in local state
       const userData: User = {
@@ -1822,16 +1832,41 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
 
     try {
       const redirectTo = getOAuthRedirectTo();
-      const { error } = await supabase.auth.signInWithOAuth({
+      // `skipBrowserRedirect` + explicit `location.assign` avoids cases where Safari / in-app WebKit never
+      // leaves the app and jumps straight to `redirectTo` without hitting accounts.google.com first.
+      const { data, error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
           redirectTo,
-          skipBrowserRedirect: false,
+          skipBrowserRedirect: true,
+          queryParams: {
+            prompt: 'select_account',
+          },
         },
       });
 
       if (error) {
         throw new Error(`Google sign-in failed: ${error.message}`);
+      }
+
+      const url = data?.url;
+      if (!url) {
+        setIsLoading(false);
+        throw new Error(
+          'Google sign-in did not return a link. In Supabase Dashboard → Authentication → Providers, enable Google and set the Client ID / Secret.',
+        );
+      }
+
+      // Native (Capacitor): open the OAuth URL in SFSafariViewController / Chrome Custom Tab.
+      // Google blocks embedded WebViews, so we must leave the app's WebView to hit accounts.google.com.
+      // The `appUrlOpen` listener below catches the custom-scheme callback and exchanges the code for a session.
+      if (isNative()) {
+        await Browser.open({ url, presentationStyle: 'popover' });
+        return;
+      }
+
+      if (typeof window !== 'undefined') {
+        window.location.assign(url);
       }
     } catch (error: any) {
       setIsLoading(false);
@@ -1882,6 +1917,14 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
           );
         } catch (_) {}
         await supabase.auth.signOut();
+        setIsLoading(false);
+        return;
+      }
+
+      const banGoogle = await fetchModerationBanStatus();
+      if (banGoogle.banned) {
+        await supabase.auth.signOut();
+        clearLocalUserState();
         setIsLoading(false);
         return;
       }
@@ -1954,8 +1997,36 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
       }
     });
 
+    // Native (Capacitor): intercept the custom-scheme callback from SFSafariViewController / Chrome Custom Tab
+    // after Google OAuth completes. Parse the `code` query param and exchange it for a Supabase session
+    // (PKCE flow). Detect session in URL is disabled on native, so we have to do this by hand.
+    let urlOpenHandle: { remove: () => void } | undefined;
+    if (isNative()) {
+      void CapacitorApp.addListener('appUrlOpen', async ({ url }) => {
+        if (!url || !url.startsWith('com.strummyak.app://')) return;
+        try {
+          const parsed = new URL(url);
+          const code = parsed.searchParams.get('code');
+          if (code) {
+            await supabase.auth.exchangeCodeForSession(code);
+          }
+        } catch (err) {
+          console.error('OAuth callback handling failed:', err);
+        } finally {
+          try {
+            await Browser.close();
+          } catch (_) {
+            /* Browser may already be closed */
+          }
+        }
+      }).then((handle) => {
+        urlOpenHandle = handle;
+      });
+    }
+
     return () => {
       subscription.unsubscribe();
+      urlOpenHandle?.remove();
     };
   }, []);
 
@@ -2924,11 +2995,7 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
   const sendMessage = async (chatId: string, content: string, receiverId?: string): Promise<void> => {
     if (!user) throw new Error('User not logged in');
 
-    const trimmedContent = content.trim();
-    if (textViolatesContentPolicy(trimmedContent)) {
-      await applyContentPolicyViolation(trimmedContent);
-      throw new Error('CONTENT_POLICY_VIOLATION');
-    }
+    await enforceOutgoingTextPolicy(content);
 
     const messageId = `msg_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
     const now = new Date().toISOString();
@@ -2953,7 +3020,7 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
       senderId: user.id,
       senderName: user.name,
       senderUsername: user.username!,
-      content: trimmedContent,
+      content: content.trim(),
       timestamp: now,
       type: 'text'
     };
@@ -2967,7 +3034,7 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
         .insert({
           send_user: user.id,           // user_1: the one who sends the message
           receive_user: actualReceiverId, // user_2: the one who receives the message
-          message: trimmedContent,       // the message content
+          message: content.trim(),       // the message content
           created_at: now
         })
         .select();
@@ -2986,7 +3053,7 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
           receive_id: actualReceiverId,
           sender_name: user.name,
           sender_username: user.username || 'unknown',
-          content: trimmedContent,
+          content: content.trim(),
           message_type: 'text',
           created_at: now
         });
@@ -3039,14 +3106,58 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
       .sort((a, b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime());
   };
 
+  /** After prohibited community or DM text: purge data, ban IP/device (Edge), sign out. */
+  const handleModerationViolation = async (violatingUserId: string) => {
+    try {
+      websocketService.disconnect();
+    } catch {
+      /* noop */
+    }
+    try {
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
+      if (session?.access_token) {
+        await invokeModerationEnforceEdge(session.access_token);
+      }
+    } catch {
+      /* Edge may be unavailable; still attempt client purge */
+    }
+    try {
+      await purgeUserDataBestEffort(supabase, violatingUserId);
+    } catch {
+      /* noop */
+    }
+    clearLocalUserState();
+    try {
+      await supabase.auth.signOut();
+    } catch {
+      /* noop */
+    }
+    setUser(null);
+    setRecentPointsActivities([]);
+    setFriends([]);
+    setFriendRequests([]);
+    setChats([]);
+    setMessages([]);
+    setCommunityPosts([]);
+    setBlockedUsers([]);
+    setIsConnected(false);
+  };
+
+  const enforceOutgoingTextPolicy = async (text: string): Promise<void> => {
+    if (!user) throw new Error('User not logged in');
+    const mod = scanUserGeneratedText(text);
+    if (!mod.ok) {
+      await handleModerationViolation(user.id);
+      throw new Error(MODERATION_ERR);
+    }
+  };
+
   const createCommunityPost = async (content: string): Promise<void> => {
     if (!user) throw new Error('User not logged in');
 
-    const trimmedPost = content.trim();
-    if (textViolatesContentPolicy(trimmedPost)) {
-      await applyContentPolicyViolation(trimmedPost);
-      throw new Error('CONTENT_POLICY_VIOLATION');
-    }
+    await enforceOutgoingTextPolicy(content);
 
     const newPost: CommunityPost = {
       id: generateUniqueId('post_'),
@@ -3055,7 +3166,7 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
       username: user.username!,
       userLevel: user.level,
       avatar: user.avatar!,
-      content: trimmedPost,
+      content: content.trim(),
       timestamp: new Date().toISOString(),
       likes: 0,
       comments: 0,
@@ -3071,7 +3182,7 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
         userId: user.id,
         userName: user.name,
         avatar: user.avatar,
-        content: trimmedPost,
+        content: content.trim(),
         timestamp: new Date().toISOString(),
         likes: 0,
         comments: 0,
@@ -3322,6 +3433,7 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
     sendMessage,
     getChatMessages,
     createCommunityPost,
+    enforceOutgoingTextPolicy,
     likeCommunityPost,
     fetchCommunityPosts,
     toggleLikePost,

@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useUser, MUSIC_THEMES } from '../contexts/UserContext';
+import { isSupabaseConfigured } from '../lib/supabase';
 import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
 import { Button } from './ui/button';
 import { Input } from './ui/input';
@@ -159,8 +160,23 @@ export function Auth() {
           </CardHeader>
           
           <CardContent>
+            {!isSupabaseConfigured && (
+              <div className="mb-4 p-3 rounded-lg bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800 text-sm text-amber-950 dark:text-amber-100">
+                <p className="font-semibold m-0 mb-1">Supabase is not connected</p>
+                <p className="m-0 text-xs leading-relaxed opacity-95">
+                  Add <code className="px-1 rounded bg-white/70 dark:bg-black/30">VITE_SUPABASE_URL</code> and{' '}
+                  <code className="px-1 rounded bg-white/70 dark:bg-black/30">VITE_SUPABASE_ANON_KEY</code> to your{' '}
+                  <code className="px-1 rounded bg-white/70 dark:bg-black/30">.env</code> file (see{' '}
+                  <code className="px-1 rounded bg-white/70 dark:bg-black/30">.env.example</code>), then stop and restart{' '}
+                  <code className="px-1 rounded bg-white/70 dark:bg-black/30">npm run dev</code>.
+                </p>
+                <p className="m-0 mt-2 text-[11px] text-amber-800/90 dark:text-amber-200/80">
+                  Errors mentioning <code>content.js</code> or <code>browser is not defined</code> come from a browser
+                  extension, not this app.
+                </p>
+              </div>
+            )}
 
-            
             {error && (
               <div className="mb-4 p-4 bg-red-50 border border-red-200 rounded-lg">
                 <p className="text-sm text-red-600 mb-3">{error}</p>
@@ -197,7 +213,7 @@ export function Auth() {
                       value={formData.level} 
                       onValueChange={(value) => setFormData({ ...formData, level: value as any })}
                     >
-                      <SelectTrigger>
+                      <SelectTrigger id="level">
                         <SelectValue placeholder="Select your level" />
                       </SelectTrigger>
                       <SelectContent>

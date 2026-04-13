@@ -572,6 +572,14 @@ function hasCompletedLearnBasicsProgram(progressData: ProgressData | null): bool
   return Object.values(songs).some(s => Boolean(s?.learnBasicsProgramCompleted));
 }
 
+/** One-line Beats card copy (few words). */
+function dashSongHint(line: string): string {
+  const t = line.replace(/\s+/g, ' ').trim();
+  if (t.length <= 22) return t;
+  const cut = t.lastIndexOf(' ', 20);
+  return (cut > 6 ? t.slice(0, cut) : t.slice(0, 20)) + '…';
+}
+
 /**
  * Single “do this first” line for the dashboard Beats card (daily only).
  * Callers navigate with `onSectionChange`; do not set strummy-beats-directed (no bottom popup).
@@ -588,7 +596,7 @@ export function getDashboardDailyFirstStep(
   }
 ): DashboardDailyFirstStep {
   if (!user) {
-    return { line: 'Open Technique & Theory to begin your path.', section: 'technique' };
+    return { line: 'Open Technique', section: 'technique' };
   }
 
   const p = progressData as Record<string, unknown> | null;
@@ -608,7 +616,7 @@ export function getDashboardDailyFirstStep(
 
   if (brandNewNovice) {
     return {
-      line: 'Learning Guitar Basics — start here',
+      line: 'Finish Learn Basics',
       section: 'songs',
       openLearnGuitarBasics: true,
     };
@@ -618,52 +626,32 @@ export function getDashboardDailyFirstStep(
     const { technique } = completedLessonSetsFromProgress(progressData);
     const next = getNextOpenJourneyRow(uid, level, 'technique', technique);
     if (next) {
-      const headline = describeJourneyRow(next.row).headline;
-      return {
-        line: `Technique: ${headline}`,
-        section: 'technique',
-      };
+      return { line: 'Technique next', section: 'technique' };
     }
-    return {
-      line: 'Technique: 5+ min or your next lesson',
-      section: 'technique',
-    };
+    return { line: 'Technique now', section: 'technique' };
   }
 
   if (!theoryDone) {
     const { theory } = completedLessonSetsFromProgress(progressData);
     const next = getNextOpenJourneyRow(uid, level, 'theory', theory);
     if (next) {
-      const headline = describeJourneyRow(next.row).headline;
-      return {
-        line: `Theory: ${headline}`,
-        section: 'theory',
-      };
+      return { line: 'Theory next', section: 'theory' };
     }
-    return {
-      line: 'Theory: 5+ min or your next lesson',
-      section: 'theory',
-    };
+    return { line: 'Theory now', section: 'theory' };
   }
 
   if (!practiceDone) {
     const pick = pickSongToPractice(progressData, today);
     if (pick) {
       return {
-        line: `Practice: ${pick.line} · ~${dailyGoal} min`,
+        line: `Practice ${dashSongHint(pick.line)}`,
         section: 'songs',
       };
     }
-    return {
-      line: `Songs: add one & practice ~${dailyGoal} min`,
-      section: 'songs',
-    };
+    return { line: 'Practice songs', section: 'songs' };
   }
 
-  return {
-    line: 'All set today — open Compete for weekly goals',
-    section: 'compete',
-  };
+  return { line: 'Weekly goals', section: 'compete' };
 }
 
 /** Technique / theory daily goals: 5+ minutes in that area or one lesson/activity completed today. */
