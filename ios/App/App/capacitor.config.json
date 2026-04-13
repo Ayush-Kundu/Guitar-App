@@ -29,6 +29,7 @@
 		"LocalNotificationsPlugin",
 		"PreferencesPlugin",
 		"ScreenOrientationPlugin",
-		"StatusBarPlugin"
+		"StatusBarPlugin",
+		"InAppBrowserPlugin"
 	]
 }
