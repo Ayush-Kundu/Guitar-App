@@ -18,7 +18,7 @@ import { supabase } from '../lib/supabase';
 import { isNative } from '../utils/capacitor';
 import { Browser } from '@capacitor/browser';
 import { App as CapacitorApp } from '@capacitor/app';
-import { nativeGoogleSignIn, nativeGoogleSignOut } from '../utils/nativeGoogleAuth';
+import { isNativeGoogleConfigured, nativeGoogleSignIn, nativeGoogleSignOut } from '../utils/nativeGoogleAuth';
 
 export { supabase, isSupabaseConfigured } from '../lib/supabase';
 
@@ -1841,7 +1841,10 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
     setIsLoading(true);
 
     try {
-      if (isNative()) {
+      // Preferred on native: native Google SDK → idToken → signInWithIdToken.
+      // Requires VITE_GOOGLE_IOS_CLIENT_ID + VITE_GOOGLE_WEB_CLIENT_ID in .env and matching setup
+      // in Google Cloud Console + Supabase. Falls through to the OAuth URL flow below when not set.
+      if (isNative() && isNativeGoogleConfigured()) {
         const { idToken } = await nativeGoogleSignIn();
         const { error: idTokenError } = await supabase.auth.signInWithIdToken({
           provider: 'google',
@@ -1876,6 +1879,15 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
         throw new Error(
           'Google sign-in did not return a link. In Supabase Dashboard → Authentication → Providers, enable Google and set the Client ID / Secret.',
         );
+      }
+
+      // Native fallback (when iOS Google client isn't configured): open Google in
+      // SFSafariViewController so the user at least sees the account picker.
+      // After account selection, Supabase redirects to `com.strummyak.app://auth-callback` (if
+      // you've added it to Supabase Auth → Redirect URLs) which iOS hands to `appUrlOpen`.
+      if (isNative()) {
+        await Browser.open({ url, presentationStyle: 'popover' });
+        return;
       }
 
       if (typeof window !== 'undefined') {

@@ -35,22 +35,18 @@ function readEnv(name: string): string | undefined {
   return v && v.trim() ? v.trim() : undefined;
 }
 
+/** True if both Google client IDs are set in env so native sign-in can actually run. */
+export function isNativeGoogleConfigured(): boolean {
+  return Boolean(readEnv('VITE_GOOGLE_WEB_CLIENT_ID') && readEnv('VITE_GOOGLE_IOS_CLIENT_ID'));
+}
+
 async function ensureInitialized(): Promise<void> {
   if (initialized) return;
   const webClientId = readEnv('VITE_GOOGLE_WEB_CLIENT_ID');
   const iosClientId = readEnv('VITE_GOOGLE_IOS_CLIENT_ID');
 
-  if (!webClientId) {
-    throw new Error(
-      'Google sign-in is not configured: VITE_GOOGLE_WEB_CLIENT_ID is missing. ' +
-        'Set it in .env to your Google Cloud Web OAuth client ID (same one used in Supabase Auth → Google).',
-    );
-  }
-  if (!iosClientId) {
-    throw new Error(
-      'Google sign-in is not configured: VITE_GOOGLE_IOS_CLIENT_ID is missing. ' +
-        'Create an iOS OAuth 2.0 client in Google Cloud Console (bundle id com.strummyak.app) and paste it in .env.',
-    );
+  if (!webClientId || !iosClientId) {
+    throw new Error('Native Google sign-in is not configured (missing VITE_GOOGLE_WEB_CLIENT_ID or VITE_GOOGLE_IOS_CLIENT_ID).');
   }
 
   await SocialLogin.initialize({
