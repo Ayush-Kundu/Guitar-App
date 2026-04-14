@@ -19,6 +19,8 @@ const config: CapacitorConfig = {
     CapacitorHttp: {
       enabled: true,
     },
+    // Native Google Sign-In is configured at runtime via SocialLogin.initialize() in
+    // `src/utils/nativeGoogleAuth.ts` — uses VITE_GOOGLE_IOS_CLIENT_ID / VITE_GOOGLE_WEB_CLIENT_ID.
   },
   server: {
     // Allow cleartext traffic for local development servers

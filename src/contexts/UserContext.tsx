@@ -18,6 +18,7 @@ import { supabase } from '../lib/supabase';
 import { isNative } from '../utils/capacitor';
 import { Browser } from '@capacitor/browser';
 import { App as CapacitorApp } from '@capacitor/app';
+import { nativeGoogleSignIn, nativeGoogleSignOut } from '../utils/nativeGoogleAuth';
 
 export { supabase, isSupabaseConfigured } from '../lib/supabase';
 
@@ -1826,14 +1827,34 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
-  // Google Sign-In using Supabase Auth OAuth — only links to an existing `profiles` row by email (no auto-registration).
+  // Google Sign-In — only links to an existing `profiles` row by email (no auto-registration).
+  //
+  // Native (iOS): uses the native Google Sign-In SDK via @codetrix-studio/capacitor-google-auth.
+  //   The plugin presents ASWebAuthenticationSession (Google-approved for OAuth) and returns an
+  //   ID token. We hand that token to `supabase.auth.signInWithIdToken` which creates the Supabase
+  //   session entirely inside the app — no redirect URLs, no custom URL schemes, no popup webpage.
+  //   `onAuthStateChange` fires with the new session, `applyProfileFromGoogleSession` looks up the
+  //   email in `profiles` and signs the user in with that profile (or shows an error if no match).
+  //
+  // Web: uses Supabase OAuth redirect flow (unchanged).
   const signInWithGoogle = async () => {
     setIsLoading(true);
 
     try {
+      if (isNative()) {
+        const { idToken } = await nativeGoogleSignIn();
+        const { error: idTokenError } = await supabase.auth.signInWithIdToken({
+          provider: 'google',
+          token: idToken,
+        });
+        if (idTokenError) {
+          throw new Error(`Google sign-in failed: ${idTokenError.message}`);
+        }
+        // onAuthStateChange → applyProfileFromGoogleSession handles profile lookup and sets user state.
+        return;
+      }
+
       const redirectTo = getOAuthRedirectTo();
-      // `skipBrowserRedirect` + explicit `location.assign` avoids cases where Safari / in-app WebKit never
-      // leaves the app and jumps straight to `redirectTo` without hitting accounts.google.com first.
       const { data, error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
@@ -1857,23 +1878,16 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
         );
       }
 
-      // Native (Capacitor): open Google OAuth in SFSafariViewController via @capacitor/browser.
-      // Google blocks embedded WKWebView for OAuth ("access blocked: does not comply with Google's
-      // policies"), so we MUST use SFSafariViewController. That view controller doesn't expose URL
-      // changes to the app — the only way to auto-close it after account selection is for the final
-      // redirect to use the app's custom URL scheme (com.strummyak.app://auth-callback). iOS then
-      // dismisses the popup and hands the URL to `appUrlOpen` where we exchange the code for a
-      // session and look the email up in `profiles`.
-      if (isNative()) {
-        await Browser.open({ url, presentationStyle: 'popover' });
-        return;
-      }
-
       if (typeof window !== 'undefined') {
         window.location.assign(url);
       }
     } catch (error: any) {
       setIsLoading(false);
+      // Surface a friendlier message for the common "user cancelled the Google sheet" case.
+      const msg = String(error?.message || '').toLowerCase();
+      if (msg.includes('cancel') || msg.includes('popup_closed')) {
+        return; // swallow silently — user intentionally dismissed
+      }
       throw error;
     }
   };
@@ -2043,7 +2057,12 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
       }
 
       await supabase.auth.signOut();
-      
+
+      // Also clear the native Google session so the next sign-in re-prompts the account chooser.
+      if (isNative()) {
+        await nativeGoogleSignOut();
+      }
+
       // Disconnect WebSocket
       websocketService.disconnect();
       
