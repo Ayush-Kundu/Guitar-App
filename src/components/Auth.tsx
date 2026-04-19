@@ -626,26 +626,6 @@ export function Auth() {
           </CardContent>
         </Card>
 
-        {/* Features Preview */}
-        {!isSignUp && (
-          <div className="mt-8 text-center">
-            <p className="text-sm text-gray-600 mb-4">What you'll get:</p>
-            <div className="flex justify-center gap-6 text-xs text-gray-500">
-              <div className="flex items-center gap-1">
-                <CheckCircle2 className="w-4 h-4 text-green-500" />
-                <span>Personalized Lessons</span>
-              </div>
-              <div className="flex items-center gap-1">
-                <CheckCircle2 className="w-4 h-4 text-green-500" />
-                <span>Progress Tracking</span>
-              </div>
-              <div className="flex items-center gap-1">
-                <CheckCircle2 className="w-4 h-4 text-green-500" />
-                <span>Interactive Tools</span>
-              </div>
-            </div>
-          </div>
-        )}
       </div>
     </div>
   );
