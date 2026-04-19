@@ -626,6 +626,12 @@ export function Settings({ isDarkMode, setIsDarkMode }: SettingsProps) {
               </CardContent>
             </Card>
 
+            {/* Legal */}
+            <div className="flex justify-center gap-4 mb-2">
+              <a href="https://strummy.studio/terms" target="_blank" rel="noopener noreferrer" className="text-xs text-gray-400 hover:text-orange-500 underline">Terms of Service</a>
+              <a href="https://strummy.studio/privacy" target="_blank" rel="noopener noreferrer" className="text-xs text-gray-400 hover:text-orange-500 underline">Privacy Policy</a>
+            </div>
+
             {/* Account Actions */}
             <div className="flex flex-col items-center gap-3">
                 <Button

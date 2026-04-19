@@ -414,6 +414,13 @@ export function Auth() {
                   </Button>
                 </div>
 
+                <p className="text-xs text-gray-400 text-center mt-4 leading-relaxed">
+                  By signing in, you agree to our{' '}
+                  <a href="https://strummy.studio/terms" target="_blank" rel="noopener noreferrer" className="underline text-orange-500">Terms of Service</a>
+                  {' '}and{' '}
+                  <a href="https://strummy.studio/privacy" target="_blank" rel="noopener noreferrer" className="underline text-orange-500">Privacy Policy</a>.
+                </p>
+
                 <div className="mt-6 text-center">
                   <p className="text-sm text-gray-600">
                     Don't have an account?{' '}
@@ -431,6 +438,15 @@ export function Auth() {
                   </p>
                 </div>
               </>
+            )}
+
+            {isSignUp && step === 1 && (
+              <p className="text-xs text-gray-400 text-center mt-4 leading-relaxed">
+                By signing up, you agree to our{' '}
+                <a href="https://strummy.studio/terms" target="_blank" rel="noopener noreferrer" className="underline text-orange-500">Terms of Service</a>
+                {' '}and{' '}
+                <a href="https://strummy.studio/privacy" target="_blank" rel="noopener noreferrer" className="underline text-orange-500">Privacy Policy</a>.
+              </p>
             )}
 
             {isSignUp && step === 1 && (
