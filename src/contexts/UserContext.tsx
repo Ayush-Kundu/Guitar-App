@@ -19,6 +19,7 @@ import { isNative } from '../utils/capacitor';
 import { Browser } from '@capacitor/browser';
 import { App as CapacitorApp } from '@capacitor/app';
 import { isNativeGoogleConfigured, nativeGoogleSignIn, nativeGoogleSignOut } from '../utils/nativeGoogleAuth';
+import { nativeAppleSignIn, nativeAppleSignOut } from '../utils/nativeAppleAuth';
 
 export { supabase, isSupabaseConfigured } from '../lib/supabase';
 
@@ -151,6 +152,10 @@ interface UserContextType {
   signUp: (userData: Partial<User> & { password: string }) => Promise<void>;
   signIn: (email: string, password: string) => Promise<void>;
   signInWithGoogle: () => Promise<void>;
+  signInWithApple: () => Promise<void>;
+  deleteAccount: () => Promise<void>;
+  deleteCommunityPost: (postId: string) => Promise<void>;
+  reportContent: (target: { type: 'post' | 'message'; id: string; userId: string }, reason: string) => Promise<void>;
   signOut: () => Promise<void>;
   updateUser: (updates: Partial<User>) => void;
   updateProfile: (updates: Partial<User>) => Promise<void>;
@@ -1904,6 +1909,76 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
+  // Apple Sign-In — mirrors Google: native on iOS, web via Supabase OAuth (not implemented; can add later).
+  const signInWithApple = async () => {
+    setIsLoading(true);
+    try {
+      if (!isNative()) {
+        throw new Error('Apple sign-in is only available on iOS.');
+      }
+      const { idToken } = await nativeAppleSignIn();
+      const { error: idTokenError } = await supabase.auth.signInWithIdToken({
+        provider: 'apple',
+        token: idToken,
+      });
+      if (idTokenError) {
+        throw new Error(`Apple sign-in failed: ${idTokenError.message}`);
+      }
+      // onAuthStateChange → applyProfileFromAppleOrGoogleSession handles profile lookup.
+    } catch (error: any) {
+      setIsLoading(false);
+      const msg = String(error?.message || '').toLowerCase();
+      if (msg.includes('cancel') || msg.includes('1001')) {
+        return; // user dismissed the Apple sheet
+      }
+      throw error;
+    }
+  };
+
+  // Account deletion — purges all user data from Supabase and signs out.
+  const deleteAccount = async () => {
+    if (!user) throw new Error('No user signed in.');
+    try {
+      await purgeUserDataBestEffort(supabase, user.id);
+      clearLocalUserState();
+      if (isNative()) {
+        await nativeGoogleSignOut();
+        await nativeAppleSignOut();
+      }
+      await supabase.auth.signOut();
+      setUser(null);
+    } catch (error: any) {
+      console.error('Account deletion error:', error);
+      throw error;
+    }
+  };
+
+  // Delete own community post
+  const deleteCommunityPost = async (postId: string) => {
+    if (!user) return;
+    try {
+      await supabase.from('likes').delete().eq('post_id', postId);
+    } catch (_) { /* ignore FK failures */ }
+    await supabase.from('posts').delete().eq('id', postId).eq('user_id', user.id);
+    setCommunityPosts(prev => prev.filter(p => p.id !== postId));
+  };
+
+  // Report content (posts or messages)
+  const reportContent = async (
+    target: { type: 'post' | 'message'; id: string; userId: string },
+    reason: string,
+  ) => {
+    if (!user) return;
+    await supabase.from('content_reports').insert({
+      reporter_id: user.id,
+      reported_user_id: target.userId,
+      content_type: target.type,
+      content_id: target.id,
+      reason,
+      created_at: new Date().toISOString(),
+    });
+  };
+
   /** Load app User from `profiles` when Google OAuth session exists; email must match an existing profile row. */
   const applyProfileFromGoogleSession = async (session: Session) => {
     const authUser = session.user;
@@ -2017,12 +2092,14 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
       data: { subscription },
     } = supabase.auth.onAuthStateChange(async (event, session) => {
       if (!session?.user) return;
-      const isGoogle =
-        session.user.app_metadata?.provider === 'google' ||
-        (session.user.identities ?? []).some((id) => id.provider === 'google');
-      if (!isGoogle) return;
+      const provider = session.user.app_metadata?.provider;
+      const identities = session.user.identities ?? [];
+      const isGoogle = provider === 'google' || identities.some((id) => id.provider === 'google');
+      const isApple = provider === 'apple' || identities.some((id) => id.provider === 'apple');
+      if (!isGoogle && !isApple) return;
 
       if (event === 'SIGNED_IN' || event === 'INITIAL_SESSION') {
+        // Both Apple and Google use the same profile-lookup-by-email logic.
         await applyProfileFromGoogleSession(session);
       }
     });
@@ -2070,9 +2147,10 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
 
       await supabase.auth.signOut();
 
-      // Also clear the native Google session so the next sign-in re-prompts the account chooser.
+      // Also clear native OAuth sessions so the next sign-in re-prompts the account chooser.
       if (isNative()) {
         await nativeGoogleSignOut();
+        await nativeAppleSignOut();
       }
 
       // Disconnect WebSocket
@@ -3439,6 +3517,10 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
     signUp,
     signIn,
     signInWithGoogle,
+    signInWithApple,
+    deleteAccount,
+    deleteCommunityPost,
+    reportContent,
     signOut,
     updateUser,
     updateProfile,

@@ -51,7 +51,19 @@ import {
   TrendingUp,
   AlertTriangle,
   Shield,
+  Flag,
+  Trash2,
 } from "lucide-react";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "./ui/alert-dialog";
 
 // Fix image imports - use relative paths
 import guitarCharacter from "../assets/20250901_1300_Guitar Character Action Change_remix_01k43dpxbpe93vepc15pn9e6jw.png";
@@ -106,6 +118,8 @@ export function Community() {
     fetchFriendRequests,
     fetchUsersFromSupabase,
     fetchFriends, // To refresh friends list after accepting request
+    deleteCommunityPost,
+    reportContent,
   } = useUser();
 
   const [activeView, setActiveView] = useState("discover");
@@ -114,6 +128,11 @@ export function Community() {
   const [messageInput, setMessageInput] = useState("");
   const [postContent, setPostContent] = useState("");
   const [showUserSearch, setShowUserSearch] = useState(false);
+  const [postToDelete, setPostToDelete] = useState<string | null>(null);
+  const [showReportDialog, setShowReportDialog] = useState(false);
+  const [reportTarget, setReportTarget] = useState<{ type: 'post' | 'message'; id: string; userId: string } | null>(null);
+  const [reportReason, setReportReason] = useState('');
+  const [reportSubmitted, setReportSubmitted] = useState(false);
   const [showNewGroupDialog, setShowNewGroupDialog] = useState(false);
   const [groupName, setGroupName] = useState("");
   const [selectedFriends, setSelectedFriends] = useState<string[]>([]);
@@ -920,13 +939,45 @@ export function Community() {
                   {/* Content - Responsive */}
                   <div className="flex-1 min-w-0">
                     {/* Header - Responsive layout */}
-                    <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-2 mb-3">
-                      <span className="font-semibold text-gray-900 dark:text-gray-100 truncate text-sm sm:text-base">
-                        {post.userName}
-                      </span>
-                      <span className="text-xs text-gray-400 shrink-0">
-                        {formatTime(post.timestamp)}
-                      </span>
+                    <div className="flex items-start gap-1 sm:gap-2 mb-3">
+                      <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-2 flex-1 min-w-0">
+                        <span className="font-semibold text-gray-900 dark:text-gray-100 truncate text-sm sm:text-base">
+                          {post.userName}
+                        </span>
+                        <span className="text-xs text-gray-400 shrink-0">
+                          {formatTime(post.timestamp)}
+                        </span>
+                      </div>
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <button className="p-1 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors shrink-0">
+                            <MoreVertical className="w-4 h-4 text-gray-400" />
+                          </button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end">
+                          {post.userId === user?.id ? (
+                            <DropdownMenuItem
+                              className="text-red-600 dark:text-red-400"
+                              onClick={() => setPostToDelete(post.id)}
+                            >
+                              <Trash2 className="w-4 h-4 mr-2" />
+                              Delete Post
+                            </DropdownMenuItem>
+                          ) : (
+                            <DropdownMenuItem
+                              onClick={() => {
+                                setReportTarget({ type: 'post', id: post.id, userId: post.userId });
+                                setReportReason('');
+                                setReportSubmitted(false);
+                                setShowReportDialog(true);
+                              }}
+                            >
+                              <Flag className="w-4 h-4 mr-2" />
+                              Report Post
+                            </DropdownMenuItem>
+                          )}
+                        </DropdownMenuContent>
+                      </DropdownMenu>
                     </div>
 
                     {/* Post content - Better typography */}
@@ -952,6 +1003,81 @@ export function Community() {
           )}
         </div>
       </div>
+
+      {/* Delete Post Confirmation */}
+      <AlertDialog open={!!postToDelete} onOpenChange={(open) => !open && setPostToDelete(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete Post</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to delete this post? This cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              className="bg-red-600 hover:bg-red-700 text-white"
+              onClick={async () => {
+                if (postToDelete) {
+                  await deleteCommunityPost(postToDelete);
+                  setPostToDelete(null);
+                }
+              }}
+            >
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Report Dialog */}
+      <Dialog open={showReportDialog} onOpenChange={setShowReportDialog}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Report Content</DialogTitle>
+            <DialogDescription>
+              {reportSubmitted
+                ? 'Thank you for your report. We will review it shortly.'
+                : 'Why are you reporting this content?'}
+            </DialogDescription>
+          </DialogHeader>
+          {reportSubmitted ? (
+            <div className="flex justify-end">
+              <Button onClick={() => setShowReportDialog(false)}>Done</Button>
+            </div>
+          ) : (
+            <div className="space-y-3">
+              {['Spam', 'Harassment', 'Inappropriate content', 'Self-harm or violence', 'Other'].map((reason) => (
+                <button
+                  key={reason}
+                  className={`w-full text-left px-4 py-3 rounded-lg border transition-colors ${
+                    reportReason === reason
+                      ? 'border-orange-400 bg-orange-50 dark:bg-orange-900/20 dark:border-orange-500'
+                      : 'border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800'
+                  }`}
+                  onClick={() => setReportReason(reason)}
+                >
+                  <span className="text-sm font-medium text-gray-900 dark:text-gray-100">{reason}</span>
+                </button>
+              ))}
+              <div className="flex justify-end gap-2 pt-2">
+                <Button variant="outline" onClick={() => setShowReportDialog(false)}>Cancel</Button>
+                <Button
+                  disabled={!reportReason}
+                  onClick={async () => {
+                    if (reportTarget && reportReason) {
+                      await reportContent(reportTarget, reportReason);
+                      setReportSubmitted(true);
+                    }
+                  }}
+                >
+                  Submit Report
+                </Button>
+              </div>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
     </>
   );
 

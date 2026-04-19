@@ -32,9 +32,21 @@ import {
   Flame,
   Lightbulb,
   Users,
-  BellRing
+  BellRing,
+  Trash2,
+  AlertTriangle
 } from "lucide-react";
 import { useUser } from '../contexts/UserContext';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "./ui/alert-dialog";
 import { useNotifications, NotificationCategory } from '../utils/notifications';
 
 // Import all avatar options
@@ -83,7 +95,9 @@ const songGenres = [
 ];
 
 export function Settings({ isDarkMode, setIsDarkMode }: SettingsProps) {
-  const { user, signOut, updateProfile } = useUser();
+  const { user, signOut, updateProfile, deleteAccount } = useUser();
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [editData, setEditData] = useState({
     name: user?.name || '',
@@ -614,16 +628,58 @@ export function Settings({ isDarkMode, setIsDarkMode }: SettingsProps) {
 
             {/* Account Actions */}
             <div className="flex flex-col items-center gap-3">
-                <Button 
-                  variant="outline" 
+                <Button
+                  variant="outline"
                   className="w-80 text-red-600 border-red-300 hover:bg-red-50 dark:border-red-700 dark:text-red-400 dark:hover:bg-red-900/20 rounded-xl transition-all duration-300 hover:scale-105"
                   onClick={signOut}
                   style={{ borderBottom: '3px solid rgb(255, 123, 106)' }}
                 >
                   <LogOut className="w-4 h-4 mr-2" />
                   Sign Out
-                  </Button>
+                </Button>
+                <Button
+                  variant="outline"
+                  className="w-80 text-red-700 border-red-400 hover:bg-red-100 dark:border-red-600 dark:text-red-300 dark:hover:bg-red-900/30 rounded-xl transition-all duration-300"
+                  onClick={() => setShowDeleteConfirm(true)}
+                  disabled={isDeleting}
+                >
+                  <Trash2 className="w-4 h-4 mr-2" />
+                  {isDeleting ? 'Deleting...' : 'Delete Account'}
+                </Button>
             </div>
+
+            <AlertDialog open={showDeleteConfirm} onOpenChange={setShowDeleteConfirm}>
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  <AlertDialogTitle className="flex items-center gap-2">
+                    <AlertTriangle className="w-5 h-5 text-red-600" />
+                    Delete Account
+                  </AlertDialogTitle>
+                  <AlertDialogDescription>
+                    This will permanently delete all your data including your profile, posts, messages, friends, and practice progress. This action cannot be undone.
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel disabled={isDeleting}>Cancel</AlertDialogCancel>
+                  <AlertDialogAction
+                    className="bg-red-600 hover:bg-red-700 text-white"
+                    disabled={isDeleting}
+                    onClick={async () => {
+                      setIsDeleting(true);
+                      try {
+                        await deleteAccount();
+                      } catch (err) {
+                        console.error('Delete account failed:', err);
+                        setIsDeleting(false);
+                        setShowDeleteConfirm(false);
+                      }
+                    }}
+                  >
+                    {isDeleting ? 'Deleting...' : 'Delete Permanently'}
+                  </AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
         </div>
         </div>
         </div>
