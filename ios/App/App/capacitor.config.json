@@ -16,6 +16,9 @@
 		},
 		"CapacitorHttp": {
 			"enabled": true
+		},
+		"CapacitorUpdater": {
+			"autoUpdate": false
 		}
 	},
 	"server": {
@@ -31,6 +34,7 @@
 		"ScreenOrientationPlugin",
 		"StatusBarPlugin",
 		"SocialLoginPlugin",
+		"CapacitorUpdaterPlugin",
 		"InAppBrowserPlugin"
 	]
 }

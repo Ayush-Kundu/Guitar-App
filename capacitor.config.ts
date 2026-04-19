@@ -21,6 +21,11 @@ const config: CapacitorConfig = {
     },
     // Native Google Sign-In is configured at runtime via SocialLogin.initialize() in
     // `src/utils/nativeGoogleAuth.ts` — uses VITE_GOOGLE_IOS_CLIENT_ID / VITE_GOOGLE_WEB_CLIENT_ID.
+    CapacitorUpdater: {
+      // Self-hosted OTA — the app checks the manifest URL on launch and downloads new bundles.
+      // Set autoUpdate to false because we manage the update flow ourselves in src/utils/otaUpdate.ts.
+      autoUpdate: false,
+    },
   },
   server: {
     // Allow cleartext traffic for local development servers

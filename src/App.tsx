@@ -19,6 +19,7 @@ import {
   guidedStepMatchesSection,
   isGuidedBeatsFlowActive,
 } from "./utils/beatsGuidedFlow";
+import { checkForOtaUpdate } from "./utils/otaUpdate";
 
 function AppContent() {
   const { user, isLoading } = useUser();
@@ -27,6 +28,11 @@ function AppContent() {
   const [beatsPopupDismissed, setBeatsPopupDismissed] = React.useState(false);
   const [celebration, setCelebration] = React.useState<CelebrationPayload | null>(null);
   const clearCelebration = React.useCallback(() => setCelebration(null), []);
+
+  // Check for OTA updates on launch (native only, no-op on web).
+  React.useEffect(() => {
+    checkForOtaUpdate();
+  }, []);
 
   // Intro (first time)
   React.useEffect(() => {

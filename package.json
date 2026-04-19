@@ -15,6 +15,7 @@
     "@capacitor/screen-orientation": "^8.0.0",
     "@capacitor/status-bar": "^8.0.0",
     "@capgo/capacitor-social-login": "^8.3.13",
+    "@capgo/capacitor-updater": "^8.45.9",
     "@capgo/inappbrowser": "^8.5.4",
     "@radix-ui/react-accordion": "^1.2.3",
     "@radix-ui/react-alert-dialog": "^1.1.6",
@@ -75,6 +76,7 @@
     "start": "react-scripts start",
     "dev": "vite",
     "build": "vite build",
+    "ota:prepare": "bash scripts/prepare-ota.sh",
     "server": "node server/index.js",
     "dev:server": "nodemon server/index.js",
     "dev:full": "concurrently \"npm run start\" \"npm run dev\" \"npm run dev:server\""
