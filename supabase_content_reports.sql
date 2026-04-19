@@ -1,6 +1,3 @@
--- Content reports table for community post and message reporting.
--- Run in Supabase SQL Editor (once).
-
 CREATE TABLE IF NOT EXISTS public.content_reports (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   reporter_id TEXT NOT NULL,
@@ -16,7 +13,6 @@ CREATE INDEX IF NOT EXISTS idx_content_reports_reported ON public.content_report
 
 ALTER TABLE public.content_reports ENABLE ROW LEVEL SECURITY;
 
--- Allow authenticated users to insert reports (but not read/delete others' reports).
 CREATE POLICY "Users can create reports"
   ON public.content_reports
   FOR INSERT

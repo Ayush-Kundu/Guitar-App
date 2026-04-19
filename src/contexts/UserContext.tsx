@@ -153,6 +153,7 @@ interface UserContextType {
   signIn: (email: string, password: string) => Promise<void>;
   signInWithGoogle: () => Promise<void>;
   signInWithApple: () => Promise<void>;
+  signUpWithSocial: (provider: 'google' | 'apple', idToken: string, userData: { name: string; email: string; level: string; musicPreferences: string[] }) => Promise<void>;
   deleteAccount: () => Promise<void>;
   deleteCommunityPost: (postId: string) => Promise<void>;
   reportContent: (target: { type: 'post' | 'message'; id: string; userId: string }, reason: string) => Promise<void>;
@@ -1935,6 +1936,89 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
+  // Social sign-up: creates Supabase auth via idToken + inserts a profile row with user-provided details.
+  const signUpWithSocial = async (
+    provider: 'google' | 'apple',
+    idToken: string,
+    userData: { name: string; email: string; level: string; musicPreferences: string[] },
+  ) => {
+    setIsLoading(true);
+    try {
+      // Check if email already exists in profiles
+      const { data: existing } = await supabase
+        .from('profiles')
+        .select('email')
+        .eq('email', userData.email.toLowerCase());
+      if (existing && existing.length > 0) {
+        throw new Error('An account with this email already exists. Please sign in instead.');
+      }
+
+      // Create Supabase auth user via the social token
+      const { data: authData, error: authError } = await supabase.auth.signInWithIdToken({
+        provider,
+        token: idToken,
+      });
+      if (authError) {
+        throw new Error(`Sign-up failed: ${authError.message}`);
+      }
+
+      // Create profile row (same shape as regular signUp)
+      const userId = authData.user?.id || generateUserId();
+      const profileData = {
+        user_id: userId,
+        email: userData.email.toLowerCase(),
+        password_hash: '', // social login, no password
+        username: userData.name || userData.email.split('@')[0],
+        guitar_level: userData.level || 'beginner',
+        style_1: userData.musicPreferences[0] || 'rock',
+        style_2: userData.musicPreferences[1] || 'pop',
+        style_3: userData.musicPreferences[2] || 'blues',
+        points: 0,
+        compete_level: 'Bronze I',
+        streak: 0,
+      };
+
+      const { error: insertError } = await supabase
+        .from('profiles')
+        .insert([profileData])
+        .select();
+      if (insertError) {
+        throw new Error(`Failed to create account: ${insertError.message}`);
+      }
+
+      const newUser: User = {
+        id: userId,
+        name: userData.name || userData.email.split('@')[0],
+        email: userData.email,
+        level: userData.level || 'beginner',
+        musicPreferences: userData.musicPreferences,
+        practiceStreak: 0,
+        songsMastered: 0,
+        chordsLearned: 0,
+        hoursThisWeek: 0,
+        totalPoints: 0,
+        totalCoins: 0,
+        weeklyPoints: 0,
+        levelProgress: 0,
+        joinDate: new Date().toISOString(),
+        createdAt: new Date().toISOString(),
+        username: userData.name || userData.email.split('@')[0],
+        avatar: '🎸',
+        isOnline: true,
+      };
+
+      setUser(newUser);
+      if (typeof window !== 'undefined') {
+        localStorage.setItem('guitarAppUser', JSON.stringify(newUser));
+        localStorage.setItem('guitarAppSession', JSON.stringify({ userId, email: userData.email.toLowerCase() }));
+      }
+    } catch (error: any) {
+      throw error;
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   // Account deletion — purges all user data from Supabase and signs out.
   const deleteAccount = async () => {
     if (!user) throw new Error('No user signed in.');
@@ -3518,6 +3602,7 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
     signIn,
     signInWithGoogle,
     signInWithApple,
+    signUpWithSocial,
     deleteAccount,
     deleteCommunityPost,
     reportContent,
