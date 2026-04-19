@@ -252,6 +252,8 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [recentPointsActivities, setRecentPointsActivities] = useState<PointsActivity[]>([]);
+  // Flag to suppress onAuthStateChange during signUpWithSocial (prevents race condition).
+  const socialSignUpInProgress = React.useRef(false);
   const [isConnected, setIsConnected] = useState(false);
   
   // Messaging state
@@ -472,7 +474,14 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
       setIsLoading(false);
     };
     
-    initializeAuth();
+    // Safety: if initializeAuth hangs (e.g. Supabase unreachable), force-clear the spinner after 8s.
+    const safetyTimeout = setTimeout(() => {
+      setIsLoading((prev) => {
+        if (prev) console.warn('[Strummy] initializeAuth timed out — forcing loading=false');
+        return false;
+      });
+    }, 8000);
+    initializeAuth().finally(() => clearTimeout(safetyTimeout));
 
     // Load all data from localStorage
     const storedActivities = localStorage.getItem('guitarAppPointsActivities');
@@ -1943,6 +1952,7 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
     userData: { name: string; email: string; level: string; musicPreferences: string[] },
   ) => {
     setIsLoading(true);
+    socialSignUpInProgress.current = true;
     try {
       // Check if email already exists in profiles
       const { data: existing } = await supabase
@@ -2015,6 +2025,7 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
     } catch (error: any) {
       throw error;
     } finally {
+      socialSignUpInProgress.current = false;
       setIsLoading(false);
     }
   };
@@ -2176,6 +2187,11 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
       data: { subscription },
     } = supabase.auth.onAuthStateChange(async (event, session) => {
       if (!session?.user) return;
+      // Skip when signUpWithSocial is running — it handles profile creation itself,
+      // and applyProfileFromGoogleSession would sign out the user because the profile
+      // row hasn't been inserted yet at the moment signInWithIdToken fires this event.
+      if (socialSignUpInProgress.current) return;
+
       const provider = session.user.app_metadata?.provider;
       const identities = session.user.identities ?? [];
       const isGoogle = provider === 'google' || identities.some((id) => id.provider === 'google');
