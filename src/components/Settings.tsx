@@ -626,17 +626,11 @@ export function Settings({ isDarkMode, setIsDarkMode }: SettingsProps) {
               </CardContent>
             </Card>
 
-            {/* Legal */}
-            <div className="flex justify-center gap-4 mb-2">
-              <a href="https://strummy.studio/terms" target="_blank" rel="noopener noreferrer" className="text-xs text-gray-400 hover:text-orange-500 underline">Terms of Service</a>
-              <a href="https://strummy.studio/privacy" target="_blank" rel="noopener noreferrer" className="text-xs text-gray-400 hover:text-orange-500 underline">Privacy Policy</a>
-            </div>
-
-            {/* Account Actions */}
-            <div className="flex flex-col items-center gap-3">
+            {/* Account Actions — side by side */}
+            <div className="flex justify-center gap-3 px-4">
                 <Button
                   variant="outline"
-                  className="w-80 text-red-600 border-red-300 hover:bg-red-50 dark:border-red-700 dark:text-red-400 dark:hover:bg-red-900/20 rounded-xl transition-all duration-300 hover:scale-105"
+                  className="flex-1 max-w-40 text-red-600 border-red-300 hover:bg-red-50 dark:border-red-700 dark:text-red-400 dark:hover:bg-red-900/20 rounded-xl transition-all duration-300"
                   onClick={signOut}
                   style={{ borderBottom: '3px solid rgb(255, 123, 106)' }}
                 >
@@ -645,13 +639,20 @@ export function Settings({ isDarkMode, setIsDarkMode }: SettingsProps) {
                 </Button>
                 <Button
                   variant="outline"
-                  className="w-80 text-red-700 border-red-400 hover:bg-red-100 dark:border-red-600 dark:text-red-300 dark:hover:bg-red-900/30 rounded-xl transition-all duration-300"
+                  className="flex-1 max-w-40 text-red-700 border-red-400 hover:bg-red-100 dark:border-red-600 dark:text-red-300 dark:hover:bg-red-900/30 rounded-xl transition-all duration-300"
                   onClick={() => setShowDeleteConfirm(true)}
                   disabled={isDeleting}
+                  style={{ borderBottom: '3px solid rgb(239, 68, 68)' }}
                 >
                   <Trash2 className="w-4 h-4 mr-2" />
                   {isDeleting ? 'Deleting...' : 'Delete Account'}
                 </Button>
+            </div>
+
+            {/* Legal — below account actions */}
+            <div className="flex justify-center gap-4 mt-3 mb-2">
+              <a href="/terms.html" target="_blank" rel="noopener noreferrer" className="text-xs text-gray-400 hover:text-orange-500 underline">Terms of Service</a>
+              <a href="/privacy.html" target="_blank" rel="noopener noreferrer" className="text-xs text-gray-400 hover:text-orange-500 underline">Privacy Policy</a>
             </div>
 
             <AlertDialog open={showDeleteConfirm} onOpenChange={setShowDeleteConfirm}>

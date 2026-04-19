@@ -153,7 +153,7 @@ interface UserContextType {
   signIn: (email: string, password: string) => Promise<void>;
   signInWithGoogle: () => Promise<void>;
   signInWithApple: () => Promise<void>;
-  signUpWithSocial: (provider: 'google' | 'apple', idToken: string, userData: { name: string; email: string; level: string; musicPreferences: string[] }) => Promise<void>;
+  signUpWithSocial: (provider: 'google' | 'apple', idToken: string, userData: { name: string; email: string; level: string; musicPreferences: string[]; existingAuthUserId?: string }) => Promise<void>;
   deleteAccount: () => Promise<void>;
   deleteCommunityPost: (postId: string) => Promise<void>;
   reportContent: (target: { type: 'post' | 'message'; id: string; userId: string }, reason: string) => Promise<void>;
@@ -1919,37 +1919,67 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
-  // Apple Sign-In — mirrors Google: native on iOS, web via Supabase OAuth (not implemented; can add later).
+  // Apple Sign-In — native on iOS, Supabase OAuth redirect on web.
   const signInWithApple = async () => {
     setIsLoading(true);
     try {
-      if (!isNative()) {
-        throw new Error('Apple sign-in is only available on iOS.');
+      if (isNative()) {
+        const { idToken } = await nativeAppleSignIn();
+        const { error: idTokenError } = await supabase.auth.signInWithIdToken({
+          provider: 'apple',
+          token: idToken,
+        });
+        if (idTokenError) {
+          throw new Error(`Apple sign-in failed: ${idTokenError.message}`);
+        }
+        // onAuthStateChange → applyProfileFromGoogleSession handles profile lookup.
+        return;
       }
-      const { idToken } = await nativeAppleSignIn();
-      const { error: idTokenError } = await supabase.auth.signInWithIdToken({
+
+      // Web: use Supabase OAuth redirect (same pattern as Google).
+      const redirectTo = getOAuthRedirectTo();
+      const { data, error } = await supabase.auth.signInWithOAuth({
         provider: 'apple',
-        token: idToken,
+        options: {
+          redirectTo,
+          skipBrowserRedirect: true,
+        },
       });
-      if (idTokenError) {
-        throw new Error(`Apple sign-in failed: ${idTokenError.message}`);
+
+      if (error) {
+        throw new Error(`Apple sign-in failed: ${error.message}`);
       }
-      // onAuthStateChange → applyProfileFromAppleOrGoogleSession handles profile lookup.
+
+      const url = data?.url;
+      if (!url) {
+        setIsLoading(false);
+        throw new Error(
+          'Apple sign-in did not return a link. In Supabase Dashboard → Authentication → Providers, enable Apple.',
+        );
+      }
+
+      if (typeof window !== 'undefined') {
+        window.location.assign(url);
+      }
     } catch (error: any) {
       setIsLoading(false);
       const msg = String(error?.message || '').toLowerCase();
-      if (msg.includes('cancel') || msg.includes('1001')) {
-        return; // user dismissed the Apple sheet
+      if (msg.includes('cancel') || msg.includes('1001') || msg.includes('popup_closed')) {
+        return;
       }
       throw error;
     }
   };
 
-  // Social sign-up: creates Supabase auth via idToken + inserts a profile row with user-provided details.
+  // Social sign-up: inserts a profile row with user-provided details.
+  // On native: also creates the Supabase auth user via idToken.
+  // On web: the auth user was already created by the OAuth redirect, so we just need the profile.
+  // `idToken` is empty string on web (auth session already exists from redirect).
+  // `existingAuthUserId` is the Supabase auth user id (populated on web from sessionStorage).
   const signUpWithSocial = async (
     provider: 'google' | 'apple',
     idToken: string,
-    userData: { name: string; email: string; level: string; musicPreferences: string[] },
+    userData: { name: string; email: string; level: string; musicPreferences: string[]; existingAuthUserId?: string },
   ) => {
     setIsLoading(true);
     socialSignUpInProgress.current = true;
@@ -1963,17 +1993,26 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
         throw new Error('An account with this email already exists. Please sign in instead.');
       }
 
-      // Create Supabase auth user via the social token
-      const { data: authData, error: authError } = await supabase.auth.signInWithIdToken({
-        provider,
-        token: idToken,
-      });
-      if (authError) {
-        throw new Error(`Sign-up failed: ${authError.message}`);
-      }
+      let userId: string;
 
-      // Create profile row (same shape as regular signUp)
-      const userId = authData.user?.id || generateUserId();
+      if (idToken) {
+        // Native: create Supabase auth user via the social token
+        const { data: authData, error: authError } = await supabase.auth.signInWithIdToken({
+          provider,
+          token: idToken,
+        });
+        if (authError) {
+          throw new Error(`Sign-up failed: ${authError.message}`);
+        }
+        userId = authData.user?.id || generateUserId();
+      } else if (userData.existingAuthUserId) {
+        // Web: auth user was already created by OAuth redirect
+        userId = userData.existingAuthUserId;
+      } else {
+        // Fallback: check current session
+        const { data: { session } } = await supabase.auth.getSession();
+        userId = session?.user?.id || generateUserId();
+      }
       const profileData = {
         user_id: userId,
         email: userData.email.toLowerCase(),
@@ -2074,17 +2113,20 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
     });
   };
 
-  /** Load app User from `profiles` when Google OAuth session exists; email must match an existing profile row. */
+  /** Load app User from `profiles` when a social OAuth session exists; email must match an existing profile row.
+   *  If no profile exists, stores the social info in sessionStorage so the Auth page can show
+   *  the "complete your profile" form (web sign-up via OAuth redirect). */
   const applyProfileFromGoogleSession = async (session: Session) => {
     const authUser = session.user;
     const email = authUser.email?.toLowerCase();
-    const googleName =
+    const socialName =
       authUser.user_metadata?.full_name || authUser.user_metadata?.name || email?.split('@')[0] || 'User';
-    const isGoogle =
-      authUser.app_metadata?.provider === 'google' ||
-      (authUser.identities ?? []).some((id) => id.provider === 'google');
+    const provider = authUser.app_metadata?.provider;
+    const identities = authUser.identities ?? [];
+    const isGoogle = provider === 'google' || identities.some((id) => id.provider === 'google');
+    const isApple = provider === 'apple' || identities.some((id) => id.provider === 'apple');
 
-    if (!email || !isGoogle) {
+    if (!email || (!isGoogle && !isApple)) {
       setIsLoading(false);
       return;
     }
@@ -2097,7 +2139,7 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
         .maybeSingle();
 
       if (profileError) {
-        console.error('Profile lookup (Google):', profileError);
+        console.error('Profile lookup (social):', profileError);
         try {
           sessionStorage.setItem(
             'strummy-oauth-error',
@@ -2110,13 +2152,20 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
       }
 
       if (!existingProfile) {
+        // No profile yet — this is a new user signing up via social OAuth on web.
+        // Store their info so Auth.tsx can show the "complete your profile" form.
         try {
           sessionStorage.setItem(
-            'strummy-oauth-error',
-            'No Strummy account found for this Google email. Sign up with email and password first, then you can use Google next time with the same email.',
+            'strummy-social-signup-pending',
+            JSON.stringify({
+              provider: isGoogle ? 'google' : 'apple',
+              email,
+              name: socialName,
+              authUserId: authUser.id,
+            }),
           );
         } catch (_) {}
-        await supabase.auth.signOut();
+        // Don't sign out — keep the Supabase auth session alive so signUpWithSocial can use it.
         setIsLoading(false);
         return;
       }
@@ -2240,9 +2289,14 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
   // Updated signout function
   const signOut = async () => {
     try {
-      // Sync progress to Supabase before signing out
+      // Sync progress to Supabase before signing out (with timeout so it doesn't block)
       if (user) {
-        await syncFullProgressToSupabase(user.id);
+        try {
+          await Promise.race([
+            syncFullProgressToSupabase(user.id),
+            new Promise((_, reject) => setTimeout(() => reject(new Error('sync timeout')), 3000)),
+          ]);
+        } catch (_) { /* don't block sign-out if sync fails */ }
       }
 
       await supabase.auth.signOut();

@@ -38,10 +38,11 @@ export function Auth() {
   const [showSignInOption, setShowSignInOption] = useState(false);
   const [step, setStep] = useState(1); // 1: Basic info, 2: Music preferences
 
-  // Social sign-up: holds the provider token so we can create the profile on final submit.
+  // Social sign-up: holds the provider info so we can create the profile on final submit.
   const [socialAuth, setSocialAuth] = useState<{
     provider: 'google' | 'apple';
-    idToken: string;
+    idToken: string; // empty string on web (auth session already exists from OAuth redirect)
+    authUserId?: string; // populated on web
   } | null>(null);
 
   const [formData, setFormData] = useState({
@@ -52,12 +53,27 @@ export function Auth() {
     musicPreferences: [] as string[]
   });
 
+  // Check for pending social sign-up (web OAuth redirect returned but no profile exists yet).
   useEffect(() => {
     try {
       const msg = sessionStorage.getItem('strummy-oauth-error');
       if (msg) {
         sessionStorage.removeItem('strummy-oauth-error');
         setError(msg);
+      }
+
+      const pending = sessionStorage.getItem('strummy-social-signup-pending');
+      if (pending) {
+        sessionStorage.removeItem('strummy-social-signup-pending');
+        const data = JSON.parse(pending) as { provider: 'google' | 'apple'; email: string; name: string; authUserId: string };
+        setSocialAuth({ provider: data.provider, idToken: '', authUserId: data.authUserId });
+        setFormData(prev => ({
+          ...prev,
+          email: data.email,
+          name: data.name || prev.name,
+        }));
+        setIsSignUp(true);
+        setStep(1);
       }
     } catch (_) {}
   }, []);
@@ -83,12 +99,15 @@ export function Auth() {
     try {
       if (isSignUp) {
         if (socialAuth) {
-          // Social sign-up: create auth via idToken + profile with user-entered details.
+          // Social sign-up: create profile with user-entered details.
+          // On native: idToken is set, creates auth user too.
+          // On web: idToken is empty, auth user already exists from OAuth redirect.
           await signUpWithSocial(socialAuth.provider, socialAuth.idToken, {
             name: formData.name,
             email: formData.email,
             level: formData.level,
             musicPreferences: formData.musicPreferences,
+            existingAuthUserId: socialAuth.authUserId,
           });
         } else {
           await signUp(formData);
@@ -127,46 +146,53 @@ export function Auth() {
     }
   };
 
-  /** Get email/name from Google or Apple, pre-fill the sign-up form. */
+  /** Get email/name from Google or Apple, pre-fill the sign-up form.
+   *  Native: uses native SDK, gets token + email immediately.
+   *  Web: redirects to Supabase OAuth; on return, onAuthStateChange detects no profile and
+   *       stores pending data in sessionStorage, which the useEffect above picks up. */
   const handleSocialSignUp = async (provider: 'google' | 'apple') => {
     setIsLoading(true);
     setError(null);
     try {
-      let idToken: string;
-      let email: string | undefined;
-      let name: string | undefined;
+      // Native path: get token + email directly from the SDK.
+      if (isNative()) {
+        let idToken: string;
+        let email: string | undefined;
+        let name: string | undefined;
 
+        if (provider === 'google' && isNativeGoogleConfigured()) {
+          const result = await nativeGoogleSignIn();
+          idToken = result.idToken;
+          email = result.email;
+          name = result.name;
+        } else if (provider === 'apple') {
+          const result = await nativeAppleSignIn();
+          idToken = result.idToken;
+          email = result.email;
+          name = result.name;
+        } else {
+          throw new Error('Google sign-in not configured on this device.');
+        }
+
+        if (!email) {
+          throw new Error(`Could not get email from ${provider === 'google' ? 'Google' : 'Apple'}. Please sign up with email and password instead.`);
+        }
+
+        setSocialAuth({ provider, idToken });
+        setFormData(prev => ({ ...prev, email, name: name || prev.name }));
+        setStep(1);
+        setIsLoading(false);
+        return;
+      }
+
+      // Web path: redirect to Supabase OAuth. Mark that this is a sign-up so that when the user
+      // returns and onAuthStateChange finds no profile, it stores the pending data in sessionStorage.
+      try { sessionStorage.setItem('strummy-social-signup-intent', '1'); } catch (_) {}
       if (provider === 'google') {
-        if (!isNative() || !isNativeGoogleConfigured()) {
-          throw new Error('Google sign-up is only available on the iOS app.');
-        }
-        const result = await nativeGoogleSignIn();
-        idToken = result.idToken;
-        email = result.email;
-        name = result.name;
+        await signInWithGoogle();
       } else {
-        if (!isNative()) {
-          throw new Error('Apple sign-up is only available on the iOS app.');
-        }
-        const result = await nativeAppleSignIn();
-        idToken = result.idToken;
-        email = result.email;
-        name = result.name;
+        await signInWithApple();
       }
-
-      if (!email) {
-        throw new Error(`Could not get email from ${provider === 'google' ? 'Google' : 'Apple'}. Please sign up with email and password instead.`);
-      }
-
-      // Store the token for later, pre-fill form fields.
-      setSocialAuth({ provider, idToken });
-      setFormData(prev => ({
-        ...prev,
-        email,
-        name: name || prev.name,
-      }));
-      setStep(1);
-      setIsLoading(false);
     } catch (error: any) {
       setIsLoading(false);
       const msg = String(error?.message || '').toLowerCase();
@@ -561,9 +587,9 @@ export function Auth() {
             {((!isSignUp) || (isSignUp && step === 1)) && (
               <p className="text-xs text-gray-400 text-center mt-4 leading-relaxed">
                 By {isSignUp ? 'signing up' : 'signing in'}, you agree to our{' '}
-                <a href="https://strummy.studio/terms" target="_blank" rel="noopener noreferrer" className="underline text-orange-500">Terms of Service</a>
+                <a href="/terms.html" target="_blank" rel="noopener noreferrer" className="underline text-orange-500">Terms of Service</a>
                 {' '}and{' '}
-                <a href="https://strummy.studio/privacy" target="_blank" rel="noopener noreferrer" className="underline text-orange-500">Privacy Policy</a>.
+                <a href="/privacy.html" target="_blank" rel="noopener noreferrer" className="underline text-orange-500">Privacy Policy</a>.
               </p>
             )}
 

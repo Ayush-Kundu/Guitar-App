@@ -1,0 +1,38 @@
+- generic [ref=e5]:
+  - generic [ref=e6]:
+    - generic [ref=e7]:
+      - img [ref=e8]
+      - heading "Strummy" [level=1] [ref=e14]
+    - paragraph [ref=e15]: Your personalized guitar learning journey
+  - generic [ref=e16]:
+    - heading "Welcome Back" [level=4] [ref=e18]
+    - generic [ref=e19]:
+      - generic [ref=e20]:
+        - generic [ref=e21]:
+          - generic [ref=e22]: Email
+          - textbox "Email" [ref=e23]:
+            - /placeholder: Enter your email
+        - generic [ref=e24]:
+          - generic [ref=e25]: Password
+          - textbox "Password" [ref=e26]:
+            - /placeholder: Enter your password
+        - button "Sign In" [ref=e27]
+      - generic [ref=e32]: or
+      - button "Sign in with Google" [ref=e34]:
+        - img
+        - text: Sign in with Google
+      - paragraph [ref=e36]:
+        - text: Don't have an account?
+        - button "Sign up" [ref=e37]
+  - generic [ref=e38]:
+    - paragraph [ref=e39]: "What you'll get:"
+    - generic [ref=e40]:
+      - generic [ref=e41]:
+        - img [ref=e42]
+        - generic [ref=e45]: Personalized Lessons
+      - generic [ref=e46]:
+        - img [ref=e47]
+        - generic [ref=e50]: Progress Tracking
+      - generic [ref=e51]:
+        - img [ref=e52]
+        - generic [ref=e55]: Interactive Tools
