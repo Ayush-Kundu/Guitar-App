@@ -2072,18 +2072,44 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
   // Account deletion — purges all user data from Supabase and signs out.
   const deleteAccount = async () => {
     if (!user) throw new Error('No user signed in.');
+    const userId = user.id;
     try {
-      await purgeUserDataBestEffort(supabase, user.id);
-      clearLocalUserState();
+      // Purge all server-side data
+      await purgeUserDataBestEffort(supabase, userId);
+    } catch (err) {
+      console.warn('Server purge partial failure (continuing):', err);
+    }
+    try {
+      // Clear all local state
+      if (typeof window !== 'undefined') {
+        localStorage.removeItem('guitarAppUser');
+        localStorage.removeItem('guitarAppSession');
+        localStorage.removeItem('guitarAppMessages');
+        localStorage.removeItem('guitarAppChats');
+        localStorage.removeItem('guitarAppFriends');
+        localStorage.removeItem('guitarAppFriendRequests');
+        localStorage.removeItem('guitarAppPointsActivities');
+        localStorage.removeItem('guitarAppCommunityPosts');
+      }
       if (isNative()) {
         await nativeGoogleSignOut();
         await nativeAppleSignOut();
       }
       await supabase.auth.signOut();
+      // Reset all React state
       setUser(null);
+      setRecentPointsActivities([]);
+      setFriends([]);
+      setFriendRequests([]);
+      setChats([]);
+      setMessages([]);
+      setCommunityPosts([]);
+      setIsConnected(false);
+      websocketService.disconnect();
     } catch (error: any) {
-      console.error('Account deletion error:', error);
-      throw error;
+      console.error('Account deletion cleanup error:', error);
+      // Still clear user so they go to auth screen
+      setUser(null);
     }
   };
 
@@ -2288,47 +2314,45 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
 
   // Updated signout function
   const signOut = async () => {
-    try {
-      // Sync progress to Supabase before signing out (with timeout so it doesn't block)
-      if (user) {
-        try {
-          await Promise.race([
-            syncFullProgressToSupabase(user.id),
-            new Promise((_, reject) => setTimeout(() => reject(new Error('sync timeout')), 3000)),
-          ]);
-        } catch (_) { /* don't block sign-out if sync fails */ }
-      }
-
-      await supabase.auth.signOut();
-
-      // Also clear native OAuth sessions so the next sign-in re-prompts the account chooser.
-      if (isNative()) {
-        await nativeGoogleSignOut();
-        await nativeAppleSignOut();
-      }
-
-      // Disconnect WebSocket
-      websocketService.disconnect();
-      
-      // Clear session from localStorage
-      if (typeof window !== 'undefined') {
-        localStorage.removeItem('guitarAppUser');
-        localStorage.removeItem('guitarAppSession');
-      }
-      
-      // Clear local state
-      setUser(null);
-      setRecentPointsActivities([]);
-      setFriends([]);
-      setFriendRequests([]);
-      setChats([]);
-      setMessages([]);
-      setCommunityPosts([]);
-      setIsConnected(false);
-      
-      
-    } catch (error) {
+    // Sync progress (best-effort, don't block)
+    if (user) {
+      try {
+        await Promise.race([
+          syncFullProgressToSupabase(user.id),
+          new Promise((_, reject) => setTimeout(() => reject(new Error('sync timeout')), 3000)),
+        ]);
+      } catch (_) {}
     }
+
+    // Sign out of Supabase (best-effort)
+    try { await supabase.auth.signOut(); } catch (_) {}
+
+    // Clear native OAuth sessions
+    if (isNative()) {
+      try { await nativeGoogleSignOut(); } catch (_) {}
+      try { await nativeAppleSignOut(); } catch (_) {}
+    }
+
+    // Disconnect WebSocket
+    try { websocketService.disconnect(); } catch (_) {}
+
+    // Clear session from localStorage
+    if (typeof window !== 'undefined') {
+      localStorage.removeItem('guitarAppUser');
+      localStorage.removeItem('guitarAppSession');
+      localStorage.removeItem('guitarAppPointsActivities');
+      localStorage.removeItem('guitarAppCommunityPosts');
+    }
+
+    // Clear all React state — this ALWAYS runs regardless of errors above
+    setUser(null);
+    setRecentPointsActivities([]);
+    setFriends([]);
+    setFriendRequests([]);
+    setChats([]);
+    setMessages([]);
+    setCommunityPosts([]);
+    setIsConnected(false);
   };
 
   const updateUser = (updates: Partial<User>) => {

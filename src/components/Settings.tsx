@@ -198,8 +198,8 @@ export function Settings({ isDarkMode, setIsDarkMode }: SettingsProps) {
   }
 
   return (
-    <div className="page-content min-h-screen bg-gradient-to-br from-amber-50 to-orange-50 dark:from-gray-900 dark:to-gray-800 p-4 pb-20">
-      <div className="max-w-4xl mx-auto">
+    <div className="page-content min-h-screen bg-gradient-to-br from-amber-50 to-orange-50 dark:from-gray-900 dark:to-gray-800 px-3 pt-4 pb-24">
+      <div className="max-w-lg mx-auto">
         {/* Success Message */}
         {showSuccess && (
           <div className="mb-6 p-4 rounded-2xl flex items-center gap-3 transition-all duration-500" style={{ border: '2px solid rgb(240, 240, 240)', backgroundColor: 'rgba(255, 255, 255, 0.4)' }}>
@@ -627,11 +627,13 @@ export function Settings({ isDarkMode, setIsDarkMode }: SettingsProps) {
             </Card>
 
             {/* Account Actions — side by side */}
-            <div className="flex justify-center gap-3 px-4">
+            <div className="flex gap-3 w-full">
                 <Button
                   variant="outline"
-                  className="flex-1 max-w-40 text-red-600 border-red-300 hover:bg-red-50 dark:border-red-700 dark:text-red-400 dark:hover:bg-red-900/20 rounded-xl transition-all duration-300"
-                  onClick={signOut}
+                  className="flex-1 text-red-600 border-2 border-red-300 hover:bg-red-50 dark:border-red-700 dark:text-red-400 dark:hover:bg-red-900/20 rounded-xl"
+                  onClick={async () => {
+                    try { await signOut(); } catch (e) { console.error(e); }
+                  }}
                   style={{ borderBottom: '3px solid rgb(255, 123, 106)' }}
                 >
                   <LogOut className="w-4 h-4 mr-2" />
@@ -639,7 +641,7 @@ export function Settings({ isDarkMode, setIsDarkMode }: SettingsProps) {
                 </Button>
                 <Button
                   variant="outline"
-                  className="flex-1 max-w-40 text-red-700 border-red-400 hover:bg-red-100 dark:border-red-600 dark:text-red-300 dark:hover:bg-red-900/30 rounded-xl transition-all duration-300"
+                  className="flex-1 text-red-700 border-2 border-red-400 hover:bg-red-100 dark:border-red-600 dark:text-red-300 dark:hover:bg-red-900/30 rounded-xl"
                   onClick={() => setShowDeleteConfirm(true)}
                   disabled={isDeleting}
                   style={{ borderBottom: '3px solid rgb(239, 68, 68)' }}
@@ -650,9 +652,9 @@ export function Settings({ isDarkMode, setIsDarkMode }: SettingsProps) {
             </div>
 
             {/* Legal — below account actions */}
-            <div className="flex justify-center gap-4 mt-3 mb-2">
-              <a href="/terms.html" target="_blank" rel="noopener noreferrer" className="text-xs text-gray-400 hover:text-orange-500 underline">Terms of Service</a>
-              <a href="/privacy.html" target="_blank" rel="noopener noreferrer" className="text-xs text-gray-400 hover:text-orange-500 underline">Privacy Policy</a>
+            <div className="flex justify-center gap-4 mt-4 pb-4">
+              <a href="/terms.html" className="text-xs text-gray-400 hover:text-orange-500 underline">Terms of Service</a>
+              <a href="/privacy.html" className="text-xs text-gray-400 hover:text-orange-500 underline">Privacy Policy</a>
             </div>
 
             <AlertDialog open={showDeleteConfirm} onOpenChange={setShowDeleteConfirm}>
