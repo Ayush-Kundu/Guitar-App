@@ -1,1 +1,0 @@
-// This file has been removed as the GuitarHelper component is no longer used
